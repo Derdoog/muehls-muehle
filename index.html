@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Muehls Muehle · Live</title>
+<meta name="theme-color" content="#111316">
+<meta name="description" content="Live-Übersicht des DayZ-Servers Muehls Muehle: wer online ist, Rangliste, Erfolge und Deathmatch-Killfeed.">
+<style>
+  :root{--bg:#111316;--panel:#1a1d22;--panel2:#22262d;--line:#2e333b;--text:#ece8df;--mut:#9a968d;--acc:#d9ab2e;--acc2:#f2c84e;--rot:#d0493a;--gr:#3fa66b}
+  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f4f1ea;--panel:#fff;--panel2:#f0ece3;--line:#ddd6c8;--text:#1d1b17;--mut:#6c675d;--acc:#b8860b;--acc2:#9a6f00}}
+  :root[data-theme="light"]{--bg:#f4f1ea;--panel:#fff;--panel2:#f0ece3;--line:#ddd6c8;--text:#1d1b17;--mut:#6c675d;--acc:#b8860b;--acc2:#9a6f00}
+  *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+  button{font:inherit;color:inherit;cursor:pointer}
+  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
+  .kopf{max-width:1200px;margin:auto;padding:14px 16px 0;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+  h1{font-size:19px;margin:0} h1 span{color:var(--acc)} .mut{color:var(--mut);font-size:13px}
+  nav{max-width:1200px;margin:auto;padding:8px 16px 0;display:flex;gap:2px}
+  nav button{background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;color:var(--mut);font-weight:600}
+  nav button.an{color:var(--text);border-color:var(--acc)} nav .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr);margin-left:6px;vertical-align:middle}
+  main{max-width:1200px;margin:auto;padding:16px 16px 60px}
+  .tab{display:none} .tab.an{display:block}
+  .kacheln{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+  .kachel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+  .kachel b{display:block;font-size:24px;line-height:1.15;color:var(--acc2)} .kachel span{font-size:12px;color:var(--mut)}
+  .zwei{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+  .panel h3{font-size:15px;margin:0 0 8px}
+  .hinweis{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:14px}
+  .spl{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)} .spl:first-of-type{border-top:0}
+  .av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#24402f;color:#a3e6bf;font-weight:800;flex:0 0 auto}
+  .av.tot{background:#3a2a2a;color:#e39a8f}
+  .mitte{flex:1;min-width:0} .mitte b{display:block}
+  .ev{display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px} .ev:first-child{border-top:0}
+  .ev .uhr{color:var(--mut);font:12px Consolas,monospace;width:86px;flex:0 0 auto;white-space:nowrap;padding-top:2px}
+  .ev.kill .tx{color:#e8775f} .ev.kampflog .tx{color:var(--acc2);font-weight:600} .ev.erfolg .tx{color:var(--acc2)}
+  .seg{display:inline-flex;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px;margin-bottom:10px}
+  .seg button{background:none;border:0;border-radius:7px;padding:5px 11px;color:var(--mut);font-weight:600;font-size:13px}
+  .seg button.an{background:var(--acc);color:#141414}
+  .scroll{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14px} th{color:var(--mut);font-weight:600;text-align:right;padding:6px 8px;font-size:12px;white-space:nowrap;cursor:pointer}
+  td{padding:7px 8px;text-align:right;border-top:1px solid var(--line);white-space:nowrap} th:first-child,td:first-child{text-align:left} th.an{color:var(--acc2)}
+  tr.on td:first-child::before{content:"● ";color:var(--gr)}
+  .name{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+  .kf{font:14px/1.8 Consolas,monospace} .kf b{color:var(--acc2)} .kopfs{color:#e8775f}
+  .runde{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+  .runde .gross{font-size:20px;font-weight:800} .chip{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:2px 9px;font-size:12px;margin:3px 4px 0 0}
+  .erf{display:inline-flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--acc);border-radius:99px;padding:3px 10px;font-size:13px;margin:0 6px 6px 0}
+  .erf.offen{border-color:var(--line);opacity:.4}
+  .wbar{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0} .wbar i{display:block;height:11px;background:var(--acc);border-radius:3px}
+  dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:0;width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
+  dialog::backdrop{background:rgba(0,0,0,.6)} .dlg{padding:16px} .zu{float:right;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 10px}
+  footer{max-width:1200px;margin:auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
+  @media(max-width:760px){.kacheln{grid-template-columns:1fr 1fr}.zwei{grid-template-columns:1fr}.ev .uhr{width:44px;white-space:normal;font-size:11px}h1{font-size:17px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="mut" id="stand">lade …</span></div>
+  <nav><button data-t="pve" class="an">🌲 PvE Chernarus<span class="live" id="pveLive" hidden></span></button><button data-t="dm">⚔ Deathmatch<span class="live" id="dmLive" hidden></span></button></nav>
+</header>
+<main>
+  <section class="tab an" id="t-pve">
+    <div id="pBanner"></div>
+    <div class="kacheln" id="pKacheln"></div>
+    <div class="zwei">
+      <div class="panel"><h3>Gerade online</h3><div id="pOnline"></div></div>
+      <div class="panel"><h3>Ereignisse</h3><div id="pEv" style="max-height:520px;overflow:auto"></div></div>
+    </div>
+    <div class="panel scroll"><h3>🏆 Rangliste</h3><div class="seg" id="pZeit"></div><table id="pRang"></table>
+      <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil mit Erfolgen. K/D = Kills geteilt durch Tode durch Spieler.</div></div>
+  </section>
+  <section class="tab" id="t-dm">
+    <div id="dRunde"></div>
+    <div class="zwei">
+      <div class="panel"><h3>🎯 Killfeed</h3><div id="dKf" class="kf"></div></div>
+      <div class="panel scroll"><h3>Stand dieser Runde</h3><table id="dStand"></table></div>
+    </div>
+    <div class="zwei">
+      <div class="panel scroll"><h3>🏆 Elo-Wertung über alle Runden</h3><table id="dElo"></table></div>
+      <div class="panel"><h3>📜 Letzte Runden</h3><div id="dRunden"></div></div>
+    </div>
+  </section>
+</main>
+<footer>Aktualisiert sich alle 2 Minuten von selbst. Positionen und Basen werden hier bewusst nicht gezeigt.</footer>
+<dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
+<script>
+const REPO='derdoog/muehls-muehle';
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const dauer=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h} h ${m} min`:`${m} min`};
+const uhr=t=>{const d=new Date(t*1000),h=new Date(),hm=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});return d.toDateString()===h.toDateString()?hm:d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+hm};
+const vor=t=>{if(!t)return '–';const s=Date.now()/1000-t;return s<120?'gerade eben':s<3600?`vor ${Math.round(s/60)} min`:s<86400?`vor ${Math.round(s/3600)} h`:`vor ${Math.round(s/86400)} T.`};
+const ICON={kill:'🎯',tod:'✝️',verbindung:'🔌',bewusstlos:'😵',erfolg:'🏅',kampflog:'⚠️'};
+const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+let D=null,RZ='gesamt',RS='spielzeit',ersterTab=true;
+function tab(t){$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{localStorage.setItem('tab',t)}catch(e){}}
+$$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+async function laden(){
+  let d=null;
+  try{const r=await fetch(`https://api.github.com/repos/${REPO}/contents/daten.json?ref=daten`,{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-store'});if(r.ok)d=await r.json()}catch(e){}
+  if(!d){try{const r=await fetch(`https://raw.githubusercontent.com/${REPO}/daten/daten.json?t=${Date.now()}`,{cache:'no-store'});if(r.ok)d=await r.json()}catch(e){}}
+  if(!d){$('#stand').textContent='Daten gerade nicht erreichbar';return}
+  D=d;zeichnen();
+  if(ersterTab){ersterTab=false;let t=null;try{t=localStorage.getItem('tab')}catch(e){}tab(t||(d.dm.laeuft?'dm':'pve'))}
+}
+function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
+  $('#stand').textContent=(alt>600?'⚠ letzter Stand ':'Stand ')+uhr(d.stand)+(alt>600?' (Server-PC gerade aus)':'');
+  $('#pveLive').hidden=!p.laeuft;$('#dmLive').hidden=!m.laeuft;
+  // PvE
+  $('#pBanner').innerHTML=p.laeuft?'':'<div class="hinweis">Gerade läuft eine Deathmatch-Runde, der PvE-Server ist kurz aus. Hier steht der letzte Stand.</div>';
+  const sp=p.spieler,bis=p.neustart?Math.round((p.neustart-60-Date.now()/1000)/60):null;
+  $('#pKacheln').innerHTML=[[p.online.length,'gerade online'],[bis===null?'–':(bis<=0?'jetzt':(bis>=60?Math.floor(bis/60)+' h '+bis%60+' min':bis+' min')),'bis zum nächsten Neustart'],
+    [sp.length,'Spieler bisher'],[Math.round(sp.reduce((a,s)=>a+s.spielzeit,0)/3600)+' h','Spielzeit gesamt']].map(([z,t])=>`<div class="kachel"><b>${z}</b><span>${t}</span></div>`).join('');
+  $('#pOnline').innerHTML=p.online.length?p.online.map(o=>`<div class="spl"><span class="av ${o.tot?'tot':''}">${esc((o.name[0]||'?').toUpperCase())}</span><div class="mitte"><b class="name" data-n="${esc(o.name)}">${esc(o.name)}</b><span class="mut">${o.tot?'tot · ':''}seit ${dauer(Date.now()/1000-o.seit)}</span></div></div>`).join('')
+    :`<div class="mut">Niemand online.${sp.length?' Zuletzt da: '+[...sp].sort((a,b)=>b.zuletzt-a.zuletzt).slice(0,3).map(s=>esc(s.name)+' ('+vor(s.zuletzt)+')').join(', '):''}</div>`;
+  $('#pEv').innerHTML=p.ereignisse.map(e=>`<div class="ev ${e.k}"><span class="uhr">${uhr(e.t)}</span><span>${ICON[e.k]||'•'}</span><span class="tx">${esc(e.txt)}</span></div>`).join('')||'<div class="mut">Noch nichts passiert.</div>';
+  const ms=Object.keys(p.monate||{}).sort().reverse();
+  $('#pZeit').innerHTML=`<button class="${RZ==='gesamt'?'an':''}" data-z="gesamt">Gesamt</button>`+ms.map(k=>`<button class="${RZ===k?'an':''}" data-z="${k}">${MN[+k.slice(5)-1]} ${k.slice(0,4)}</button>`).join('');
+  $$('#pZeit button').forEach(b=>b.onclick=()=>{RZ=b.dataset.z;zeichnen()});
+  const mon=RZ!=='gesamt'&&p.monate[RZ];const rows=mon||sp;
+  const SP=mon?[['name','Spieler'],['spielzeit','Spielzeit'],['kills','Kills'],['tode','Tode'],['weitester','Weitester'],['strecke','Strecke']]
+    :[['name','Spieler'],['spielzeit','Spielzeit'],['kills','Kills'],['tode','Tode'],['kd','K/D'],['weitester','Weitester'],['strecke','Strecke'],['erfolge','🏅'],['zuletzt','Zuletzt']];
+  if(!SP.some(x=>x[0]===RS))RS='spielzeit';
+  const rs=[...rows].sort((a,b)=>RS==='name'?a.name.localeCompare(b.name):(b[RS]-a[RS]));
+  const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${esc(s.name)}</b>`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
+  $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
+  $$('#pRang th').forEach(th=>th.onclick=()=>{RS=th.dataset.s;zeichnen()});
+  $$('[data-n]').forEach(b=>b.onclick=()=>profil(b.dataset.n));
+  // Deathmatch
+  $('#dRunde').innerHTML=m.laeuft?`<div class="panel runde"><div class="mut">Läuft gerade seit ${dauer(Date.now()/1000-(m.seit||d.stand))}</div><div class="gross">${esc(m.karte)} · ${esc(m.modus)}</div>
+      <div>${[m.zeit,...(m.regeln||[])].filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>
+      ${m.rotation.aktiv?`<div class="mut" style="margin-top:6px">🔁 Wechselt alle ${m.rotation.minuten} min${m.rotation.naechster?` · danach: <b>${esc(m.rotation.naechster.karte)}</b> · ${esc(m.rotation.naechster.modus)}`:''}</div>`:''}</div>`
+    :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>';
+  $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
+    (m.kills.map(k=>k.taeter?`<div><b>${esc(k.taeter)}</b> ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
+  $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map(s=>`<tr><td>${esc(s[0])}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
+  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th>K/D</th><th>Siege</th><th>Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b>${i+1}. ${esc(s.name)}</b></td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td>${s.siege}</td><td>${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
+  $('#dRunden').innerHTML=m.runden.map(r=>`<div class="spl"><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
+    <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+s[1]+'/'+s[2]).join('  ')}${r.weitester?' · weitester: '+esc(r.weitester[0])+' '+r.weitester[3]+' m':''}</span></div></div>`).join('')||'<div class="mut">Noch keine Runden.</div>';
+}
+function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
+  const hab=new Set(pr.erfolge.map(e=>e[1])),WT=['Mo','Di','Mi','Do','Fr','Sa','So'],mx=Math.max(1,...(pr.wochentag||[0]));
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 2px">${esc(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}</div>
+    <div class="kacheln" style="margin-top:12px">${[[dauer(s.spielzeit),'Spielzeit'],[dauer(pr.ueberlebt),'am Leben seit'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.strecke+' km','gelaufen']].map(([z,t])=>`<div class="kachel"><b style="font-size:19px">${z}</b><span>${t}</span></div>`).join('')}</div>
+    <h3 style="font-size:15px">🏅 Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h3>
+    <div>${p.erfolge_alle.map(e=>`<span class="erf ${hab.has(e[2])?'':'offen'}" title="${esc(e[3])}">${e[1]} ${esc(e[2])}</span>`).join('')}</div>
+    <h3 style="font-size:15px;margin-top:12px">Wann spielt ${esc(n)}?</h3>${(pr.wochentag||[]).map((x,i)=>`<div class="wbar"><span style="width:24px">${WT[i]}</span><i style="width:${Math.round(x/mx*70)}%"></i><span class="mut">${x?dauer(x):''}</span></div>`).join('')}
+    ${pr.tage.length?`<h3 style="font-size:15px;margin-top:12px">Letzte Tage</h3><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${pr.tage.map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:''}
+    ${pr.waffen.length?`<h3 style="font-size:15px;margin-top:12px">Lieblingswaffen</h3>${pr.waffen.map(w=>`<span class="chip">${esc(w[0])} · ${w[1]}</span>`).join('')}`:''}`;
+  $('#dlg').showModal()}
+const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
+laden();setInterval(()=>{if(!document.hidden)laden()},120000);setInterval(()=>{if(D)zeichnen()},30000);
+</script>
+</body>
+</html>
