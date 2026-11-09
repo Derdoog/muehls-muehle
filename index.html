@@ -85,7 +85,7 @@
 <footer>Aktualisiert sich alle 2 Minuten von selbst. Positionen und Basen werden hier bewusst nicht gezeigt.</footer>
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
 <script>
-const REPO='derdoog/muehls-muehle';
+const REPO='Derdoog/muehls-muehle';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dauer=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h} h ${m} min`:`${m} min`};
