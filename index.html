@@ -82,7 +82,7 @@
     </div>
   </section>
 </main>
-<footer>Aktualisiert sich alle 2 Minuten von selbst. Positionen und Basen werden hier bewusst nicht gezeigt.</footer>
+<footer>Aktualisiert sich alle 30 Sekunden von selbst. Positionen und Basen werden hier bewusst nicht gezeigt.</footer>
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
 <script>
 const REPO='Derdoog/muehls-muehle';
@@ -96,10 +96,16 @@ const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','Septe
 let D=null,RZ='gesamt',RS='spielzeit',ersterTab=true;
 function tab(t){$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{localStorage.setItem('tab',t)}catch(e){}}
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+const TAKT=30,ZWEIGE=20;
+async function holeJson(u,opt){try{const r=await fetch(u,opt||{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}return null}
 async function laden(){
-  let d=null;
-  try{const r=await fetch(`https://api.github.com/repos/${REPO}/contents/daten.json?ref=daten`,{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-store'});if(r.ok)d=await r.json()}catch(e){}
-  if(!d){try{const r=await fetch(`https://raw.githubusercontent.com/${REPO}/daten/daten.json?t=${Date.now()}`,{cache:'no-store'});if(r.ok)d=await r.json()}catch(e){}}
+  let d=null;const jetzt=Date.now()/1000;
+  // Live-Zweige: der Takt, der vor 8 s lief, ist sicher schon geschrieben (Zweig live-XX)
+  for(const zur of [8,38]){const t=Math.floor((jetzt-zur)/TAKT);
+    const x=await holeJson(`https://raw.githubusercontent.com/${REPO}/live-${String(((t%ZWEIGE)+ZWEIGE)%ZWEIGE).padStart(2,'0')}/daten.json`);
+    if(x&&jetzt-x.stand<150){d=x;break}}
+  if(!d)d=await holeJson(`https://api.github.com/repos/${REPO}/contents/daten.json?ref=daten`,{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-cache'});
+  if(!d)d=await holeJson(`https://raw.githubusercontent.com/${REPO}/daten/daten.json`);
   if(!d){$('#stand').textContent='Daten gerade nicht erreichbar';return}
   D=d;zeichnen();
   if(ersterTab){ersterTab=false;let t=null;try{t=localStorage.getItem('tab')}catch(e){}tab(t||(d.dm.laeuft?'dm':'pve'))}
@@ -150,7 +156,9 @@ function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n]
     ${pr.waffen.length?`<h3 style="font-size:15px;margin-top:12px">Lieblingswaffen</h3>${pr.waffen.map(w=>`<span class="chip">${esc(w[0])} · ${w[1]}</span>`).join('')}`:''}`;
   $('#dlg').showModal()}
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
-laden();setInterval(()=>{if(!document.hidden)laden()},120000);setInterval(()=>{if(D)zeichnen()},30000);
+laden();
+function naechster(){const s=TAKT-(Date.now()/1000)%TAKT+9;setTimeout(()=>{if(!document.hidden)laden();naechster()},s*1000)}naechster();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)laden()});setInterval(()=>{if(D)zeichnen()},30000);
 </script>
 </body>
 </html>
