@@ -89,6 +89,15 @@
   .rdin{padding:8px 0 4px 18px;font-size:14px} .rdin table{margin:4px 0 8px}
   .rh{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-top:1px solid var(--line);flex-wrap:wrap} .rh:first-child{border-top:0} .rh span:first-child{flex:0 0 190px;color:var(--mut);font-size:13px}
   .titel{display:inline-block;font-size:11px;font-weight:600;color:var(--acc2);border:1px solid var(--line);border-radius:99px;padding:0 7px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  .reiter{display:flex;gap:6px;overflow-x:auto;margin:4px 0 12px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .reiter button{flex:0 0 auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:99px;padding:7px 13px;font:inherit;font-size:14px;cursor:pointer}
+  .reiter button.an{background:var(--acc);color:#141414;border-color:var(--acc);font-weight:700}
+  .reiter.klein{margin:10px 0 8px}.reiter.klein button{padding:5px 10px;font-size:13px}
+  .mr{display:none}.mr.an{display:block}
+  .mwahl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:8px}
+  .wahl{font:inherit;padding:4px 6px;border-radius:8px;background:var(--panel2);color:var(--text);border:1px solid var(--line);max-width:100%}
+  .hinweis{background:var(--panel2);border:1px solid var(--acc);border-radius:10px;padding:10px 12px;margin:8px 0}
+  table.wt{border-collapse:collapse;width:100%;font-size:13px}table.wt th,table.wt td{padding:5px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
   .bgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:8px 0 14px}
   .bg{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px}
   .bg.offen{opacity:.55} .bg b{display:block;font-size:14px} .bg .mut{font-size:12px;line-height:1.35}
@@ -142,15 +151,18 @@
     </div>
     <div class="zwei">
       <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
-      <div class="panel scroll"><h3>🔫 Waffen</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Gezählt ab dem 10.11.2026.</div></div>
+      <div class="panel scroll"><h3>🔫 Waffen</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div>
     </div>
   </section>
   <section class="tab" id="t-meine">
-    <div class="panel"><h3 id="mTitel">Meine Charaktere</h3><div id="mListe"></div></div>
-    <div id="mStat"></div>
-    <h3 style="margin:18px 0 8px">🗺 Meine Karte (PvE Chernarus)</h3>
-    <div id="mKarte"></div>
-    <div class="mut" style="margin-top:8px">Nur für dich sichtbar: deine Charaktere auf Chernarus, Wege der letzten Zeit, deine Kills und Tode und Basen, an denen du gebaut hast. Positionen kommen aus dem Server-Log und sind einige Minuten alt.</div>
+    <div class="panel"><h3 id="mTitel">Meine Statistik</h3><div id="mListe"></div><div id="mWahl" class="mwahl"></div></div>
+    <div class="reiter" id="mReiter"></div>
+    <div id="mStat">
+      <div class="mr" id="mr-uebersicht"></div><div class="mr" id="mr-dm"></div><div class="mr" id="mr-pve"></div><div class="mr" id="mr-waffen"></div>
+      <div class="mr" id="mr-erfolge"></div>
+      <div class="mr" id="mr-karte"><div class="panel"><h3>🗺 Meine Karte (PvE Chernarus)</h3><div id="mKarte"></div><div class="mut" id="mr-karte-text" style="margin-top:8px"></div><div id="mr-heat" style="margin-top:12px"></div></div></div>
+      <div class="mr" id="mr-titel"></div>
+    </div>
   </section>
 </main>
 <footer><span id="takt">Aktualisiert sich alle 10 Sekunden von selbst.</span> Positionen und Basen werden hier nur dem jeweiligen Spieler nach dem Login gezeigt.</footer>
@@ -281,40 +293,7 @@ function statusZeichnen(){const s=D&&D.status,el=$('#sStatus');if(!s||!s.t||Date
   const rest=Math.max(1,Math.round((s.startzeit_min||3)-(Date.now()/1000-s.t)/60));
   const T={laeuft:['🟢','Server läuft'],startet:['🟡','Server startet neu, ca. '+rest+' min'],wechsel:['🟡','Kartenwechsel, Server startet gleich neu'],gestoppt:['🔴','Server ist gestoppt'],update:['🟡','Server macht ein Update']}[s.status]||['⚪',s.status];
   el.innerHTML=`<span>${T[0]}</span> ${esc(T[1])}`}
-function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n);
-  const rn=(D.dm.runden||[]).map(r=>({r,i:r.stand.findIndex(x=>x[0]===n)})).filter(x=>x.i>=0).slice(0,8);
-  if(!s&&!rn.length){const p=D.pve.spieler.find(x=>x.name===n);if(p)profil(n);return}
-  const z=[];if(s){if(s.beste_serie)z.push(['🔥 Beste Serie',s.beste_serie+' Kills']);if(s.laengstes_leben)z.push(['⏱️ Längstes Leben',dauer(s.laengstes_leben)]);
-    if(s.weitester)z.push(['🎯 Weitester Kill',s.weitester+' m']);if(s.kopf)z.push(['💀 Kopfschüsse',s.kopf]);if(s.rache)z.push(['⚔️ Rache',s.rache+'×']);
-    if(s.ziel_siege)z.push(['🏁 Ziel-Siege',s.ziel_siege]);if(s.jugg_runden||s.jugg_kills)z.push(['🛡️ Juggernaut',(s.jugg_runden||0)+'× gewesen, '+(s.jugg_kills||0)+'× erlegt']);
-    if(s.kopfgeld_kills)z.push(['💰 Kopfgeld kassiert',s.kopfgeld_kills+'×'])}
-  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div>
-    ${s?`<div class="kacheln" style="margin-top:12px">${[[s.elo,'Elo'],[s.kd,'K/D'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']].map(([a,b])=>`<div class="kachel"><b style="font-size:19px">${a}</b><span>${b}</span></div>`).join('')}</div>`:''}
-    ${z.length?`<div>${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}</div>`:''}
-    ${(()=>{const pr=(D.dm.profile||{})[n];if(!pr)return '';const ED=D.dm.erfolge_def||{},hab=new Set((pr.erfolge||[]).map(e=>e[0]));const t=[];
-      if(pr.nemesis)t.push(['😈 Nemesis',pr.nemesis[0]+' ('+pr.nemesis[1]+'× erwischt)']);if(pr.opfer)t.push(['🎯 Lieblingsopfer',pr.opfer[0]+' ('+pr.opfer[1]+'×)']);
-      if(pr.rivale)t.push(['⚔️ Rivale',pr.rivale[0]+' · '+pr.rivale[1]+' : '+pr.rivale[2]]);
-      return (t.length?`<div>${t.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}</div>`:'')
-        +((pr.waffen||[]).length?`<h3 style="font-size:15px;margin-top:12px">Lieblingswaffen</h3>${pr.waffen.map(w=>`<span class="chip">${esc(w[0])} · ${w[1]}</span>`).join('')}`:'')
-        +((s&&s.stil||[]).length?`<h3 style="font-size:15px;margin-top:12px">🎖 DM-Stil-Erfolge</h3><div>${s.stil.map(x=>`<span class="erf" title="${esc(((D.dm.stil_def||{})[x.id]||[])[2]||'')} · zuletzt ${datumB(x.zuletzt)}">${x.icon} ${esc(x.titel)} <span class="stufe st-${x.stufe}">${STN[x.stufe]||''}</span> ×${x.n}</span>`).join('')}</div>`:'')
-        +(Object.keys(ED).length?`<h3 style="font-size:15px;margin-top:12px">🏅 DM-Erfolge (${hab.size} von ${Object.keys(ED).length})</h3><div>${Object.entries(ED).map(([id,e])=>`<span class="erf ${hab.has(id)?'':'offen'}" title="${esc(e[2])}">${e[0]} ${esc(e[1])}</span>`).join('')}</div>`:'')})()}
-    ${rn.length?`<h3 style="font-size:15px;margin-top:12px">Letzte Runden</h3>${rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode</div>`).join('')}`:''}
-    <div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>`;
-  const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n);
-  if(!$('#dlg').open)$('#dlg').showModal()}
-function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
-  const hab=new Set(pr.erfolge.map(e=>e[1])),WT=['Mo','Di','Mi','Do','Fr','Sa','So'],mx=Math.max(1,...(pr.wochentag||[0]));
-  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}</div>
-    <div class="kacheln" style="margin-top:12px">${[[dauer(s.spielzeit),'Spielzeit'],[dauer(pr.ueberlebt),'am Leben seit'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.strecke+' km','gelaufen']].map(([z,t])=>`<div class="kachel"><b style="font-size:19px">${z}</b><span>${t}</span></div>`).join('')}</div>
-    ${(D.dm.elo||[]).some(x=>x.name===n)?`<div class="mut" style="margin-top:6px"><span class="name" id="zuDm">Deathmatch-Profil ansehen</span></div>`:''}
-    <h3 style="font-size:15px">🏅 Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h3>
-    <div>${p.erfolge_alle.map(e=>`<span class="erf ${hab.has(e[2])?'':'offen'}" title="${esc(e[3])}">${e[1]} ${esc(e[2])}</span>`).join('')}</div>
-    ${(pr.stil||[]).length?`<h3 style="font-size:15px;margin-top:12px">🎖 PvE-Stil-Erfolge</h3><div>${pr.stil.map(x=>`<span class="erf" title="${esc(((p.stil_def||{})[x.id]||[])[2]||'')} · zuletzt ${datumB(x.zuletzt)}">${x.icon} ${esc(x.titel)} <span class="stufe st-${x.stufe}">${STN[x.stufe]||''}</span> ×${x.n}</span>`).join('')}</div>`:''}
-    <h3 style="font-size:15px;margin-top:12px">Wann spielt ${esc(n)}?</h3>${(pr.wochentag||[]).map((x,i)=>`<div class="wbar"><span style="width:24px">${WT[i]}</span><i style="width:${Math.round(x/mx*70)}%"></i><span class="mut">${x?dauer(x):''}</span></div>`).join('')}
-    ${pr.tage.length?`<h3 style="font-size:15px;margin-top:12px">Letzte Tage</h3><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${pr.tage.map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:''}
-    ${pr.waffen.length?`<h3 style="font-size:15px;margin-top:12px">Lieblingswaffen</h3>${pr.waffen.map(w=>`<span class="chip">${esc(w[0])} · ${w[1]}</span>`).join('')}`:''}`;
-  const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n);
-  if(!$('#dlg').open)$('#dlg').showModal()}
+// öffentliche Profile: siehe unten (Reiter)
 // ---------------- Abstimmung (nur direkt vom Server)
 let VOTE=null;
 async function voteLaden(){if(!DIREKT)return;const v=await holeJson('/zuschauer/abstimmung');VOTE=v;if(v)v._t=Date.now()/1000;voteZeichnen()}
@@ -329,19 +308,32 @@ function voteZeichnen(){const v=VOTE,el=$('#dVote');if(!v||!v.offen){el.hidden=t
   $$('[data-vm]').forEach(b=>b.onclick=()=>stimme({karte:me.karte||null,modus:b.dataset.vm}))}
 async function stimme(d){try{const r=await fetch('/zuschauer/abstimmung',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
   if(!r.ok){const j=await r.json().catch(()=>({}));alert(j.meldung||'Abstimmen ging nicht')}}catch(e){}await voteLaden()}
-// ---------------- Spieler-Login und eigene Karte
+// ---------------- Spieler-Login, Registrierung und Meine Statistik (Reiter, Charakter-Auswahl)
 let ICH=null,MK=null,MG=null;
 async function ichLaden(){if(!DIREKT)return;$('#loginBtn').hidden=false;ICH=await holeJson('/zuschauer/ich');
   const da=ICH&&ICH.benutzer;$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;
   if(!da&&$('#t-meine').classList.contains('an'))tab('pve')}
-$('#loginBtn').onclick=async()=>{if(ICH&&ICH.benutzer){await fetch('/zuschauer/logout',{method:'POST'});MK&&MK.remove();MK=null;await ichLaden();return}
-  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">Spieler-Login</h2>
-    <div class="mut" style="margin-bottom:12px">Mit deinem Zugang siehst du deine eigenen Charaktere auf der PvE-Karte. Zugänge vergibt der Admin.</div>
-    <form id="lf"><input class="feld" id="lb" placeholder="Benutzername" autocomplete="username"><input class="feld" id="lp" type="password" placeholder="Passwort" autocomplete="current-password">
-    <div class="mut" id="lm" style="color:#e8775f;margin-bottom:8px"></div><button class="login" style="width:100%;padding:10px;background:var(--acc);color:#141414;font-weight:800">Anmelden</button></form>`;
-  $('#dlg').showModal();$('#lb').focus();
-  $('#lf').onsubmit=async ev=>{ev.preventDefault();const r=await fetch('/zuschauer/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({benutzer:$('#lb').value,passwort:$('#lp').value})});
-    const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').textContent=j.meldung||'Anmeldung fehlgeschlagen';return}dlg.close();await ichLaden();tab('meine');meineLaden()}};
+function loginForm(reg){const offen=!ICH||ICH.registrierung_an!==false;
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">${reg?'Konto anlegen':'Spieler-Login'}</h2>
+    <div class="mut" style="margin-bottom:12px">${reg?'Leg dir selbst ein Konto an. Deine Gamertags ordnet dir danach der Admin zu (PvE: einer oder mehrere Charaktere, Deathmatch: einer).':'Mit deinem Zugang siehst du deine eigene Statistik und deine Charaktere auf der PvE-Karte.'}</div>
+    <form id="lf"><input class="feld" id="lb" placeholder="Benutzername${reg?' (3–24 Zeichen: A–Z, 0–9, _ -)':''}" autocomplete="username" maxlength="24">
+    <input class="feld" id="lp" type="password" placeholder="Passwort${reg?' (mind. 8 Zeichen)':''}" autocomplete="${reg?'new-password':'current-password'}">
+    ${reg?`<input class="feld" id="lp2" type="password" placeholder="Passwort wiederholen" autocomplete="new-password">
+    <input class="feld" id="lw" placeholder="Wunsch: deine PvE-Gamertags (optional, mit Komma)" maxlength="120">
+    <input class="feld" id="lwd" placeholder="Wunsch: dein Deathmatch-Gamertag (optional)" maxlength="40">
+    <div class="mut" style="margin-bottom:8px">Die Wünsche sind nur eine Notiz für den Admin, sie werden nicht automatisch zugeordnet.</div>`:''}
+    <div class="mut" id="lm" style="color:#e8775f;margin-bottom:8px"></div><button class="login" style="width:100%;padding:10px;background:var(--acc);color:#141414;font-weight:800">${reg?'Konto anlegen':'Anmelden'}</button></form>
+    ${offen?`<div class="mut" style="margin-top:10px;text-align:center"><span class="name" id="lwechsel">${reg?'Ich habe schon ein Konto: anmelden':'Noch kein Konto? Selbst anlegen'}</span></div>`:''}`;
+  if(!$('#dlg').open)$('#dlg').showModal();$('#lb').focus();
+  const w=$('#lwechsel');if(w)w.onclick=()=>loginForm(!reg);
+  $('#lf').onsubmit=async ev=>{ev.preventDefault();
+    if(reg){if($('#lp').value!==$('#lp2').value){$('#lm').textContent='Die beiden Passwörter sind nicht gleich';return}
+      const r=await fetch('/zuschauer/registrieren',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({benutzer:$('#lb').value.trim(),passwort:$('#lp').value,passwort2:$('#lp2').value,wunsch:$('#lw').value,wunsch_dm:$('#lwd').value})});
+      const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').textContent=j.meldung||'Ging nicht';return}
+      const b=$('#lb').value.trim(),p=$('#lp').value;loginForm(false);$('#lb').value=b;$('#lp').value=p;$('#lm').style.color='var(--acc)';$('#lm').textContent=j.meldung||'Konto angelegt, jetzt anmelden.';return}
+    const r=await fetch('/zuschauer/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({benutzer:$('#lb').value,passwort:$('#lp').value})});
+    const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').style.color='#e8775f';$('#lm').textContent=j.meldung||'Anmeldung fehlgeschlagen';return}dlg.close();await ichLaden();tab('meine');meineLaden()}}
+$('#loginBtn').onclick=async()=>{if(ICH&&ICH.benutzer){await fetch('/zuschauer/logout',{method:'POST'});MK&&MK.remove();MK=null;await ichLaden();return}loginForm(false)};
 function skript(u){return new Promise((ok,f)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=f;document.head.appendChild(s)})}
 const pq=p=>p?`${String(Math.floor(p[0]/100)).padStart(3,'0')} ${String(Math.floor((15360-p[1])/100)).padStart(3,'0')}`:'';
 let ORTE=null;
@@ -356,15 +348,33 @@ function rasterZeichnen(){if(!MK)return;MR.clearLayers();if(!MEBENE.raster)retur
 function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)return;const z=MK.getZoom();
   ORTE.forEach(o=>{const gross=['Capital','City'].includes(o[3]);if(!gross&&!(o[3]==='Village'&&z>=-3)&&!(['Camp','Local','LocalOffice','RailroadStation'].includes(o[3])&&z>=-1.5))return;
     L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
+const MREITER=[['uebersicht','📋 Übersicht'],['dm','⚔️ Deathmatch'],['pve','🌲 PvE'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel']];
+let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
+try{MREIT=localStorage.getItem('meine_reiter')||MREIT;MWAHL=localStorage.getItem('meine_char')||MWAHL}catch(e){}
+(function(){const h=decodeURIComponent(location.hash||'');const m=h.match(/^#meine(?:\/([a-z]+))?(?:\/(.+))?$/);if(m){if(m[1])MREIT=m[1];if(m[2])MWAHL=m[2]}})();
+function reiterMerken(){try{localStorage.setItem('meine_reiter',MREIT);localStorage.setItem('meine_char',MWAHL)}catch(e){}
+  if($('#t-meine').classList.contains('an'))history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}
+function reiterZeigen(){if(!MREITER.some(r=>r[0]===MREIT))MREIT='uebersicht';
+  $('#mReiter').innerHTML=MREITER.map(([id,t])=>`<button data-mr="${id}" class="${id===MREIT?'an':''}">${t}</button>`).join('');
+  $$('#mReiter [data-mr]').forEach(b=>b.onclick=()=>{MREIT=b.dataset.mr;reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
+  $$('.mr').forEach(x=>x.classList.toggle('an',x.id==='mr-'+MREIT))}
 let MLAEUFT=false;
 async function meineLaden(){if(!ICH||!ICH.benutzer||MLAEUFT)return;MLAEUFT=true;try{await meineLaden2()}finally{MLAEUFT=false}}
-async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)return;
-  try{if(!$('#mStat').dataset.offen||$('#mStat').dataset.sig!==JSON.stringify(d.charaktere.map(c=>c.statistik)).length+''){meineStat(d);$('#mStat').dataset.sig=JSON.stringify(d.charaktere.map(c=>c.statistik)).length+''}}catch(e){$('#mStat').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
-  $('#mTitel').textContent='Meine Charaktere ('+ICH.benutzer+')';
-  $('#mListe').innerHTML=d.charaktere.length?d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem Server gesehen</span></div></div>`
-    :c.nur_dm?`<div class="spl"><span class="av">⚔</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">bisher nur im Deathmatch gesehen</span></div></div>`
-    :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('')
-    :'<div class="mut">Dir ist noch kein Gamertag zugeordnet. Sag dem Admin Bescheid.</div>';
+async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encodeURIComponent(MWAHL));
+  if(!d&&MWAHL!=='alle'){MWAHL='alle';d=await holeJson('/zuschauer/meine?char=alle')}if(!d)return;MDATEN=d;
+  reiterZeigen();reiterMerken();
+  $('#mTitel').textContent='Meine Statistik ('+ICH.benutzer+')';
+  const pt=d.pve_gamertags||[];
+  $('#mWahl').innerHTML=pt.length>1?`<label class="mut">🌲 PvE-Charakter: <select id="mWahlSel" class="wahl"><option value="alle">Alle zusammen (${pt.length})</option>${pt.map(g=>`<option value="${esc(g)}" ${g===MWAHL?'selected':''}>${esc(g)}</option>`).join('')}</select></label>`:'';
+  $('#mWahl').innerHTML+=`<span class="mut">⚔️ DM-Gamertag: <b style="color:var(--text)">${d.dm_gamertag?esc(d.dm_gamertag):'– noch keiner –'}</b></span>`;
+  const sel=$('#mWahlSel');if(sel){sel.value=pt.includes(MWAHL)?MWAHL:'alle';sel.onchange=()=>{MWAHL=sel.value;delete $('#mStat').dataset.sig;meineLaden()}}
+  const sig=JSON.stringify([d.pve,d.dm,d.pve_einzeln,d.dm_titel]).length+'|'+MWAHL;
+  try{if($('#mStat').dataset.sig!==sig){meineStat(d);$('#mStat').dataset.sig=sig}}catch(e){console.error(e);$('#mr-uebersicht').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
+  $('#mListe').innerHTML=(d.status==='wartet'||(!pt.length&&!d.dm_gamertag))?`<div class="hinweis">⏳ Dein Konto wartet auf die Zuordnung. <b>Dein Admin ordnet dir deine Gamertags zu.</b> Danach siehst du hier deine Statistik.</div>`
+    :d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem PvE-Server gesehen</span></div></div>`
+    :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('');
+  if(MREIT==='karte')karteZeichnen(d)}
+async function karteZeichnen(d){if(!d)return;
   if(!window.L){const c=document.createElement('link');c.rel='stylesheet';c.href='/zuschauer/leaflet.css';document.head.appendChild(c);try{await skript('/zuschauer/leaflet.js')}catch(e){$('#mKarte').innerHTML='<div class="mut" style="padding:16px">Karte konnte nicht geladen werden.</div>';return}}
   const B=[[0,0],[15360,15360]],ll=p=>[p[1],p[0]],pts=[];
   if(!ORTE)ORTE=await holeJson('/zuschauer/orte.json');
@@ -372,15 +382,15 @@ async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)re
     MR=L.layerGroup().addTo(MK);MO=L.layerGroup().addTo(MK);MG=L.layerGroup().addTo(MK);MK.fitBounds(B);MK._erst=true;
     MK.on('zoomend',()=>{rasterZeichnen();orteZeichnen()});
     MK.on('click',e=>L.popup().setLatLng(e.latlng).setContent(koordText([e.latlng.lng,e.latlng.lat])).openOn(MK));
-    const leg=L.control({position:'bottomleft'});leg.onAdd=()=>{const d=L.DomUtil.create('div','legende');
-      const zu=innerWidth<700;d.innerHTML=`<div class="legkopf" style="cursor:pointer;font-weight:600">🗺 Legende <span class="legpf">${zu?'▸':'▾'}</span></div><div class="leginhalt" style="display:${zu?'none':'block'}"><div><i style="background:#3fa66b"></i>dein Charakter (online)</div><div><i style="background:#777"></i>letzte Position (offline)</div>
+    const leg=L.control({position:'bottomleft'});leg.onAdd=()=>{const dv=L.DomUtil.create('div','legende');
+      const zu=innerWidth<700;dv.innerHTML=`<div class="legkopf" style="cursor:pointer;font-weight:600">🗺 Legende <span class="legpf">${zu?'▸':'▾'}</span></div><div class="leginhalt" style="display:${zu?'none':'block'}"><div><i style="background:#777"></i>Stand nach dem Logout</div>
         <div><i class="linie" style="background:#3fa66b"></i>gelaufener Weg</div><div><i class="ring" style="border-color:#ff5a3c"></i>dein Kill</div>
-        <div><i class="ring" style="border-color:#b9b2a6"></i>dein Tod</div><div>🏠 Basis · ⛺ Lager · 🚩 Flagge</div>
+        <div><i class="ring" style="border-color:#b9b2a6"></i>dein Tod</div><div>⬚ grobes Gebiet (online)</div><div>🏠 Basis · ⛺ Lager · 🚩 Flagge</div>
         <label><input type="checkbox" data-me="raster" ${MEBENE.raster?'checked':''}>Planquadrate</label><label><input type="checkbox" data-me="orte" ${MEBENE.orte?'checked':''}>Ortsnamen</label>
         <div class="mut" style="color:#bbb">Tippen auf die Karte zeigt Koordinaten</div></div>`;
-      d.querySelector('.legkopf').onclick=()=>{const x=d.querySelector('.leginhalt'),o=x.style.display==='none';x.style.display=o?'block':'none';d.querySelector('.legpf').textContent=o?'▾':'▸';};
-      L.DomEvent.disableClickPropagation(d);
-      d.querySelectorAll('[data-me]').forEach(c=>c.onchange=()=>{MEBENE[c.dataset.me]=c.checked;try{localStorage.setItem('meine_ebenen',JSON.stringify(MEBENE))}catch(e){}rasterZeichnen();orteZeichnen()});return d};
+      dv.querySelector('.legkopf').onclick=()=>{const x=dv.querySelector('.leginhalt'),o=x.style.display==='none';x.style.display=o?'block':'none';dv.querySelector('.legpf').textContent=o?'▾':'▸';};
+      L.DomEvent.disableClickPropagation(dv);
+      dv.querySelectorAll('[data-me]').forEach(c=>c.onchange=()=>{MEBENE[c.dataset.me]=c.checked;try{localStorage.setItem('meine_ebenen',JSON.stringify(MEBENE))}catch(e){}rasterZeichnen();orteZeichnen()});return dv};
     leg.addTo(MK)}
   MG.clearLayers();if(!$('#mKarte').offsetWidth)return;MK.invalidateSize();rasterZeichnen();orteZeichnen();
   const FARBE=['#3fa66b','#4c8fd6','#d9ab2e','#c060c0','#e0703a','#50c0c0'];
@@ -390,8 +400,9 @@ async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)re
     (c.kills||[]).forEach(k=>{if(!k.pos)return;const eig=k.taeter===c.name;L.circleMarker(ll(k.pos),{radius:5,color:eig?'#ff5a3c':'#b9b2a6',weight:2,fillOpacity:.6})
       .bindPopup((k.taeter?`${esc(k.taeter)} ➜ ${esc(k.opfer)}<br>${esc(k.waffe||'')} · ${k.m||0} m`:`${esc(k.opfer)} ✝ ${esc(k.ursache||'')}`)+`<br><span class="mut">${uhr(k.t)}</span>`+koordText(k.pos)).addTo(MG)});
     (c.basen||[]).forEach(b=>{pts.push(ll(b.pos));L.marker(ll(b.pos),{icon:L.divIcon({className:'basis',html:b.flagge?'🚩':(b.n>=3?'🏠':'⛺'),iconSize:[22,22]})}).bindPopup(`${b.n>=3?'Basis':'Lager'} von ${esc(c.name)}<br><span class="mut">zuletzt ${vor(b.zuletzt)}</span>`+koordText(b.pos)).addTo(MG)});
-    if(c.pos){pts.push(ll(c.pos));L.circleMarker(ll(c.pos),{radius:9,color:'#fff',weight:2,fillColor:c.online?f:'#777',fillOpacity:1}).bindTooltip(esc(c.name),{permanent:true,direction:'top',offset:[0,-9]})
-      .bindPopup(`<b>${esc(c.name)}</b> ${c.online?'🟢 online':'⚫ offline, zuletzt '+vor(c.zuletzt)}<br>${koordText(c.pos)}`).addTo(MG)}});
+    if(c.grob){const g=c.grob;L.rectangle([[g.z0,g.x0],[g.z0+g.s,g.x0+g.s]],{color:f,weight:2,dashArray:'6 6',fillOpacity:.08}).bindTooltip(`${esc(c.name)}: ${c.online?'gerade':'zuletzt'} irgendwo hier (${g.s/1000}×${g.s/1000} km${g.gebiet?', Gegend '+esc(g.gebiet):''})`).addTo(MG);pts.push([g.z0+g.s/2,g.x0+g.s/2])}
+    if(c.pos){pts.push(ll(c.pos));L.circleMarker(ll(c.pos),{radius:9,color:'#fff',weight:2,fillColor:'#777',fillOpacity:1}).bindTooltip(esc(c.name),{permanent:true,direction:'top',offset:[0,-9]})
+      .bindPopup(`<b>${esc(c.name)}</b> Stand ${c.pos_stand?uhr(c.pos_stand):'–'} (nach dem Logout)<br>${koordText(c.pos)}`).addTo(MG)}});
   if(MK._erst&&pts.length){MK.fitBounds(L.latLngBounds(pts).pad(.4),{maxZoom:-1});MK._erst=false}}
 // ---------------- Meine Statistik (nur nach Login, nur eigene Gamertags)
 const WTN=['Mo','Di','Mi','Do','Fr','Sa','So'];
@@ -418,45 +429,106 @@ function meilenKarte(e){const prog=Math.round(Math.min(1,(e.wert||0)/e.schwelle)
   return `<div class="bg ${e.erreicht?'':'offen'}">${medaille(e.icon,e.erreicht?e.stufe:null,0)}<div><b>${esc(e.titel)}</b><span class="stufe st-${e.erreicht?e.stufe:'offen'}">${e.erreicht?STN[e.stufe]:'offen'}</span>
     <div class="mut">${esc(e.text)}</div>${e.erreicht?`<div class="mut">Erreicht: ${datumB(e.t)}</div>`:`<div class="fort"><i style="width:${prog}%"></i></div><div class="mut">${e.wert} von ${e.schwelle}${e.einheit?' '+esc(e.einheit):''}</div>`}</div></div>`}
 const kach=l=>`<div class="kacheln" style="margin-top:8px">${l.map(([a,b])=>`<div class="kachel"><b style="font-size:19px">${a}</b><span>${b}</span></div>`).join('')}</div>`;
-function titelWahl(c){const st=c.statistik||{},opt=[];
-  ((st.dm||{}).stil||[]).filter(x=>x.n).forEach(x=>opt.push(['dm:'+x.id,'⚔️ '+x.titel+' ('+STN[x.stufe]+')']));
-  ((st.pve||{}).stil||[]).filter(x=>x.n).forEach(x=>opt.push(['pve:'+x.id,'🌲 '+x.titel+' ('+STN[x.stufe]+')']));
-  const akt=st.titel_wahl?st.titel_wahl.bereich+':'+st.titel_wahl.id:'';
-  return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><span class="mut">🏷 Mein Titel unter dem Namen:</span><select data-titel="${esc(c.name)}" style="font:inherit;padding:4px;border-radius:8px;background:var(--panel2);color:var(--text);border:1px solid var(--line)"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===akt?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':'<span class="mut">Hol dir einen Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>'}</div>`}
-function meineStat(d){const out=[];
-  for(const c of d.charaktere){const st=c.statistik||{};if(!st.dm&&!st.pve)continue;
-    out.push(`<div class="panel"><h2 style="margin:0">${esc(c.name)}${st.titel?`<span class="titel">${esc(st.titel)}</span>`:''}</h2>${titelWahl(c)}`);
-    const m=st.dm;
-    if(m){const p=m.profil||{};
-      out.push(`<h3 class="bereich">⚔️ Deathmatch</h3>`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
-        +`<div class="zwei"><div><h4>🔫 Kills nach Waffe</h4>${balken(m.waffen)||'<div class="mut">–</div>'}</div><div><h4>☠️ Tode durch Waffe</h4>${balken(m.tode_waffen)||'<div class="mut">–</div>'}</div></div>`
-        +`<div class="zwei"><div><h4>📏 Kill-Entfernungen</h4>${balken(m.distanzen.map((n,i)=>[(i?m.faecher[i-1]:0)+(i<m.faecher.length?'–'+m.faecher[i]:'+')+' m',n]))}</div>`
-        +`<div><h4>🕐 Wann du killst (Stunde, Berliner Zeit)</h4>${stundenBild(m.stunden)}<h4>📅 Wochentage</h4>${balken(m.wochentage.map((n,i)=>[WTN[i],n]))}</div></div>`
-        +`<h4>📈 Elo-Verlauf</h4>${eloBild(m.elo_verlauf)}`
-        +((p.nemesis||p.opfer||p.rivale)?`<h4>😈 Nemesis &amp; Rivalen</h4>${p.nemesis?`<div class="rh"><span>Nemesis (erwischt dich am öftesten)</span><b>${esc(p.nemesis[0])} · ${p.nemesis[1]}×</b></div>`:''}${p.opfer?`<div class="rh"><span>Lieblingsopfer</span><b>${esc(p.opfer[0])} · ${p.opfer[1]}×</b></div>`:''}${p.rivale?`<div class="rh"><span>Rivale</span><b>${esc(p.rivale[0])} · ${p.rivale[1]} : ${p.rivale[2]}</b></div>`:''}`:'')
-        +(m.saisons.length?`<h4>👑 Saison-Platzierungen</h4>${m.saisons.map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)}: Platz ${s[1]}</span>`).join('')}`:'')
-        +`<h4>🏅 DM-Erfolge</h4><div class="bgs">${m.erfolge.map(meilenKarte).join('')}</div>`
-        +`<h4>🎖 DM-Stil-Erfolge <span class="mut">(mehrfach holbar: 1× Bronze · 5× Silber · 10× Gold · 25× Platin · 50× Diamant)</span></h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`
-        +(Object.keys(m.heat||{}).length?`<h4>🔥 Deine Heatmap je Arena <span class="mut">(nur für dich sichtbar)</span></h4><div class="bgs" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${Object.values(m.heat).map(h=>`<div><b>${esc(h.titel)}</b>${heatBild(h)}</div>`).join('')}</div><div class="mut">Brauner Rand = Arena-Mauer. Gezählt ab dem 10.11.2026.</div>`:'')
-        +(m.runden_liste.length?`<h4>📜 Deine letzten Runden</h4>${m.runden_liste.slice(0,15).map(r=>`<div class="mut">${uhr(r[3])} · ${esc(r[1])} · ${esc(r[2])}${r[4]?` · <b style="color:var(--text)">${r[4][0]} Kills / ${r[4][1]} Tode</b>`:''} · <a href="/zuschauer/runde/${r[0]}" style="color:inherit">Runde ansehen</a></div>`).join('')}`:''))}
-    const v=st.pve;
-    if(v){out.push(`<h3 class="bereich pve">🌲 PvE Chernarus</h3>`+kach([[dauer(v.spielzeit),'Spielzeit'],[dauer(v.ueberlebt),'am Leben seit'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[v.kd,'K/D'],[v.strecke+' km','gelaufen'],[v.werte.weitester?v.werte.weitester+' m':'–','weitester Kill'],[v.werte.bewusstlos,'mal bewusstlos'],[(v.schatz.funde||0)+' / '+(v.schatz.ketten||0),'Schätze / Ketten']])
-        +`<div class="zwei"><div><h4>🔫 Lieblingswaffen</h4>${balken(v.waffen)||'<div class="mut">–</div>'}</div><div><h4>📅 Spielzeit nach Wochentag</h4>${balken((v.wochentag||[]).map((n,i)=>[WTN[i],n]),dauer)}</div></div>`
-        +`<div class="zwei"><div><h4>🎯 Deine Opfer</h4>${balken(v.opfer)||'<div class="mut">–</div>'}</div><div><h4>☠️ Erwischt von</h4>${balken(v.getoetet_von)||'<div class="mut">–</div>'}</div></div>`
-        +`<h4>🏅 PvE-Erfolge</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div>`
-        +`<h4>🎖 PvE-Stil-Erfolge <span class="mut">(mehrfach holbar: 1× Bronze · 5× Silber · 10× Gold · 25× Platin · 50× Diamant)</span></h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`
-        +`<div class="mut">🔥 Deine PvE-Kill- und Todesorte (${v.heat.length}) siehst du unten auf deiner Karte – nur du.</div>`)}
-    out.push('</div>')}
-  $('#mStat').innerHTML=out.join('');$('#mStat').dataset.offen=1;
-  $$('#mStat [data-titel]').forEach(s=>s.onchange=async()=>{const [b,id]=(s.value||':').split(':');
-    const r=await fetch('/zuschauer/titel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gamertag:s.dataset.titel,bereich:b,id})});
-    const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Ging nicht');return}delete $('#mStat').dataset.offen;meineLaden();laden()})}
-const _tab=tab;tab=t=>{_tab(t);if(t==='meine')meineLaden();if(t==='dm')voteLaden()};
+const ZN={kopf:'Kopf',torso:'Torso',arme:'Arme',beine:'Beine'};
+function zonenText(z){return z?Object.keys(ZN).map(k=>`${ZN[k]} ${z[k]||0} %`).join(' · '):'–'}
+function waffenTabelle(l,hinweis){if(!l||!l.length)return '<div class="mut">Noch keine Treffer oder Kills gezählt.</div>';
+  return `<div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th><th title="Treffer pro Kill: weniger = präziser">Treffer/Kill</th><th title="Anteil Treffer in Kopf/Gehirn">Kopf-%</th><th>Trefferzonen</th><th>Ø m</th><th>max m</th><th title="Schaden gesamt (Ø pro Treffer)">Schaden</th></tr>${l.map(w=>`<tr><td><b>${esc(w.waffe)}</b></td><td>${w.kills}${w.kopf_kills?` <span class="mut">(${w.kopf_kills} Kopf)</span>`:''}</td><td>${w.treffer}</td><td>${w.treffer_pro_kill??'–'}</td><td>${w.kopfquote??'–'}${w.kopfquote!=null?' %':''}</td><td class="mut">${zonenText(w.zonen)}</td><td>${w.distanz_mittel??'–'}</td><td>${w.distanz_max||'–'}</td><td>${w.schaden||'–'}${w.schaden_pro_treffer?` <span class="mut">(Ø ${w.schaden_pro_treffer})</span>`:''}</td></tr>`).join('')}</table></div>`}
+function summeText(s){if(!s||!s.treffer)return '';return kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+`<div class="mut">Trefferzonen: ${zonenText(s.zonen)}</div>`}
+function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).map(x=>[bereich+':'+x.id,(bereich==='dm'?'⚔️ ':'🌲 ')+x.titel+' ('+(STN[x.stufe]||'')+')']);
+  const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
+  return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
+function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(mehrfach holbar: 1× Bronze · 5× Silber · 10× Gold · 25× Platin · 50× Diamant)</span>';
+  const keinDm=`<div class="mut">Dir ist noch kein Deathmatch-Gamertag zugeordnet${d.dm_gamertag?' bzw. er hat noch keine gewertete Runde':''}.</div>`;
+  const keinPve=`<div class="mut">${(d.pve_gamertags||[]).length?'Für diese Auswahl gibt es noch keine PvE-Daten.':'Dir ist noch kein PvE-Gamertag zugeordnet.'}</div>`;
+  const wahlTxt=v?(v.zusammen&&v.zusammen.length>1?'Alle zusammen: '+v.zusammen.map(esc).join(', '):esc(v.name)):'';
+  // Übersicht
+  $('#mr-uebersicht').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}${d.dm_titel?`<span class="titel">${esc(d.dm_titel)}</span>`:''}</h3>${m?kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.siege+' / '+m.runden,'Siege / Runden']]):keinDm}
+    <h3 class="bereich pve">🌲 PvE Chernarus${v?' · '+wahlTxt:''}</h3>${v?kach([[dauer(v.spielzeit),'Spielzeit'],[v.strecke+' km','gelaufen'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[(v.schatz.funde||0),'Schätze']]):keinPve}
+    ${D&&D.nachtrag&&D.nachtrag.archiv?`<div class="mut" style="margin-top:8px">Rückwirkend aus ${D.nachtrag.archiv.logs} Server-Logs nachgetragen (Waffen, Treffer, Zonen, Distanzen).</div>`:''}</div>`;
+  // Deathmatch
+  if(m){const p=m.profil||{};
+    $('#mr-dm').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch · ${esc(m.name)}</h3>`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
+      +(p.podest?`<div class="rh"><span>🏆 Podestplätze</span><b>🥇 ${p.podest[0]} · 🥈 ${p.podest[1]} · 🥉 ${p.podest[2]}</b></div>`:'')
+      +(p.karte_fav?`<div class="rh"><span>🗺 Lieblingskarte</span><b>${esc(p.karte_fav[0])} (${p.karte_fav[1]}×)</b></div>`:'')+(p.modus_fav?`<div class="rh"><span>🎲 Lieblingsmodus</span><b>${esc(p.modus_fav[0])} (${p.modus_fav[1]}×)</b></div>`:'')
+      +((m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)?`<div class="rh"><span>💰 Kopfgeld / 🛡️ Juggernaut</span><b>${m.kopfgeld_kills||0}× kassiert · ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0}× erlegt</b></div>`:'')
+      +`<div class="zwei"><div><h4>🔫 Kills nach Waffe</h4>${balken(m.waffen)||'<div class="mut">–</div>'}</div><div><h4>☠️ Tode durch Waffe</h4>${balken(m.tode_waffen)||'<div class="mut">–</div>'}</div></div>`
+      +`<div class="zwei"><div><h4>📏 Kill-Entfernungen</h4>${balken(m.distanzen.map((n,i)=>[(i?m.faecher[i-1]:0)+(i<m.faecher.length?'–'+m.faecher[i]:'+')+' m',n]))}</div>`
+      +`<div><h4>🕐 Wann du killst (Stunde, Berliner Zeit)</h4>${stundenBild(m.stunden)}<h4>📅 Wochentage</h4>${balken(m.wochentage.map((n,i)=>[WTN[i],n]))}</div></div>`
+      +`<h4>📈 Elo-Verlauf</h4>${eloBild(m.elo_verlauf)}`
+      +((p.nemesis||p.opfer||p.rivale)?`<h4>😈 Nemesis &amp; Rivalen</h4>${p.nemesis?`<div class="rh"><span>Nemesis (erwischt dich am öftesten)</span><b>${esc(p.nemesis[0])} · ${p.nemesis[1]}×</b></div>`:''}${p.opfer?`<div class="rh"><span>Lieblingsopfer</span><b>${esc(p.opfer[0])} · ${p.opfer[1]}×</b></div>`:''}${p.rivale?`<div class="rh"><span>Rivale</span><b>${esc(p.rivale[0])} · ${p.rivale[1]} : ${p.rivale[2]}</b></div>`:''}`:'')
+      +(m.saisons.length?`<h4>👑 Saison-Platzierungen</h4>${m.saisons.map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)}: Platz ${s[1]}</span>`).join('')}`:'')
+      +(m.runden_liste.length?`<h4>📜 Deine letzten Runden</h4>${m.runden_liste.slice(0,15).map(r=>`<div class="mut">${uhr(r[3])} · ${esc(r[1])} · ${esc(r[2])}${r[4]?` · <b style="color:var(--text)">${r[4][0]} Kills / ${r[4][1]} Tode</b>`:''} · <a href="/zuschauer/runde/${r[0]}" style="color:inherit">Runde ansehen</a></div>`).join('')}`:'')+'</div>'}
+  else $('#mr-dm').innerHTML=`<div class="panel">${keinDm}</div>`;
+  // PvE
+  $('#mr-pve').innerHTML=v?`<div class="panel"><h3 class="bereich pve">🌲 PvE Chernarus · ${wahlTxt}</h3>`+kach([[dauer(v.spielzeit),'Spielzeit'],[dauer(v.ueberlebt),'am Leben seit'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[v.kd,'K/D'],[v.strecke+' km','gelaufen'],[v.werte.weitester?v.werte.weitester+' m':'–','weitester Kill'],[v.werte.bewusstlos,'mal bewusstlos'],[(v.schatz.funde||0)+' / '+(v.schatz.ketten||0),'Schätze / Ketten']])
+      +`<div class="zwei"><div><h4>🔫 Kills nach Waffe</h4>${balken(v.waffen)||'<div class="mut">Noch kein Spieler-Kill im PvE.</div>'}</div><div><h4>📅 Spielzeit nach Wochentag</h4>${balken((v.wochentag||[]).map((n,i)=>[WTN[i],n]),dauer)}</div></div>`
+      +`<div class="zwei"><div><h4>🎯 Deine Opfer</h4>${balken(v.opfer)||'<div class="mut">–</div>'}</div><div><h4>☠️ Erwischt von</h4>${balken(v.getoetet_von)||'<div class="mut">–</div>'}</div></div>`
+      +(v.tage.length?`<h4>📆 Letzte Tage</h4><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${v.tage.slice(0,14).map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:'')+'</div>'
+    :`<div class="panel">${keinPve}</div>`;
+  // Waffen
+  $('#mr-waffen').innerHTML=`<div class="panel"><div class="hinweis">ℹ️ ${esc(d.waffen_hinweis||'')}</div>
+    <h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe)+waffenTabelle(m.waffen_detail):keinDm}
+    <h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe)+waffenTabelle(v.waffen_detail):keinPve}
+    <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).</div></div>`;
+  // Erfolge
+  $('#mr-erfolge').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Meilensteine</h4><div class="bgs">${m.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
+    <h3 class="bereich pve">🌲 PvE-Erfolge${v?' · '+wahlTxt:''}</h3>${v?`<h4>🏅 Meilensteine</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`:keinPve}</div>`;
+  // Karte & Heatmap (Karte selbst: karteZeichnen)
+  const km=d.karte||{};
+  $('#mr-karte-text').innerHTML=`Nur für dich sichtbar. <b>Kein Live-Kompass:</b> Wege, Position, Kills und Tode zeigt die Karte erst ${km.verzug_min??30} Minuten nach deinem Logout${km.grob==='aus'?'':`, solange du online bist nur grob ein ${km.grob==='1km'?'1×1':'2×2'}-km-Gebiet`}. Deine Basen und Lager siehst du immer.`;
+  $('#mr-heat').innerHTML=(m&&Object.keys(m.heat||{}).length)?`<h4>🔥 Deine Deathmatch-Heatmap je Arena <span class="mut">(nur für dich, nach Rundenende)</span></h4><div class="bgs" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${Object.values(m.heat).map(h=>`<div><b>${esc(h.titel)}</b>${heatBild(h)}</div>`).join('')}</div><div class="mut">Brauner Rand = Arena-Mauer.</div>`:'<div class="mut">Noch keine Deathmatch-Heatmap.</div>';
+  // Titel
+  $('#mr-titel').innerHTML=`<div class="panel"><h3>🏷 Titel unter deinem Namen</h3><div class="mut">Deathmatch und PvE getrennt: ein DM-Titel nur für deinen DM-Gamertag, PvE-Titel je PvE-Charakter.</div>
+    <h4>⚔️ Deathmatch</h4>${m?titelSelect(m.name,'dm',m.stil,m.titel_wahl):keinDm}
+    <h4>🌲 PvE</h4>${(d.pve_einzeln||[]).length?d.pve_einzeln.map(x=>titelSelect(x.name,'pve',x.stil,x.titel_wahl)).join(''):keinPve}</div>`;
+  $$('#mr-titel [data-titel]').forEach(s=>s.onchange=async()=>{const [b,id]=(s.value||(s.dataset.bereich+':')).split(':');
+    const r=await fetch('/zuschauer/titel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gamertag:s.dataset.titel,bereich:b||s.dataset.bereich,id})});
+    const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Ging nicht');return}delete $('#mStat').dataset.sig;meineLaden();laden()})}
+// ---------------- Öffentliche Profile (ohne Login, ohne Positionen) mit Reitern
+const STUF=[1,5,10,25,50],STK=['bronze','silber','gold','platin','diamant'];
+function stilOeff(defs,hab){const h={};(hab||[]).forEach(x=>h[x.id]=x);return Object.entries(defs||{}).map(([id,dd])=>{const x=h[id]||{n:0};const i=STUF.filter(s=>x.n>=s).length;
+  return {id,icon:dd[0],titel:dd[1],erklaerung:dd[2],schaetzung:dd[3],n:x.n||0,stufe:i?STK[i-1]:null,zuerst:x.zuerst,zuletzt:x.zuletzt,naechste:i<5?[STUF[i],STN[STK[i]]]:null}})}
+function profilDialog(kopf,reiter){const id='pr'+Math.random().toString(36).slice(2,7);
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button>${kopf}<div class="reiter klein" id="${id}">${reiter.map((r,i)=>`<button data-pr="${i}" class="${i?'':'an'}">${r[0]}</button>`).join('')}</div>${reiter.map((r,i)=>`<div class="prr" data-prr="${i}" ${i?'hidden':''}>${r[1]}</div>`).join('')}`;
+  $$('#'+id+' [data-pr]').forEach(b=>b.onclick=()=>{$$('#'+id+' [data-pr]').forEach(x=>x.classList.toggle('an',x===b));$$('#dlgIn [data-prr]').forEach(x=>x.hidden=x.dataset.prr!==b.dataset.pr)});
+  if(!$('#dlg').open)$('#dlg').showModal()}
+function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile||{})[n]||{};
+  const rn=(D.dm.runden||[]).map(r=>({r,i:r.stand.findIndex(x=>x[0]===n)})).filter(x=>x.i>=0).slice(0,12);
+  if(!s&&!rn.length){const p=D.pve.spieler.find(x=>x.name===n);if(p)profil(n);return}
+  const z=[];if(s){if(pr.podest)z.push(['🏆 Podestplätze','🥇 '+pr.podest[0]+' · 🥈 '+pr.podest[1]+' · 🥉 '+pr.podest[2]]);if(s.beste_serie)z.push(['🔥 Beste Serie',s.beste_serie+' Kills']);if(s.laengstes_leben)z.push(['⏱️ Längstes Leben',dauer(s.laengstes_leben)]);
+    if(s.weitester)z.push(['🎯 Weitester Kill',s.weitester+' m']);z.push(['💀 Kopfschüsse',(s.kopf||0)+' ('+(pr.kopfquote||0)+' % der Kills)']);if(s.rache)z.push(['⚔️ Rache',s.rache+'×']);
+    if(s.ziel_siege)z.push(['🏁 Ziel-Siege',s.ziel_siege]);z.push(['🛡️ Juggernaut',(s.jugg_runden||0)+'× gewesen, '+(s.jugg_kills||0)+'× erlegt']);z.push(['💰 Kopfgeld kassiert',(s.kopfgeld_kills||0)+'×']);
+    if(pr.karte_fav)z.push(['🗺 Lieblingskarte',pr.karte_fav[0]+' ('+pr.karte_fav[1]+'×)']);if(pr.modus_fav)z.push(['🎲 Lieblingsmodus',pr.modus_fav[0]+' ('+pr.modus_fav[1]+'×)']);
+    if(pr.nemesis)z.push(['😈 Nemesis',pr.nemesis[0]+' ('+pr.nemesis[1]+'× erwischt)']);if(pr.opfer)z.push(['🎯 Lieblingsopfer',pr.opfer[0]+' ('+pr.opfer[1]+'×)']);if(pr.rivale)z.push(['⚔️ Rivale',pr.rivale[0]+' · '+pr.rivale[1]+' : '+pr.rivale[2]])}
+  const ED=D.dm.erfolge_def||{},hab={};(pr.erfolge||[]).forEach(e=>hab[e[0]]=e[1]);const fs=pr.fortschritt||{};
+  const ueb=`${s?kach([[s.elo,'Elo'],[s.kd,'K/D'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']]):''}${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}
+    ${(pr.elo_verlauf||[]).length>1?`<h4>📈 Elo-Verlauf</h4>${eloBild(pr.elo_verlauf.map((x,i)=>[i,x]))}`:''}
+    ${(pr.saisons||[]).length?`<h4>👑 Saisons</h4>${pr.saisons.map(x=>`<span class="chip">${MN[+x[0].slice(5)-1]} ${x[0].slice(0,4)}: Platz ${x[1]}</span>`).join('')}`:''}`;
+  const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
+  const erf=`<h4>🏅 DM-Erfolge (${Object.keys(hab).filter(k=>ED[k]).length} von ${Object.keys(ED).length})</h4><div class="bgs">${Object.entries(ED).map(([id,e])=>meilenKarte({icon:e[0],titel:e[1],text:e[2],erreicht:id in hab,t:hab[id],stufe:'gold',wert:(fs[id]||[0])[0],schwelle:(fs[id]||[0,1])[1],einheit:''})).join('')}</div>
+    <h4>🎖 DM-Stil-Erfolge</h4><div class="bgs">${stilOeff(D.dm.stil_def,s&&s.stil).map(x=>badgeKarte(x,'dm')).join('')}</div>`;
+  const run=rn.length?rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode · <a href="/zuschauer/runde/${r.id}" style="color:inherit">ansehen</a></div>`).join(''):'<div class="mut">Keine Runde in der letzten Zeit.</div>';
+  profilDialog(`<h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div>`,
+    [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf],['📜 Runden',run+'<div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>']]);
+  const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n)}
+function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
+  const WT=['Mo','Di','Mi','Do','Fr','Sa','So'],mx=Math.max(1,...(pr.wochentag||[0])),zt=pr.erfolge_zeit||{},fs=pr.fortschritt||{};
+  const ueb=kach([[dauer(s.spielzeit),'Spielzeit'],[dauer(pr.ueberlebt),'am Leben seit'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.strecke+' km','gelaufen']])
+    +kach([[s.kd,'K/D'],[s.weitester?s.weitester+' m':'–','weitester Kill'],[s.kopf,'Kopfschüsse'],[s.sitzungen,'Mal eingeloggt']])
+    +`<h4>Wann spielt ${esc(n)}?</h4>${(pr.wochentag||[]).map((x,i)=>`<div class="wbar"><span style="width:24px">${WT[i]}</span><i style="width:${Math.round(x/mx*70)}%"></i><span class="mut">${x?dauer(x):''}</span></div>`).join('')}
+    ${pr.tage.length?`<h4>Letzte Tage</h4><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${pr.tage.map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:''}`;
+  const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
+  const erf=`<h4>🏅 PvE-Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h4><div class="bgs">${p.erfolge_alle.map(e=>meilenKarte({icon:e[1],titel:e[2],text:e[3],erreicht:e[0] in zt,t:zt[e[0]],stufe:'gold',wert:(fs[e[0]]||[0])[0],schwelle:(fs[e[0]]||[0,1])[1],einheit:''})).join('')}</div>
+    <h4>🎖 PvE-Stil-Erfolge</h4><div class="bgs">${stilOeff(p.stil_def,pr.stil).map(x=>badgeKarte(x,'pve')).join('')}</div>`;
+  profilDialog(`<h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div>`,
+    [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf]]);
+  const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n)}
+const _tab=tab;tab=t=>{_tab(t);if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 $('#takt').textContent='Aktualisiert sich alle '+(DIREKT?10:TAKT)+' Sekunden von selbst.';
 setInterval(()=>{$$('.countdown').forEach(x=>x.textContent=countdown(+x.dataset.bis));if(D)statusZeichnen()},1000);
-laden();ichLaden().then(()=>{try{if(localStorage.getItem('tab')==='meine'&&ICH&&ICH.benutzer){tab('meine')}}catch(e){}});voteLaden();
+laden();ichLaden().then(()=>{try{if(((location.hash||'').startsWith('#meine')||localStorage.getItem('tab')==='meine')&&ICH&&ICH.benutzer){tab('meine')}}catch(e){}});voteLaden();
 if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an'))meineLaden()},15000);
 setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
 function naechster(){const s=DIREKT?10:TAKT-(Date.now()/1000)%TAKT+9;setTimeout(()=>{if(!document.hidden)laden();naechster()},s*1000)}naechster();
