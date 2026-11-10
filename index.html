@@ -143,6 +143,32 @@
   .heat{width:100%;max-width:520px;background:#1b1d18;border:1px solid var(--line)}
   .stunden{display:flex;align-items:flex-end;gap:2px;height:60px} .stunden i{flex:1;background:linear-gradient(0deg,var(--olive),var(--acc));min-height:1px}
   footer{max-width:1200px;margin:auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
+
+  /* Update 5: Rubel-Shop (Spielmenü-Design), Kosmetik */
+  .rubel{font:700 28px var(--kopf);color:var(--acc2);letter-spacing:.03em}
+  .ware{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:6px 0 12px}
+  .ware>div{background:var(--panel2);border:1px solid var(--line);padding:8px 10px;display:flex;flex-direction:column;gap:4px;transition:border-color .15s;min-width:0}
+  .ware>div:hover{border-color:var(--acc)} .ware b{font-size:13px} .ware .preis{font:700 15px var(--kopf);color:var(--acc2)}
+  .ware .zeile{display:flex;gap:6px;align-items:center;justify-content:space-between}
+  .ware input{width:58px;font:inherit;padding:3px 5px;background:var(--bg2);color:var(--text);border:1px solid var(--line2)}
+  .knopf{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border:0;padding:8px 14px;font:700 13px var(--kopf);text-transform:uppercase;letter-spacing:.07em;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
+  .knopf:hover{filter:brightness(1.1)} .knopf:disabled{filter:grayscale(.8);opacity:.55;cursor:default} .knopf.grau{background:var(--panel2);color:var(--text);border:1px solid var(--line2)}
+  .buch{display:grid;grid-template-columns:auto 1fr auto auto;gap:2px 10px;font-size:13px}
+  .buch .plus{color:#8fd16a;text-align:right;white-space:nowrap} .buch .minus{color:#e8775f;text-align:right;white-space:nowrap}
+  .skopf{display:flex;gap:18px;flex-wrap:wrap;align-items:center} .skopf>div:last-child{flex:1;min-width:220px}
+  .gt{display:inline-block;padding:0 4px}
+  .ks-hg-tarn{background:repeating-linear-gradient(45deg,#3b4a2a 0 6px,#2c3520 6px 12px,#4d5a33 12px 16px);color:#f0f0e0;padding:1px 7px}
+  .ks-hg-nacht{background:linear-gradient(180deg,#0f2a0f,#1f4a1f);color:#9cff9c;padding:1px 7px;text-shadow:0 0 4px #3f3}
+  .ks-hg-blut{background:linear-gradient(135deg,#5a0f0f,#2a0505);color:#ffd9d0;padding:1px 7px}
+  .ks-hg-eis{background:linear-gradient(135deg,#1d4f6e,#0d2433);color:#e6f8ff;padding:1px 7px}
+  .ks-hg-wueste{background:linear-gradient(135deg,#a8854a,#6d5530);color:#1d140a;padding:1px 7px}
+  .ks-hg-gold{background:linear-gradient(135deg,#8a6a12,#f2c84e 50%,#8a6a12);color:#1a1205;padding:1px 7px}
+  .ks-name-feuer{color:#ffd36b;text-shadow:0 0 4px #ff8a00,0 -2px 6px #ff4500,0 -4px 10px #c21800;animation:feuer 1.2s ease-in-out infinite alternate}
+  @keyframes feuer{0%{text-shadow:0 0 4px #ff8a00,0 -2px 6px #ff4500,0 -4px 10px #c21800;color:#ffd36b}50%{text-shadow:0 0 6px #ffb000,0 -3px 9px #ff5a00,0 -6px 14px #e02000;color:#fff0b0}100%{text-shadow:0 0 3px #ff7000,0 -1px 5px #ff3000,0 -3px 8px #a01000;color:#ffc04a}}
+  @media(prefers-reduced-motion:reduce){.ks-name-feuer{animation:none}}
+  @media(max-width:760px){.buch{grid-template-columns:auto 1fr auto}.buch .saldo{display:none}.rubel{font-size:24px}}
+  #mr-shop .login:disabled{opacity:.4;cursor:default}
+  @media(max-width:420px){.ware{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ware>div{padding:7px 8px}.ware .zeile{flex-wrap:wrap}.ware input{width:52px}.buch{grid-template-columns:1fr auto}.buch .dat{grid-column:1 / -1;font-size:11px;margin-top:4px}}
   /* Update 4: Waffenbilder, Regeln & Punkte */
   .wimg{display:inline-block;width:76px;height:30px;object-fit:contain;vertical-align:middle;margin-right:8px;padding:1px 3px;border:1px solid var(--line);background:radial-gradient(ellipse at 50% 55%,rgba(226,221,200,.62),rgba(226,221,200,.1) 78%),#2a2f2a}
   .wimg.leer{background:repeating-linear-gradient(135deg,var(--line) 0 4px,transparent 4px 8px);border:1px dashed var(--line2);opacity:.6}
@@ -245,7 +271,7 @@ nav button{min-width:0}
       <div class="mr" id="mr-uebersicht"></div><div class="mr" id="mr-dm"></div><div class="mr" id="mr-pve"></div><div class="mr" id="mr-waffen"></div>
       <div class="mr" id="mr-erfolge"></div>
       <div class="mr" id="mr-karte"><div class="panel"><h3>🗺 Meine Karte (PvE Chernarus)</h3><div id="mKarte"></div><div class="mut" id="mr-karte-text" style="margin-top:8px"></div><div id="mr-heat" style="margin-top:12px"></div></div></div>
-      <div class="mr" id="mr-titel"></div>
+      <div class="mr" id="mr-titel"></div><div class="mr" id="mr-shop"></div>
     </div>
   </section>
 </main>
@@ -261,6 +287,10 @@ const vor=t=>{if(!t)return '–';const s=Date.now()/1000-t;return s<120?'gerade 
 const ICON={kill:'🎯',tod:'✝️',verbindung:'🔌',bewusstlos:'😵',erfolg:'🏅',kampflog:'⚠️'};
 const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const TT=n=>{const t=D&&D.titel&&D.titel[n];return t?`<span class="titel">${esc(t)}</span>`:''};
+// Update 5: Kosmetik (gekaufte Hintergründe / brennender Gamertag), Rubel-Anzeige
+const KSK=n=>{const k=D&&D.kosmetik&&D.kosmetik[n];return k?(k.hg?' ks-'+String(k.hg).replace(/_/g,'-'):'')+(k.name?' ks-'+String(k.name).replace(/_/g,'-'):''):''};
+const GT=n=>{const c=KSK(n);return c?`<span class="gt${c}">${esc(n)}</span>`:esc(n)};
+const RUB=k=>{k=Math.round(+k||0);return (k<0?'-':'')+Math.floor(Math.abs(k)/100)+','+String(Math.abs(k)%100).padStart(2,'0')+' ₽'};
 // Update 4: Waffenbilder (lokal vom eigenen Server)
 let WB=null;const wbild=w=>{const f=WB&&WB[String(w||'').toLowerCase()];return f?`<img class="wimg" src="/zuschauer/waffe/${encodeURIComponent(f)}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src');this.className='wimg leer'">`:'<span class="wimg leer" title="kein Bild"></span>'};
 const STI={bronze:'🥉',silber:'🥈',gold:'🥇',platin:'💎',diamant:'💎'},STN={bronze:'Bronze',silber:'Silber',gold:'Gold',platin:'Platin',diamant:'Diamant'},STF={bronze:'#cd7f32',silber:'#c0c8d0',gold:'#f2c84e',platin:'#a8e0ee',diamant:'#7fe0ff'};
@@ -314,7 +344,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     :[['name','Spieler'],['spielzeit','Spielzeit'],['kills','Kills'],['tode','Tode'],['kd','K/D'],['weitester','Weitester'],['strecke','Strecke'],['erfolge','🏅'],['zuletzt','Zuletzt']];
   if(!SP.some(x=>x[0]===RS))RS='spielzeit';
   const rs=[...rows].sort((a,b)=>RS==='name'?a.name.localeCompare(b.name):(b[RS]-a[RS]));
-  const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${esc(s.name)}</b>${TT(s.name)}`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
+  const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${GT(s.name)}</b>${TT(s.name)}`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
   const NM=new Set(['strecke','erfolge','zuletzt']);   // Update 4.2: auf dem Handy ausgeblendet
   const NM2=new Set(['weitester']);   // Update 4.3: unter 400 px zusaetzlich aus (Kills-Spalte bleibt lesbar)
   $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}${NM.has(k)?' nm':''}${NM2.has(k)?' nm2':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td${NM.has(k)?' class="nm"':NM2.has(k)?' class="nm2"':''}>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
@@ -337,12 +367,12 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>'+(plan?`<div class="panel runde">${plan}</div>`:'');
   const pkt=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
   $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
-    (m.kills.map(k=>k.erfolg?`<div class="kf-erf">${esc(k.erfolg)}</div>`:k.taeter?`<div><b>${esc(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}${k.elo?` <span class="elo" title="Elo-Gewinn des Schützen (der Getötete verliert genauso viel)">+${k.elo} Elo</span>`:''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
-  $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
-  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th title="Kills geteilt durch Tode"><span class="lang">Kills pro Tod</span><span class="kurz">K/D</span></th><th class="nm">Siege</th><th class="nm">Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${esc(s.name)}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td class="nm">${s.siege}</td><td class="nm">${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
+    (m.kills.map(k=>k.erfolg?`<div class="kf-erf">${esc(k.erfolg)}</div>`:k.taeter?`<div><b>${GT(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}${k.elo?` <span class="elo" title="Elo-Gewinn des Schützen (der Getötete verliert genauso viel)">+${k.elo} Elo</span>`:''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
+  $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0])}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
+  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th title="Kills geteilt durch Tode"><span class="lang">Kills pro Tod</span><span class="kurz">K/D</span></th><th class="nm">Siege</th><th class="nm">Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${GT(s.name)}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td class="nm">${s.siege}</td><td class="nm">${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
   $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
     <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span>${(r.erfolge||[]).length?`<span class="mut rerf">🏅 ${r.erfolge.slice(0,3).map(x=>esc(x[0])+': '+esc(x[3])).join(' · ')}${r.erfolge.length>3?' · +'+(r.erfolge.length-3)+' weitere':''}</span>`:''}</div></summary>
-    <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
+    <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0])}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
     ${r.weitester?`<div>🎯 Weitester Kill: <b>${esc(r.weitester[0])}</b> ➜ ${esc(r.weitester[1])} · ${esc(r.weitester[2]||'')} · ${r.weitester[3]} m</div>`:''}
     ${(r.erfolge||[]).length?`<div>🏅 Erfolge dieser Runde: ${r.erfolge.map(x=>'<b>'+esc(x[0])+'</b> '+esc(x[3])).join(' · ')}</div>`:''}
     ${r.leben&&r.leben.length?`<div>⏱️ Am längsten überlebt: ${r.leben.map(l=>'<b>'+esc(l[0])+'</b> '+dauer(l[1])).join(' · ')}</div>`:''}
@@ -438,7 +468,7 @@ function rasterZeichnen(){if(!MK)return;MR.clearLayers();if(!MEBENE.raster)retur
 function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)return;const z=MK.getZoom();
   ORTE.forEach(o=>{const gross=['Capital','City'].includes(o[3]);if(!gross&&!(o[3]==='Village'&&z>=-3)&&!(['Camp','Local','LocalOffice','RailroadStation'].includes(o[3])&&z>=-1.5))return;
     L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
-const MREITER=[['uebersicht','📋 Übersicht'],['dm','⚔️ Deathmatch'],['pve','🌲 PvE'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel']];
+const MREITER=[['uebersicht','📋 Übersicht'],['dm','⚔️ Deathmatch'],['pve','🌲 PvE'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['shop','🛒 Rubel-Shop']];
 let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
 try{MREIT=localStorage.getItem('meine_reiter')||MREIT;MWAHL=localStorage.getItem('meine_char')||MWAHL}catch(e){}
 (function(){const h=decodeURIComponent(location.hash||'');const m=h.match(/^#meine(?:\/([a-z]+))?(?:\/(.+))?$/);if(m){if(m[1])MREIT=m[1];if(m[2])MWAHL=m[2]}})();
@@ -463,6 +493,7 @@ async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encod
   $('#mListe').innerHTML=(d.status==='wartet'||(!pt.length&&!d.dm_gamertag))?`<div class="hinweis">⏳ Dein Konto wartet auf die Zuordnung. <b>Dein Admin ordnet dir deine Gamertags zu.</b> Danach siehst du hier deine Statistik.</div>`
     :d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem PvE-Server gesehen</span></div></div>`
     :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('');
+  try{const ss=JSON.stringify(d.shop||null);if($('#mr-shop').dataset.sig!==ss){shopZeichnen(d);$('#mr-shop').dataset.sig=ss}}catch(e){console.error(e)}
   if(MREIT==='karte')karteZeichnen(d)}
 async function karteZeichnen(d){if(!d)return;
   if(!window.L){const c=document.createElement('link');c.rel='stylesheet';c.href='/zuschauer/leaflet.css';document.head.appendChild(c);try{await skript('/zuschauer/leaflet.js')}catch(e){$('#mKarte').innerHTML='<div class="mut" style="padding:16px">Karte konnte nicht geladen werden.</div>';return}}
@@ -583,7 +614,62 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
     const r=await fetch('/zuschauer/titel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gamertag:s.dataset.titel,bereich:b||s.dataset.bereich,id})});
     const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Ging nicht');return}delete $('#mStat').dataset.sig;meineLaden();laden()})}
 // ---------------- Regeln & Punkte (Werte kommen aus der App, nicht aus dieser Seite)
-function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R.punkte,E=R.elo,g=P.distanz_grenzen,dp=P.distanz_punkte;
+// ---------------- Rubel-Shop (Update 5, nur eigenes Konto, nie Koordinaten)
+const SHOP_OFFEN=['offen','freigegeben','hochgeladen'];let KORB={},SWEG=null,SZIEL=null,SKAT=null;
+async function shopPost(u,b){let r,j={};try{r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});j=await r.json().catch(()=>({}))}catch(e){alert('Keine Verbindung');return null}if(!r.ok||!j.ok){alert(j.meldung||'Ging nicht');return null}return j}
+function shopNeu(){delete $('#mr-shop').dataset.sig;meineLaden()}
+function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
+  if(!s){el.innerHTML='<div class="panel"><h3>🛒 Rubel-Shop</h3><div class="mut">Der Shop ist gerade nicht verfügbar.</div></div>';return}
+  if(!s.gt){el.innerHTML='<div class="panel"><h3>🛒 Rubel-Shop</h3><div class="hinweis">Dir ist noch kein Deathmatch-Gamertag zugeordnet. Rubel verdienst du in gewerteten Deathmatch-Runden mit deinem DM-Gamertag.</div></div>';return}
+  const v=s.verdienst||{},K=s.katalog||[],kats=[...new Set(K.map(a=>a.kategorie))],H=s.heute||{bestellungen:0,max:3,max_klasse:2,klassen:{}},LK=s.limit_kat||[];
+  if(!SKAT||!kats.includes(SKAT))SKAT=kats[0];
+  const wege=Object.keys(s.wege||{});if(!wege.includes(SWEG))SWEG=wege[0];
+  const ziele=(s.ziele||[]).filter(z=>z.weg===SWEG);if(!ziele.some(z=>z.id===SZIEL))SZIEL=ziele[0]?ziele[0].id:null;
+  const kmap={};K.forEach(a=>kmap[a.id]=a);Object.keys(KORB).forEach(k=>{if(!kmap[k])delete KORB[k]});
+  const maxN=a=>LK.includes(a.kategorie)?Math.max(0,H.max_klasse-((H.klassen||{})[a.id]||0)):20;
+  const ware=Object.entries(KORB).reduce((x,[k,n])=>x+kmap[k].preis*n,0),teile=Object.values(KORB).reduce((x,n)=>x+n,0);
+  const lf=(s.liefer||{})[SWEG]||0,summe=ware+(teile?lf:0);
+  const voll=H.bestellungen>=H.max;
+  const mk=s.meine_kosmetik||{besitz:[],aktiv:{}};
+  const z=ziele.find(x=>x.id===SZIEL);
+  const wegText=SWEG==='depot'?'Lieferung ins Depot: '+esc(s.depot||'')+'. Liegt dort ab dem nächsten PvE-Neustart.'
+    :SWEG==='schatz'?'Schatz-Gutschein: deine Ware liegt als Schatz an einem zufälligen Ort, die Hinweise kommen wie bei jeder Schatzsuche. Achtung: die Suche ist öffentlich, wer zuerst da ist, bekommt sie. Dafür kostet der Weg fast nichts.'
+    :ziele.length?`<label>Ziel: <select class="wahl" id="sZiel">${ziele.map(x=>`<option value="${esc(x.id)}" ${x.id===SZIEL?'selected':''}>${esc(x.text)}${x.ok?'':' (ungültig → Depot)'}</option>`).join('')}</select></label>${z&&!z.ok?`<div class="hinweis">⚠️ ${esc(z.grund||'Ungültiger Lieferpunkt')}: die Lieferung geht dann ins Depot.</div>`:''}<div>Nur du siehst dieses Ziel. Geprüft wird: auf der Karte, nicht im Wasser.</div>`
+    :SWEG==='basis'?'Für deine PvE-Charaktere ist noch keine Basis bzw. kein Lager bekannt.':'Noch keine letzte Position bekannt (erst 30 Minuten nach dem Logout).';
+  const grund=!s.an?'Der Shop ist geschlossen.':voll?`Heute schon ${H.bestellungen} von ${H.max} Bestellungen.`:!teile?'':summe>s.stand?'Zu wenig Rubel für diesen Warenkorb.':teile>s.max_teile?`Höchstens ${s.max_teile} Teile je Bestellung.`:((SWEG==='basis'||SWEG==='position')&&!z)?'Kein Lieferziel.':'';
+  el.innerHTML=`<div class="panel"><h3>🛒 Rubel-Shop · ${esc(s.gt)}</h3>${s.an?'':'<div class="hinweis">Der Shop ist gerade geschlossen. Rubel verdienst du trotzdem.</div>'}
+    <div class="skopf"><div><div class="mut">Dein Guthaben</div><div class="rubel">${esc(s.stand_text)}</div></div>
+    <div class="mut">So verdienst du Rubel (nur gewertete Deathmatch-Runden ab ${v.min_spieler} Spielern): ${RUB(v.kurs_punkt)} je Rundenpunkt, ${RUB(v.teilnahme)} fürs Mitspielen, ${RUB(v.sieg)} für den Rundensieg.
+      Höchstens ${v.farm_max} bezahlte Kills auf dasselbe Opfer je Runde, Deckel ${RUB(v.max_runde)} je Runde und ${RUB(v.max_tag)} je Tag.</div></div></div>
+  <div class="panel"><h3>📦 Vorräte für den PvE-Server</h3>
+    <div class="mut" style="margin-bottom:8px">Bestellen → der Admin gibt frei → Lieferung beim nächsten PvE-Neustart. Höchstens ${H.max} Bestellungen am Tag zu je ${s.max_teile} Teilen, Munition und Magazine höchstens ${H.max_klasse} je Sorte am Tag. Kein Handel: geliefert wird nur an deine eigenen PvE-Charaktere. Bei Ablehnung, Storno oder wenn nach 2 Neustarts nichts da ist, bekommst du alles zurück.</div>
+    <div class="seg" id="sKat">${kats.map(k=>`<button data-k="${esc(k)}" class="${k===SKAT?'an':''}">${esc(k)}</button>`).join('')}</div>
+    <div class="ware">${K.filter(a=>a.kategorie===SKAT).map(a=>{const mx=maxN(a);return `<div><b>${esc(a.name)}</b>${a.hinweis?`<span class="mut">${esc(a.hinweis)}</span>`:''}${LK.includes(a.kategorie)?`<span class="mut">heute noch ${mx} von ${H.max_klasse}</span>`:''}<div class="zeile"><span class="preis">${esc(a.preis_text)}</span>
+      <span><input type="number" inputmode="numeric" min="0" max="${mx}" value="${KORB[a.id]||0}" data-a="${esc(a.id)}" data-max="${mx}" ${mx?'':'disabled'} aria-label="Anzahl ${esc(a.name)}"></span></div></div>`}).join('')||'<div class="mut">Hier gibt es gerade nichts.</div>'}</div>
+    <h4>🧺 Warenkorb</h4>${teile?`<div>${Object.entries(KORB).map(([k,n])=>`<span class="chip">${n}× ${esc(kmap[k].name)}</span>`).join('')}</div><div style="margin:6px 0">Ware ${RUB(ware)} + Lieferung ${RUB(lf)} = <b class="rubel" style="font-size:20px">${RUB(summe)}</b> <span class="mut">· ${teile} von höchstens ${s.max_teile} Teilen</span></div>`:'<div class="mut">Noch leer. Anzahl bei den Artikeln eintragen.</div>'}
+    <h4>🚚 Lieferweg</h4><div class="seg" id="sWeg">${wege.map(w=>`<button data-w="${w}" class="${w===SWEG?'an':''}">${esc(s.wege[w])} · ${RUB((s.liefer||{})[w]||0)}</button>`).join('')}</div>
+    <div class="mut" id="sWegText">${wegText}</div>
+    <div style="margin-top:12px;display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button class="knopf" id="sBestellen" ${!teile||grund?'disabled':''}>Bestellen</button><button class="knopf grau" id="sLeeren" ${teile?'':'disabled'}>Leeren</button>
+      <span class="mut">${grund||`Heute ${H.bestellungen} von ${H.max} Bestellungen.`}</span></div></div>
+  <div class="panel"><h3>🧾 Meine Bestellungen</h3>${(s.bestellungen||[]).length?(s.bestellungen.map(b=>`<div class="rh"><span>#${esc(b.id)} · ${datumB(b.t)}</span><b>${b.namen.map(x=>x[1]+'× '+esc(x[0])).join(', ')}</b>
+    <span class="mut">${esc(b.summe_text)} · ${esc(b.weg_text)}${b.ziel&&b.ziel.text?' ('+esc(b.ziel.text)+')':''} · <b style="color:var(--acc2)">${esc(b.status_text)}</b>${b.hinweis?' · '+esc(b.hinweis):''}${b.grund?' · '+esc(b.grund):''}</span>
+    ${b.status==='offen'?`<button class="login" data-storno="${esc(b.id)}">Stornieren</button>`:''}</div>`).join('')):'<div class="mut">Noch keine Bestellung.</div>'}</div>
+  <div class="panel"><h3>✨ Kosmetik für dein Profil</h3><div class="mut" style="margin-bottom:8px">Sichtbar in den Ranglisten, im Killfeed und in deinem Profil. Gekauft ist gekauft, wechseln kostet nichts.</div>
+    <div class="ware">${(s.kosmetik||[]).map(k=>{const hab=mk.besitz.includes(k.id),an=mk.aktiv[k.platz]===k.id;return `<div><span><span class="gt ks-${k.id.replace(/_/g,'-')}">${esc(s.gt)}</span></span><b>${esc(k.name)}</b>
+      <div class="zeile"><span class="preis">${hab?'gekauft':esc(k.preis_text)}</span>${hab?`<button class="login" data-kw="${esc(k.id)}" data-pl="${k.platz}" data-an="${an?1:0}">${an?'Ablegen':'Tragen'}</button>`:`<button class="login" data-kk="${esc(k.id)}" ${k.preis>s.stand||!s.an?'disabled':''}>Kaufen</button>`}</div></div>`}).join('')}</div></div>
+  <div class="panel"><h3>📒 Kontoauszug</h3>${(s.auszug||[]).length?`<div class="buch">${s.auszug.slice(0,60).map(x=>`<span class="mut dat">${datumB(x.t)}</span><span>${esc(x.text)}</span><span class="${x.betrag<0?'minus':'plus'}">${x.betrag>0?'+':''}${esc(x.betrag_text)}</span><span class="mut saldo">${esc(x.saldo_text||'')}</span>`).join('')}</div>`:'<div class="mut">Noch keine Buchung. Spiel eine gewertete Deathmatch-Runde!</div>'}</div>`;
+  $$('#sKat [data-k]').forEach(b=>b.onclick=()=>{SKAT=b.dataset.k;shopZeichnen(d)});
+  $$('#sWeg [data-w]').forEach(b=>b.onclick=()=>{SWEG=b.dataset.w;SZIEL=null;shopZeichnen(d)});
+  const zs=$('#sZiel');if(zs)zs.onchange=()=>{SZIEL=zs.value;shopZeichnen(d)};
+  $$('#mr-shop [data-a]').forEach(i=>i.onchange=()=>{const n=Math.max(0,Math.min(+i.dataset.max,parseInt(i.value)||0));if(n)KORB[i.dataset.a]=n;else delete KORB[i.dataset.a];shopZeichnen(d)});
+  const lb=$('#sLeeren');if(lb)lb.onclick=()=>{KORB={};shopZeichnen(d)};
+  const bb=$('#sBestellen');if(bb)bb.onclick=async()=>{if(!confirm('Für '+RUB(summe)+' bestellen? Die Rubel werden reserviert.'))return;bb.disabled=true;
+    const j=await shopPost('/zuschauer/shop/bestellen',{weg:SWEG,ziel:SZIEL,artikel:Object.entries(KORB)});bb.disabled=false;
+    if(j){KORB={};alert('Bestellung #'+j.bestellung.id+' ist eingegangen und wartet auf die Freigabe.'+(j.bestellung.hinweis?'\n'+j.bestellung.hinweis:''));shopNeu()}};
+  $$('#mr-shop [data-storno]').forEach(b=>b.onclick=async()=>{if(!confirm('Bestellung #'+b.dataset.storno+' stornieren? Du bekommst die Rubel zurück.'))return;if(await shopPost('/zuschauer/shop/stornieren',{id:b.dataset.storno}))shopNeu()});
+  $$('#mr-shop [data-kk]').forEach(b=>b.onclick=async()=>{if(!confirm('Kaufen?'))return;if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'kaufen',id:b.dataset.kk})){shopNeu();laden()}});
+  $$('#mr-shop [data-kw]').forEach(b=>b.onclick=async()=>{if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'waehlen',platz:b.dataset.pl,id:b.dataset.an==='1'?'':b.dataset.kw})){shopNeu();laden()}})}
+function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R.punkte,E=R.elo,S=R.shop||{},g=P.distanz_grenzen,dp=P.distanz_punkte;
   const zeile=(a,b)=>`<tr><td>${a}</td><td><b>${b}</b></td></tr>`;
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 8px">❓ Regeln &amp; Punkte</h2>
   <h4>🎯 Punkte je Runde</h4><table class="rg">${zeile('Kill',(P.kill>0?'+':'')+P.kill+' Punkt')}
@@ -594,6 +680,7 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
     ${zeile('Ziel-Kills (Modus „Ziel“)',P.ziel_kills.join(' / ')+' Kills, wer zuerst da ist, gewinnt')}</table>
   <div class="mut">Rundensieger: die meisten Punkte, bei Gleichstand mehr Kills, dann weniger Tode; mindestens 1 Kill. Gewertet werden nur Runden mit mindestens ${R.min_spieler} Spielern.
     Als Teilnehmer zählt, wer einen Kill oder Tod hat oder mindestens ${Math.round(R.leben_min_s/60)} Minute am Leben war.</div>
+  ${S.an?`<h4>🛒 Rubel</h4><div>${RUB(S.kurs_punkt)} je Rundenpunkt, ${RUB(S.teilnahme)} fürs Mitspielen, ${RUB(S.sieg)} für den Rundensieg. Nur Runden ab ${S.min_spieler} Spielern, höchstens ${S.farm_max} bezahlte Kills auf dasselbe Opfer, Deckel ${RUB(S.max_runde)} je Runde und ${RUB(S.max_tag)} je Tag. Einlösen: Meine Statistik → 🛒 Rubel-Shop.</div>`:''}
   <h4>📈 Elo</h4><div>Start ${E.start}. Nach jedem Kill wechselt Elo vom Opfer zum Schützen:</div>
   <div class="formel">Erwartung = 1 ÷ (1 + 10 hoch ((Elo des Opfers − Elo des Schützen) ÷ 400))<br>Gewinn = ${E.k} × (1 − Erwartung) · das Opfer verliert genauso viel</div>
   <div class="mut">In Worten: Die „Erwartung“ ist die geschätzte Chance des Schützen, gegen dieses Opfer zu gewinnen (zwischen 0 und 1). Sind beide gleich stark, ist sie 0,5 – der Schütze bekommt ${E.k} × 0,5 = ${E.k/2} Elo. Ist das Opfer viel stärker, liegt sie nahe 0 und es gibt fast ${E.k} Elo; ist es viel schwächer, fast nichts. ${E.k} ist also der höchste Gewinn pro Kill.</div>
@@ -628,7 +715,7 @@ function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile
   const erf=`<h4>🏅 DM-Haupterfolge (${HP.filter(x=>x.stufe).length} von ${HP.length})</h4><div class="bgs">${HP.map(x=>badgeKarte(x,'dm')).join('')}</div>
     <h4>🎖 DM-Stil-Erfolge</h4><div class="bgs">${stilOeff(D.dm.stil_def,s&&s.stil).map(x=>badgeKarte(x,'dm')).join('')}</div>`;
   const run=rn.length?rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode · <a href="/zuschauer/runde/${r.id}" style="color:inherit">ansehen</a></div>`).join(''):'<div class="mut">Keine Runde in der letzten Zeit.</div>';
-  profilDialog(`<div class="prkopf"><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div></div>`,
+  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px"><span class="${KSK(n).includes('ks-name')?'ks-name-feuer':''}">${esc(n)}</span>${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div></div>`,
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf],['📜 Runden',run+'<div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>']]);
   const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n)}
 function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
@@ -640,7 +727,7 @@ function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n]
   const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table></div>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
   const erf=`<h4>🏅 PvE-Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h4><div class="bgs">${p.erfolge_alle.map(e=>meilenKarte({icon:e[1],titel:e[2],text:e[3],erreicht:e[0] in zt,t:zt[e[0]],stufe:'gold',wert:(fs[e[0]]||[0])[0],schwelle:(fs[e[0]]||[0,1])[1],einheit:''})).join('')}</div>
     <h4>🎖 PvE-Stil-Erfolge</h4><div class="bgs">${stilOeff(p.stil_def,pr.stil).map(x=>badgeKarte(x,'pve')).join('')}</div>`;
-  profilDialog(`<div class="prkopf"><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div></div>`,
+  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px"><span class="${KSK(n).includes('ks-name')?'ks-name-feuer':''}">${esc(n)}</span>${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div></div>`,
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf]]);
   const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n)}
 const _tab=tab;tab=t=>{_tab(t);if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
