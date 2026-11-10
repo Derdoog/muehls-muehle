@@ -176,6 +176,25 @@ nav .live.aus{background:#80857e;animation:none;box-shadow:none;opacity:.75}
 .bg.offen .fort i{opacity:.8}
 .kf-erf{color:var(--acc2);font-weight:700}
 .rerf{display:block;margin-top:2px}
+/* Update 4.3: alle Reiter auf dem Handy voll sichtbar (umbrechen statt seitlich scrollen), Spaltenkoepfe nicht buchstabenweise umbrechen */
+nav button{min-width:0}
+@media(max-width:520px){
+  .reiter{flex-wrap:wrap;overflow-x:visible;gap:4px}
+  .reiter button{flex:1 1 auto;padding:7px 8px;font-size:11px;letter-spacing:.03em;text-align:center}
+  .reiter.klein button{padding:5px 7px;font-size:10.5px}
+  th{overflow-wrap:normal;word-break:normal;-webkit-hyphens:manual;hyphens:manual}
+  td .titel{display:table;margin:2px 0 0;font-size:9.5px;padding:0 4px;white-space:normal}
+  #pRang th,#pRang td{padding-left:3px;padding-right:3px}
+}
+@media(max-width:400px){#pRang .nm2{display:none}}
+/* Update 4.3: gesperrte Erfolge nur Icon und Text dimmen, die Detailkarte (Hover/Antippen) bleibt voll deckend */
+.bg.offen{opacity:1}
+.bg.offen>svg,.bg.offen>.med,.bg.offen .bgt>:not(.det){opacity:.55}
+.bg.offen:hover>svg,.bg.offen.auf>svg,.bg.offen:hover .bgt>:not(.det),.bg.offen.auf .bgt>:not(.det){opacity:.8}
+.bg .det{opacity:1}
+@media(hover:hover){.bg:not(.auf):hover .det{background:var(--panel2,#1b201c);opacity:1}}
+@media(max-width:380px){nav button{padding:8px 4px;font-size:11px;letter-spacing:.02em} nav .live{margin-left:4px}}
+@media(max-width:330px){nav button{white-space:normal;line-height:1.2}}
 </style>
 </head>
 <body>
@@ -297,7 +316,8 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   const rs=[...rows].sort((a,b)=>RS==='name'?a.name.localeCompare(b.name):(b[RS]-a[RS]));
   const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${esc(s.name)}</b>${TT(s.name)}`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
   const NM=new Set(['strecke','erfolge','zuletzt']);   // Update 4.2: auf dem Handy ausgeblendet
-  $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}${NM.has(k)?' nm':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td${NM.has(k)?' class="nm"':''}>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
+  const NM2=new Set(['weitester']);   // Update 4.3: unter 400 px zusaetzlich aus (Kills-Spalte bleibt lesbar)
+  $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}${NM.has(k)?' nm':''}${NM2.has(k)?' nm2':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td${NM.has(k)?' class="nm"':NM2.has(k)?' class="nm2"':''}>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
   $$('#pRang th').forEach(th=>th.onclick=()=>{RS=th.dataset.s;zeichnen()});
   $$('[data-n]').forEach(b=>b.onclick=()=>profil(b.dataset.n));
   // Deathmatch
