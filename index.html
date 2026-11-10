@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Muehls Muehle · Live</title>
-<meta name="theme-color" content="#111316">
+<meta name="theme-color" content="#0b0d0c">
 <meta name="description" content="Live-Übersicht des DayZ-Servers Muehls Muehle: wer online ist, Rangliste, Erfolge und Deathmatch-Killfeed.">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Muehls Muehle">
@@ -18,98 +18,141 @@
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="/icon-192.png">
 <style>
-  :root{--bg:#111316;--panel:#1a1d22;--panel2:#22262d;--line:#2e333b;--text:#ece8df;--mut:#9a968d;--acc:#d9ab2e;--acc2:#f2c84e;--rot:#d0493a;--gr:#3fa66b}
-  @media (prefers-color-scheme: light){:root:not([data-theme="dark"]){--bg:#f4f1ea;--panel:#fff;--panel2:#f0ece3;--line:#ddd6c8;--text:#1d1b17;--mut:#6c675d;--acc:#b8860b;--acc2:#9a6f00}}
-  :root[data-theme="light"]{--bg:#f4f1ea;--panel:#fff;--panel2:#f0ece3;--line:#ddd6c8;--text:#1d1b17;--mut:#6c675d;--acc:#b8860b;--acc2:#9a6f00}
-  *{box-sizing:border-box} html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+  /* Update 4: Spielmenü-Look (DayZ/Militär). Keine externen Schriften, nur System-Schriften. */
+  :root{--bg:#0b0d0c;--bg2:#121513;--panel:#161a17;--panel2:#1e2420;--line:#2f3830;--line2:#4a5545;--text:#e6e2d3;--mut:#8f9285;--acc:#d4a62a;--acc2:#f0c850;--rot:#c8442f;--gr:#5fae4a;--olive:#6b7a3a;
+    --kopf:"Bahnschrift","Agency FB","Arial Narrow","Roboto Condensed","Segoe UI",system-ui,sans-serif;--glow:0 0 0 1px rgba(212,166,42,.35),0 0 14px rgba(212,166,42,.18)}
+  /* bewusst immer dunkel (Spielmenü-Look); helles Schema nur noch über data-theme="light" */
+  :root[data-theme="light"]{--bg:#e9e5d8;--bg2:#ded9c9;--panel:#f6f3ea;--panel2:#ebe6d7;--line:#cfc7b2;--line2:#a99f86;--text:#1d1b17;--mut:#5f5a4e;--acc:#a37508;--acc2:#7d5a00;--olive:#5d6a2f}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,-apple-system,sans-serif}
+  body{background:radial-gradient(1200px 600px at 20% -10%,rgba(107,122,58,.16),transparent 60%),radial-gradient(900px 500px at 110% 10%,rgba(212,166,42,.07),transparent 60%),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px),var(--bg);background-attachment:fixed;min-height:100vh}
   button{font:inherit;color:inherit;cursor:pointer}
-  header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line)}
-  .kopf{max-width:1200px;margin:auto;padding:14px 16px 0;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
-  h1{font-size:19px;margin:0} h1 span{color:var(--acc)} .mut{color:var(--mut);font-size:13px}
-  nav{max-width:1200px;margin:auto;padding:8px 16px 0;display:flex;gap:2px}
-  nav button{background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;color:var(--mut);font-weight:600;white-space:nowrap}
-  @media(max-width:520px){nav{padding:6px 8px 0;overflow-x:auto} nav button{padding:8px 9px;font-size:14px}}
-  nav button.an{color:var(--text);border-color:var(--acc)} nav .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr);margin-left:6px;vertical-align:middle}
+  a{color:var(--acc2)}
+  header{position:sticky;top:0;z-index:5;background:linear-gradient(180deg,#1b201c,#101311);border-bottom:2px solid var(--line2);box-shadow:0 6px 18px rgba(0,0,0,.45)}
+  :root[data-theme="light"] header{background:linear-gradient(180deg,#d8d2bf,#cdc6b0)}
+  header::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:2px;background:linear-gradient(90deg,transparent,var(--acc) 20%,var(--acc) 80%,transparent);opacity:.55}
+  .kopf{max-width:1200px;margin:auto;padding:12px 16px 0;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
+  h1{font:700 21px/1.1 var(--kopf);margin:0;text-transform:uppercase;letter-spacing:.08em;text-shadow:0 2px 0 rgba(0,0,0,.6)} h1 span{color:var(--acc);border:1px solid var(--acc);padding:1px 7px;margin-left:6px;font-size:13px;vertical-align:3px;letter-spacing:.15em}
+  h2{font-family:var(--kopf);text-transform:uppercase;letter-spacing:.05em}
+  h4{font:700 13px var(--kopf);text-transform:uppercase;letter-spacing:.08em;color:var(--acc2);margin:16px 0 6px}
+  .mut{color:var(--mut);font-size:13px}
+  nav{max-width:1200px;margin:auto;padding:10px 16px 0;display:flex;gap:4px}
+  nav button{position:relative;background:linear-gradient(180deg,#232a24,#171b18);border:1px solid var(--line);border-bottom:0;padding:9px 16px 8px;color:var(--mut);font:700 13px var(--kopf);text-transform:uppercase;letter-spacing:.09em;white-space:nowrap;
+    clip-path:polygon(10px 0,100% 0,100% 100%,0 100%,0 10px);transition:color .15s,background .15s,transform .15s}
+  :root[data-theme="light"] nav button{background:linear-gradient(180deg,#e7e1cf,#d5ceb8)}
+  nav button:hover{color:var(--text);background:linear-gradient(180deg,#2d362e,#1c211d);transform:translateY(-1px)}
+  nav button::after{content:"";position:absolute;left:8px;right:8px;bottom:0;height:3px;background:var(--acc);transform:scaleX(0);transition:transform .2s}
+  nav button.an{color:var(--acc2);background:linear-gradient(180deg,#2f3a2c,#1a1f1a)} nav button.an::after{transform:scaleX(1)}
+  @media(max-width:520px){nav{padding:6px 8px 0;overflow-x:auto} nav button{padding:8px 10px;font-size:12px}}
+  nav .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr);margin-left:6px;vertical-align:middle;box-shadow:0 0 0 0 rgba(95,174,74,.7);animation:puls 2s infinite}
+  @keyframes puls{0%{box-shadow:0 0 0 0 rgba(95,174,74,.7)}70%{box-shadow:0 0 0 7px rgba(95,174,74,0)}100%{box-shadow:0 0 0 0 rgba(95,174,74,0)}}
+  @keyframes rein{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
   main{max-width:1200px;margin:auto;padding:16px 16px 60px}
-  .tab{display:none} .tab.an{display:block}
+  .tab{display:none} .tab.an{display:block;animation:rein .25s ease-out}
   .kacheln{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
-  .kachel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
-  .kachel b{display:block;font-size:24px;line-height:1.15;color:var(--acc2)} .kachel span{font-size:12px;color:var(--mut)}
+  .kachel{position:relative;background:linear-gradient(160deg,var(--panel2),var(--panel));border:1px solid var(--line);border-left:3px solid var(--olive);padding:12px 14px;clip-path:polygon(0 0,calc(100% - 12px) 0,100% 12px,100% 100%,0 100%)}
+  .kachel b{display:block;font:700 24px/1.15 var(--kopf);color:var(--acc2);letter-spacing:.02em} .kachel span{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.07em}
   .zwei{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
-  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
-  .panel h3{font-size:15px;margin:0 0 8px}
-  .hinweis{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:14px}
+  .panel{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.02),transparent 40%),var(--panel);border:1px solid var(--line);padding:14px 16px;margin-bottom:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 4px 14px rgba(0,0,0,.35)}
+  .panel::before,.panel::after{content:"";position:absolute;width:14px;height:14px;border:2px solid var(--acc);opacity:.7;pointer-events:none}
+  .panel::before{top:-1px;left:-1px;border-right:0;border-bottom:0} .panel::after{bottom:-1px;right:-1px;border-left:0;border-top:0}
+  .panel h3{font:700 14px var(--kopf);margin:0 0 10px;text-transform:uppercase;letter-spacing:.1em;color:var(--text);display:flex;align-items:center;gap:8px}
+  .panel h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+  .hinweis{background:repeating-linear-gradient(135deg,rgba(212,166,42,.06) 0 10px,transparent 10px 20px),var(--panel2);border:1px solid var(--line);border-left:3px solid var(--acc);padding:10px 12px;margin-bottom:14px;font-size:14px}
   .spl{display:flex;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line)} .spl:first-of-type{border-top:0}
-  .av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;background:#24402f;color:#a3e6bf;font-weight:800;flex:0 0 auto}
+  .av{width:32px;height:32px;display:grid;place-items:center;background:#24402f;color:#a3e6bf;font-weight:800;flex:0 0 auto;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
   .av.tot{background:#3a2a2a;color:#e39a8f}
   .mitte{flex:1;min-width:0} .mitte b{display:block}
   .ev{display:flex;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:14px} .ev:first-child{border-top:0}
   .ev .uhr{color:var(--mut);font:12px Consolas,monospace;width:86px;flex:0 0 auto;white-space:nowrap;padding-top:2px}
   .ev.kill .tx{color:#e8775f} .ev.kampflog .tx{color:var(--acc2);font-weight:600} .ev.erfolg .tx{color:var(--acc2)}
-  .seg{display:inline-flex;flex-wrap:wrap;background:var(--panel2);border:1px solid var(--line);border-radius:9px;padding:3px;gap:3px;margin-bottom:10px}
-  .seg button{background:none;border:0;border-radius:7px;padding:5px 11px;color:var(--mut);font-weight:600;font-size:13px}
-  .seg button.an{background:var(--acc);color:#141414}
+  .seg{display:inline-flex;flex-wrap:wrap;background:var(--bg2);border:1px solid var(--line);padding:3px;gap:3px;margin-bottom:10px}
+  .seg button{background:none;border:0;padding:5px 11px;color:var(--mut);font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.06em;transition:background .15s,color .15s}
+  .seg button:hover{color:var(--text);background:rgba(255,255,255,.05)} .seg button.an{background:var(--acc);color:#141414}
   .scroll{overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:14px} th{color:var(--mut);font-weight:600;text-align:right;padding:6px 8px;font-size:12px;white-space:nowrap;cursor:pointer}
+  table{width:100%;border-collapse:collapse;font-size:14px} th{color:var(--mut);font:700 11px var(--kopf);text-transform:uppercase;letter-spacing:.07em;text-align:right;padding:6px 8px;white-space:nowrap;cursor:pointer;border-bottom:1px solid var(--line2)}
   td{padding:7px 8px;text-align:right;border-top:1px solid var(--line);white-space:nowrap} th:first-child,td:first-child{text-align:left} th.an{color:var(--acc2)}
+  tr:hover td{background:rgba(212,166,42,.04)}
   tr.on td:first-child::before{content:"● ";color:var(--gr)}
   .name{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
-  .kf{font:14px/1.8 Consolas,monospace} .kf b{color:var(--acc2)} .kopfs{color:#e8775f}
-  .runde{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
-  .runde .gross{font-size:20px;font-weight:800} .chip{display:inline-block;background:var(--panel);border:1px solid var(--line);border-radius:99px;padding:2px 9px;font-size:12px;margin:3px 4px 0 0}
-  .erf{display:inline-flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--acc);border-radius:99px;padding:3px 10px;font-size:13px;margin:0 6px 6px 0}
+  .kf{font:14px/1.8 Consolas,monospace} .kf b{color:var(--acc2)} .kopfs{color:#e8775f} .elo{font-size:11px;color:#9fd07a;border:1px solid #3d5a2c;padding:0 5px;margin-left:4px}
+  .kf>div{animation:rein .3s ease-out}
+  .runde{background:linear-gradient(135deg,rgba(107,122,58,.18),transparent 60%),var(--panel2);border:1px solid var(--line2);padding:12px 14px}
+  .runde .gross{font:700 21px var(--kopf);text-transform:uppercase;letter-spacing:.05em} .chip{display:inline-block;background:var(--bg2);border:1px solid var(--line2);padding:1px 8px;font:700 11px var(--kopf);text-transform:uppercase;letter-spacing:.06em;margin:3px 4px 0 0}
+  .erf{display:inline-flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--acc);padding:3px 10px;font-size:13px;margin:0 6px 6px 0}
   .erf.offen{border-color:var(--line);opacity:.4}
-  .wbar{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0} .wbar i{display:block;height:11px;background:var(--acc);border-radius:3px}
-  dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:0;width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
-  dialog::backdrop{background:rgba(0,0,0,.6)} .dlg{padding:16px} .zu{float:right;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 10px}
+  .wbar{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0} .wbar i{display:block;height:10px;background:linear-gradient(90deg,var(--olive),var(--acc));transform-origin:left;animation:balken .5s ease-out}
+  @keyframes balken{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+  dialog{background:var(--bg);color:var(--text);border:1px solid var(--line2);padding:0;width:min(780px,calc(100vw - 24px));max-height:calc(100vh - 40px);box-shadow:0 0 0 1px #000,0 20px 60px rgba(0,0,0,.7)}
+  dialog[open]{animation:rein .2s ease-out}
+  dialog::backdrop{background:rgba(0,0,0,.7)} .dlg{padding:16px} .zu{float:right;background:var(--panel2);border:1px solid var(--line2);padding:4px 10px}
+  .zu:hover{border-color:var(--acc);color:var(--acc2)}
   .vote{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px}
-  .vote button{position:relative;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:10px;padding:9px 11px;overflow:hidden}
-  .vote button.an{border-color:var(--acc)} .vote button b{display:block;font-size:14px;position:relative} .vote button span{font-size:12px;color:var(--mut);position:relative}
+  .vote button{position:relative;text-align:left;background:var(--panel2);border:2px solid var(--line);padding:9px 11px;overflow:hidden;transition:border-color .15s,transform .15s}
+  .vote button:hover{border-color:var(--line2);transform:translateY(-1px)}
+  .vote button.an{border-color:var(--acc);box-shadow:var(--glow)} .vote button b{display:block;font-size:14px;position:relative} .vote button span{font-size:12px;color:var(--mut);position:relative}
   .vote button i{position:absolute;left:0;top:0;bottom:0;background:rgba(217,171,46,.18)}
-  .login{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-size:13px}
-  input.feld{width:100%;font:inherit;padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);margin-bottom:10px}
-  #mKarte{height:min(70vh,640px);border-radius:12px;border:1px solid var(--line);background:#1b1d18}
+  .login{background:linear-gradient(180deg,#2a322b,#1b201c);border:1px solid var(--line2);padding:5px 11px;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.06em;transition:border-color .15s,color .15s}
+  :root[data-theme="light"] .login{background:var(--panel2)}
+  .login:hover{border-color:var(--acc);color:var(--acc2)}
+  input.feld{width:100%;font:inherit;padding:10px;border:1px solid var(--line2);background:var(--bg2);color:var(--text);margin-bottom:10px}
+  input.feld:focus,.wahl:focus{outline:2px solid var(--acc);outline-offset:0}
+  #mKarte{height:min(70vh,640px);border:1px solid var(--line2);background:#1b1d18}
   .basis{font-size:18px;line-height:22px;text-align:center}
   .ortlabel{color:#fff;font-weight:700;text-shadow:0 0 3px #000,0 0 6px #000;white-space:nowrap;font-size:12px;pointer-events:none}
   .ortlabel.stadt{font-size:14px;color:#ffe9a8}
   .pqlabel{color:rgba(255,255,255,.75);font:11px Consolas,monospace;text-shadow:0 0 3px #000;white-space:nowrap;pointer-events:none}
-  .legende{background:rgba(17,19,22,.88);color:#ece8df;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.7;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .legende{background:rgba(17,19,22,.9);color:#ece8df;padding:8px 10px;font-size:12px;line-height:1.7;box-shadow:0 2px 8px rgba(0,0,0,.4);border:1px solid #3a4238}
   .legende i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:6px;border:2px solid #fff}
   .legende i.linie{border:0;border-radius:2px;height:3px;width:16px} .legende i.ring{background:transparent!important}
   .legende label{display:block;cursor:pointer} .legende input{margin:0 6px 0 0;vertical-align:middle}
   .leaflet-popup-content{font-size:13px} .koord{font:12px Consolas,monospace}
-  .status{display:inline-flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:13px;margin-bottom:12px}
-  img.arena{float:right;width:min(260px,38%);aspect-ratio:16/10;object-fit:cover;border-radius:10px;border:1px solid var(--line);margin:0 0 8px 12px}
-  img.arena.klein{width:min(200px,40%)} img.mini{width:64px;height:40px;object-fit:cover;border-radius:6px;border:1px solid var(--line);flex:0 0 auto}
-  .naechste{display:flex;gap:10px;align-items:center;margin-top:8px} .naechste img{width:90px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
-  .vote button img{display:block;width:100%;height:56px;object-fit:cover;border-radius:6px;margin-bottom:6px;position:relative}
+  .status{display:inline-flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--line2);padding:4px 12px;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
+  img.arena{float:right;width:min(260px,38%);aspect-ratio:16/10;object-fit:cover;border:1px solid var(--line2);margin:0 0 8px 12px;filter:saturate(.85) contrast(1.05)}
+  img.arena.klein{width:min(200px,40%)} img.mini{width:64px;height:40px;object-fit:cover;border:1px solid var(--line);flex:0 0 auto}
+  .naechste{display:flex;gap:10px;align-items:center;margin-top:8px} .naechste img{width:90px;height:56px;object-fit:cover;border:1px solid var(--line)}
+  .vote button img{display:block;width:100%;height:56px;object-fit:cover;margin-bottom:6px;position:relative}
   .pk{color:var(--acc2);font-size:12px} .countdown{color:var(--acc2)}
   details.rd{border-top:1px solid var(--line);padding:6px 0} details.rd:first-child{border-top:0} details.rd summary{cursor:pointer;list-style:none;display:flex}
-  details.rd summary::-webkit-details-marker{display:none} details.rd summary::before{content:"▸";color:var(--mut);margin-right:8px} details.rd[open] summary::before{content:"▾"}
+  details.rd summary::-webkit-details-marker{display:none} details.rd summary::before{content:"▸";color:var(--acc);margin-right:8px} details.rd[open] summary::before{content:"▾"}
   .rdin{padding:8px 0 4px 18px;font-size:14px} .rdin table{margin:4px 0 8px}
   .rh{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-top:1px solid var(--line);flex-wrap:wrap} .rh:first-child{border-top:0} .rh span:first-child{flex:0 0 190px;color:var(--mut);font-size:13px}
-  .titel{display:inline-block;font-size:11px;font-weight:600;color:var(--acc2);border:1px solid var(--line);border-radius:99px;padding:0 7px;margin-left:6px;vertical-align:middle;white-space:nowrap}
-  .reiter{display:flex;gap:6px;overflow-x:auto;margin:4px 0 12px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
-  .reiter button{flex:0 0 auto;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:99px;padding:7px 13px;font:inherit;font-size:14px;cursor:pointer}
-  .reiter button.an{background:var(--acc);color:#141414;border-color:var(--acc);font-weight:700}
-  .reiter.klein{margin:10px 0 8px}.reiter.klein button{padding:5px 10px;font-size:13px}
-  .mr{display:none}.mr.an{display:block}
+  .titel{display:inline-block;font:700 10px var(--kopf);text-transform:uppercase;letter-spacing:.06em;color:var(--acc2);border:1px solid var(--line2);padding:0 6px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  .reiter{display:flex;gap:4px;overflow-x:auto;margin:4px 0 12px;padding-bottom:4px;-webkit-overflow-scrolling:touch}
+  .reiter button{flex:0 0 auto;background:linear-gradient(180deg,#232a24,#171b18);color:var(--mut);border:1px solid var(--line);padding:7px 13px;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.07em;cursor:pointer;
+    clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px);transition:color .15s,border-color .15s}
+  :root[data-theme="light"] .reiter button{background:var(--panel2)}
+  .reiter button:hover{color:var(--text);border-color:var(--line2)}
+  .reiter button.an{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border-color:var(--acc)}
+  .reiter.klein{margin:10px 0 8px}.reiter.klein button{padding:5px 10px;font-size:11px}
+  .mr{display:none}.mr.an{display:block;animation:rein .2s ease-out}
   .mwahl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:8px}
-  .wahl{font:inherit;padding:4px 6px;border-radius:8px;background:var(--panel2);color:var(--text);border:1px solid var(--line);max-width:100%}
-  .hinweis{background:var(--panel2);border:1px solid var(--acc);border-radius:10px;padding:10px 12px;margin:8px 0}
+  .wahl{font:inherit;padding:4px 6px;background:var(--bg2);color:var(--text);border:1px solid var(--line2);max-width:100%}
+  .hinweis{border-left:3px solid var(--acc);padding:10px 12px;margin:8px 0}
   table.wt{border-collapse:collapse;width:100%;font-size:13px}table.wt th,table.wt td{padding:5px 7px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
   .bgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:8px 0 14px}
-  .bg{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px}
+  .bg{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);padding:10px;transition:border-color .15s,transform .15s}
+  .bg:hover{border-color:var(--line2);transform:translateY(-1px)}
   .bg.offen{opacity:.55} .bg b{display:block;font-size:14px} .bg .mut{font-size:12px;line-height:1.35}
-  .bg svg{flex:0 0 52px} .stufe{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .bg svg{flex:0 0 52px} .stufe{font:700 11px var(--kopf);text-transform:uppercase;letter-spacing:.06em}
   .st-bronze{color:#cd7f32} .st-silber{color:#b8c0c8} .st-gold{color:#f2c84e} .st-platin{color:#9fd8e8} .st-diamant{color:#7fe0ff} .st-offen{color:var(--mut)}
-  .fort{height:6px;background:var(--line);border-radius:3px;margin-top:5px;overflow:hidden} .fort i{display:block;height:100%;background:var(--acc)}
-  .schaetz{font-size:10px;border:1px dashed var(--mut);border-radius:6px;padding:0 4px;margin-left:4px;color:var(--mut)}
+  .fort{height:6px;background:var(--line);margin-top:5px;overflow:hidden} .fort i{display:block;height:100%;background:linear-gradient(90deg,var(--olive),var(--acc))}
+  .schaetz{font-size:10px;border:1px dashed var(--mut);padding:0 4px;margin-left:4px;color:var(--mut)}
   .bereich{border-left:4px solid var(--acc);padding-left:12px;margin:18px 0 6px} .bereich.pve{border-color:var(--gr)}
-  .heat{width:100%;max-width:520px;background:#1b1d18;border:1px solid var(--line);border-radius:10px}
-  .stunden{display:flex;align-items:flex-end;gap:2px;height:60px} .stunden i{flex:1;background:var(--acc);border-radius:2px 2px 0 0;min-height:1px}
+  .heat{width:100%;max-width:520px;background:#1b1d18;border:1px solid var(--line)}
+  .stunden{display:flex;align-items:flex-end;gap:2px;height:60px} .stunden i{flex:1;background:linear-gradient(0deg,var(--olive),var(--acc));min-height:1px}
   footer{max-width:1200px;margin:auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
-  @media(max-width:760px){.kacheln{grid-template-columns:1fr 1fr}.zwei{grid-template-columns:1fr}.ev .uhr{width:44px;white-space:normal;font-size:11px}h1{font-size:17px}}
+  /* Update 4: Waffenbilder, Regeln & Punkte */
+  .wimg{display:inline-block;width:76px;height:30px;object-fit:contain;vertical-align:middle;margin-right:8px;padding:1px 3px;border:1px solid var(--line);background:radial-gradient(ellipse at 50% 55%,rgba(226,221,200,.62),rgba(226,221,200,.1) 78%),#2a2f2a}
+  .wimg.leer{background:repeating-linear-gradient(135deg,var(--line) 0 4px,transparent 4px 8px);border:1px dashed var(--line2);opacity:.6}
+  .regelbtn{background:linear-gradient(180deg,#3a3420,#231f13);border:1px solid var(--acc);color:var(--acc2);padding:5px 11px;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.06em}
+  .regelbtn:hover{box-shadow:var(--glow)}
+  table.rg td,table.rg th{text-align:left;white-space:normal}
+  .formel{font:13px Consolas,monospace;background:var(--bg2);border:1px solid var(--line);padding:8px 10px;margin:6px 0;overflow-x:auto}
+  .prkopf{padding:10px 12px;margin:-4px -4px 6px;border:1px solid var(--line)} .prkopf h2{text-transform:none}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+  @media(max-width:760px){.kacheln{grid-template-columns:1fr 1fr}.zwei{grid-template-columns:1fr}.ev .uhr{width:44px;white-space:normal;font-size:11px}h1{font-size:17px}.wimg{width:54px;height:22px}}
 </style>
 </head>
 <body>
@@ -134,6 +177,7 @@
     <div class="panel"><h3>📅 Termine</h3><div id="pKal"></div><div class="mut" style="margin-top:6px" id="pKalIcs"></div></div>
   </section>
   <section class="tab" id="t-dm">
+    <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="regelbtn" id="regelnBtn">❓ Regeln &amp; Punkte</button></div>
     <div id="dRunde"></div>
     <div class="panel" id="dVote" hidden></div>
     <div class="zwei">
@@ -149,10 +193,8 @@
       <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div>
       <div class="panel"><h3>🏛 Ruhmeshalle Deathmatch</h3><div id="dRuhm"></div></div>
     </div>
-    <div class="zwei">
-      <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
-      <div class="panel scroll"><h3>🔫 Waffen</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div>
-    </div>
+    <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
+    <div class="panel scroll"><h3>🔫 Waffen-Rangliste (alle Spieler)</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div>
   </section>
   <section class="tab" id="t-meine">
     <div class="panel"><h3 id="mTitel">Meine Statistik</h3><div id="mListe"></div><div id="mWahl" class="mwahl"></div></div>
@@ -177,7 +219,9 @@ const vor=t=>{if(!t)return '–';const s=Date.now()/1000-t;return s<120?'gerade 
 const ICON={kill:'🎯',tod:'✝️',verbindung:'🔌',bewusstlos:'😵',erfolg:'🏅',kampflog:'⚠️'};
 const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
 const TT=n=>{const t=D&&D.titel&&D.titel[n];return t?`<span class="titel">${esc(t)}</span>`:''};
-const STN={bronze:'Bronze',silber:'Silber',gold:'Gold',platin:'Platin',diamant:'Diamant'},STF={bronze:'#cd7f32',silber:'#c0c8d0',gold:'#f2c84e',platin:'#a8e0ee',diamant:'#7fe0ff'};
+// Update 4: Waffenbilder (lokal vom eigenen Server)
+let WB=null;const wbild=w=>{const f=WB&&WB[String(w||'').toLowerCase()];return f?`<img class="wimg" src="/zuschauer/waffe/${encodeURIComponent(f)}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src');this.className='wimg leer'">`:'<span class="wimg leer" title="kein Bild"></span>'};
+const STI={bronze:'🥉',silber:'🥈',gold:'🥇',platin:'💎',diamant:'💎'},STN={bronze:'Bronze',silber:'Silber',gold:'Gold',platin:'Platin',diamant:'Diamant'},STF={bronze:'#cd7f32',silber:'#c0c8d0',gold:'#f2c84e',platin:'#a8e0ee',diamant:'#7fe0ff'};
 const datumB=t=>t?new Date(t*1000).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' Uhr':'vor 10.11.2026';
 function medaille(icon,stufe,n){const f=STF[stufe]||'#555';const z=n>1?`<circle cx="42" cy="42" r="9" fill="#111" stroke="${f}" stroke-width="1.5"/><text x="42" y="45.5" font-size="9" text-anchor="middle" fill="${f}" font-weight="700">${n>99?'99+':n}</text>`:'';
   return `<svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><defs><radialGradient id="g${stufe||'x'}" cx="40%" cy="35%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="${f}" stop-opacity=".9"/></radialGradient></defs>`+
@@ -249,7 +293,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>'+(plan?`<div class="panel runde">${plan}</div>`:'');
   const pkt=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
   $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
-    (m.kills.map(k=>k.taeter?`<div><b>${esc(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
+    (m.kills.map(k=>k.taeter?`<div><b>${esc(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}${k.elo?` <span class="elo" title="Elo-Gewinn des Schützen (der Getötete verliert genauso viel)">+${k.elo} Elo</span>`:''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
   $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
   $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th>K/D</th><th>Siege</th><th>Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${esc(s.name)}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td>${s.siege}</td><td>${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
   $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
@@ -260,7 +304,8 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     ${r.kopfschuesse?`<div>💀 Kopfschüsse: ${r.kopfschuesse}</div>`:''}${r.kopfgeld?`<div>💰 Kopfgeld kassiert: ${r.kopfgeld}-mal</div>`:''}
     ${DIREKT&&r.id?`<div style="margin-top:6px"><a href="/zuschauer/runde/${+r.id}" style="color:var(--gold,#e0b44c)">🔗 Eigene Seite dieser Runde (zum Teilen)</a></div>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
   $('#dSaison').innerHTML=(m.saisons||[]).slice(0,6).map(s=>`<div class="rh"><span>${MN[+s.monat.slice(5)-1]} ${s.monat.slice(0,4)}</span><b class="name" data-dm="${esc(s.meister||'')}">${s.meister?'👑 '+esc(s.meister):'–'}</b><span class="mut">${s.runden} Runden${s.top&&s.top[0]?' · '+s.top[0][1]+' Siege · '+s.top[0][2]+' Kills':''}</span></div>`).join('')||'<div class="mut">Noch keine Saison.</div>';
-  $('#dWaffen').innerHTML=(m.waffen||[]).length?'<tr><th>Waffe</th><th>Kills</th><th>Kopfschüsse</th><th>Weitester</th></tr>'+m.waffen.map(w=>`<tr><td>${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3]} m</td></tr>`).join(''):'<tr><td class="mut">Noch keine Kills gezählt.</td></tr>';
+  $('#dWaffen').innerHTML=(m.waffen||[]).length?'<tr><th>Waffe</th><th>Kills</th><th>Kopfschüsse</th><th title="weitester tödlicher Schuss">weitester Kill</th><th>Treffer</th><th title="weitester Treffer, auch ohne Kill">weitester Treffer</th></tr>'+m.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3]?w[3]+' m':'–'}</td><td>${w[4]??'–'}</td><td>${w[5]?w[5]+' m':'–'}</td></tr>`).join(''):'<tr><td class="mut">Noch keine Kills gezählt.</td></tr>';
+  $('#dSchrot').textContent=d.schrot_hinweis||'';
   $$('#dRunden details').forEach(x=>x.ontoggle=()=>{const k=+x.dataset.rd;if(x.open)OFFEN.add(k);else OFFEN.delete(k)});
   $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b><span class="mut">${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt</span>
     <span class="mut" style="display:block">${Object.entries(k.modi).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,z])=>esc(n)+' '+z+'×').join(' · ')}</span></div></div>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
@@ -405,6 +450,9 @@ async function karteZeichnen(d){if(!d)return;
       .bindPopup(`<b>${esc(c.name)}</b> Stand ${c.pos_stand?uhr(c.pos_stand):'–'} (nach dem Logout)<br>${koordText(c.pos)}`).addTo(MG)}});
   if(MK._erst&&pts.length){MK.fitBounds(L.latLngBounds(pts).pad(.4),{maxZoom:-1});MK._erst=false}}
 // ---------------- Meine Statistik (nur nach Login, nur eigene Gamertags)
+function nachtragText(){const n=D&&D.nachtrag;if(!n||!n.archiv)return '';const t=Object.entries(n.tage||{}).filter(([k,x])=>x.dm&&x.dm.runden).sort();
+  const zeile=t.map(([k,x])=>{const q=x.dm.kills_live?Math.round(x.dm.kills/x.dm.kills_live*100):null;return `${k.slice(8,10)}.${k.slice(5,7)}.: ${x.dm.kills} von ${x.dm.kills_live||'?'} Kills${q!=null?` (${q} %)`:''}, ${x.dm.treffer} Treffer`}).join(' · ');
+  return `<div class="mut" style="margin-top:8px">Rückwirkend aus ${n.archiv.logs} Server-Logs nachgetragen (Waffen, Treffer, Zonen, Distanzen).${zeile?` Deathmatch-Abdeckung (aus dem Log gelesen / live gezählt): ${zeile}.`:''}${n.luecken?` ⚠️ ${n.luecken} Runde(n) nur teilweise im Log, dort fehlen Treffer.`:''} Mehr als 100 % heißt: das Log hatte Kills, die live nicht gezählt wurden.</div>`}
 const WTN=['Mo','Di','Mi','Do','Fr','Sa','So'];
 function balken(liste,fmt){const mx=Math.max(1,...liste.map(x=>x[1]));return liste.map(([a,b])=>`<div class="wbar"><span style="width:130px;overflow:hidden;text-overflow:ellipsis">${esc(a)}</span><i style="width:${Math.round(b/mx*55)}%"></i><span class="mut">${fmt?fmt(b):b}</span></div>`).join('')}
 function stundenBild(st){const mx=Math.max(1,...st);return `<div class="stunden">${st.map((x,i)=>`<i title="${i}–${i+1} Uhr: ${x}" style="height:${Math.round(x/mx*100)}%"></i>`).join('')}</div><div class="mut" style="display:flex;justify-content:space-between"><span>0 Uhr</span><span>6</span><span>12</span><span>18</span><span>23</span></div>`}
@@ -419,12 +467,13 @@ function heatBild(h){const P=h.punkte||[],U=h.umriss||[];const alle=[...P.map(p=
     P.map(p=>`<circle cx="${X(p[1])}" cy="${Z(p[2])}" r="16" fill="url(#h${p[0]==='k'?'k':'t'})"/>`).join('')+
     P.map(p=>`<circle cx="${X(p[1])}" cy="${Z(p[2])}" r="2.2" fill="${p[0]==='k'?'#ff5a3c':'#8fb0ff'}"/>`).join('')+
     `<text x="8" y="${W-8}" font-size="12" fill="#ccc">↑ Norden · ${k} Kills (rot) · ${t} Tode (blau)</text></svg>`}
-function badgeKarte(x,bereich,defs){const offen=!x.n,st=x.stufe;const nx=x.naechste;const prog=nx?Math.round(Math.min(1,x.n/nx[0])*100):100;
-  return `<div class="bg ${offen?'offen':''}">${medaille(x.icon,st,x.n)}<div><b>${esc(x.titel)}${x.schaetzung?'<span class="schaetz" title="Aus den Log-Positionen geschätzt, nicht exakt">Schätzung</span>':''}</b>
-    <span class="stufe st-${st||'offen'}">${st?STN[st]+' · '+x.n+'×':'noch nicht geholt'}</span>
-    <div class="mut">So bekommst du ihn: ${esc(x.erklaerung)}</div>
-    ${x.n?`<div class="mut">Zuerst: ${datumB(x.zuerst)} · zuletzt: ${datumB(x.zuletzt)}</div>`:''}
-    ${nx?`<div class="fort" title="${x.n} von ${nx[0]}"><i style="width:${prog}%"></i></div><div class="mut">nächste Stufe ${esc(nx[1])} bei ${nx[0]}× (noch ${nx[0]-x.n})</div>`:'<div class="mut">Höchste Stufe erreicht 💎</div>'}</div></div>`}
+function badgeKarte(x,bereich,defs){const offen=!x.stufe,st=x.stufe;const nx=x.naechste;const sw=x.stufen||[];const li=sw.findIndex(z=>z[0]===st);
+  const stufenZ=sw.length?`<div class="mut" style="margin-top:3px">${sw.map((z,i)=>`<span title="${z[3]?esc(z[1])+' am '+datumB(z[3]):esc(z[1])+': noch offen'}" style="${i<=li?'color:'+STF[z[0]]+';font-weight:700':'opacity:.55'}">${STI[z[0]]} ${esc(String(z[2]))}</span>`).join(' · ')}</div>`:'';
+  return `<div class="bg ${offen?'offen':''}">${medaille(x.icon,st,(x.pn||0)>1?x.pn:0)}<div><b>${esc(x.titel)}${x.schaetzung?'<span class="schaetz" title="Aus den Log-Positionen geschätzt, nicht exakt">Schätzung</span>':''}</b>
+    <span class="stufe st-${st||'offen'}">${st?esc(x.stufe_name||STN[st]):'noch nicht geholt'}</span>
+    <div class="mut">So bekommst du ihn: ${esc(x.erklaerung)}</div>${x.schwellen?`<div class="mut">Stufen: ${esc(x.schwellen)}</div>`:''}${stufenZ}
+    ${x.n&&st?`<div class="mut">${sw.filter(z=>z[3]).map(z=>esc(z[1])+': '+datumB(z[3])).join(' · ')}</div>`:''}
+    ${nx?`<div class="mut">nächste Stufe ${esc(nx[1])} bei ${esc(String(nx[0]))}${x.wert!=null&&x.wert!==undefined?' (bisher bestes: '+esc(String(x.wert))+')':''}</div>`:''}</div></div>`}
 function meilenKarte(e){const prog=Math.round(Math.min(1,(e.wert||0)/e.schwelle)*100);
   return `<div class="bg ${e.erreicht?'':'offen'}">${medaille(e.icon,e.erreicht?e.stufe:null,0)}<div><b>${esc(e.titel)}</b><span class="stufe st-${e.erreicht?e.stufe:'offen'}">${e.erreicht?STN[e.stufe]:'offen'}</span>
     <div class="mut">${esc(e.text)}</div>${e.erreicht?`<div class="mut">Erreicht: ${datumB(e.t)}</div>`:`<div class="fort"><i style="width:${prog}%"></i></div><div class="mut">${e.wert} von ${e.schwelle}${e.einheit?' '+esc(e.einheit):''}</div>`}</div></div>`}
@@ -432,19 +481,19 @@ const kach=l=>`<div class="kacheln" style="margin-top:8px">${l.map(([a,b])=>`<di
 const ZN={kopf:'Kopf',torso:'Torso',arme:'Arme',beine:'Beine'};
 function zonenText(z){return z?Object.keys(ZN).map(k=>`${ZN[k]} ${z[k]||0} %`).join(' · '):'–'}
 function waffenTabelle(l,hinweis){if(!l||!l.length)return '<div class="mut">Noch keine Treffer oder Kills gezählt.</div>';
-  return `<div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th><th title="Treffer pro Kill: weniger = präziser">Treffer/Kill</th><th title="Anteil Treffer in Kopf/Gehirn">Kopf-%</th><th>Trefferzonen</th><th>Ø m</th><th>max m</th><th title="Schaden gesamt (Ø pro Treffer)">Schaden</th></tr>${l.map(w=>`<tr><td><b>${esc(w.waffe)}</b></td><td>${w.kills}${w.kopf_kills?` <span class="mut">(${w.kopf_kills} Kopf)</span>`:''}</td><td>${w.treffer}</td><td>${w.treffer_pro_kill??'–'}</td><td>${w.kopfquote??'–'}${w.kopfquote!=null?' %':''}</td><td class="mut">${zonenText(w.zonen)}</td><td>${w.distanz_mittel??'–'}</td><td>${w.distanz_max||'–'}</td><td>${w.schaden||'–'}${w.schaden_pro_treffer?` <span class="mut">(Ø ${w.schaden_pro_treffer})</span>`:''}</td></tr>`).join('')}</table></div>`}
+  return `<div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th><th title="Treffer pro Kill: weniger = präziser">Treffer/Kill</th><th title="Anteil Treffer in Kopf/Gehirn">Kopf-%</th><th>Trefferzonen</th><th>Ø m</th><th title="weitester tödlicher Schuss">weitester Kill</th><th title="weitester Treffer, auch ohne Kill">weitester Treffer</th><th title="Schaden gesamt (Ø pro Treffer)">Schaden</th></tr>${l.map(w=>`<tr><td>${wbild(w.waffe)}<b>${esc(w.waffe)}</b></td><td>${w.kills}${w.kopf_kills?` <span class="mut">(${w.kopf_kills} Kopf)</span>`:''}</td><td>${w.treffer}</td><td>${w.treffer_pro_kill??'–'}</td><td>${w.kopfquote??'–'}${w.kopfquote!=null?' %':''}</td><td class="mut">${zonenText(w.zonen)}</td><td>${w.distanz_mittel??'–'}</td><td>${w.kill_distanz_max?w.kill_distanz_max+' m':'–'}</td><td>${(w.treffer_distanz_max??w.distanz_max)?(w.treffer_distanz_max??w.distanz_max)+' m':'–'}</td><td>${w.schaden||'–'}${w.schaden_pro_treffer?` <span class="mut">(Ø ${w.schaden_pro_treffer})</span>`:''}</td></tr>`).join('')}</table></div>`}
 function summeText(s){if(!s||!s.treffer)return '';return kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+`<div class="mut">Trefferzonen: ${zonenText(s.zonen)}</div>`}
 function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).map(x=>[bereich+':'+x.id,(bereich==='dm'?'⚔️ ':'🌲 ')+x.titel+' ('+(STN[x.stufe]||'')+')']);
   const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
   return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
-function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(mehrfach holbar: 1× Bronze · 5× Silber · 10× Gold · 25× Platin · 50× Diamant)</span>';
+function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze → 🥈 Silber → 🥇 Gold → 💎 Platin, jede Stufe schwerer; Platin immer wieder holbar: 2×, 3× Platin …)</span>';
   const keinDm=`<div class="mut">Dir ist noch kein Deathmatch-Gamertag zugeordnet${d.dm_gamertag?' bzw. er hat noch keine gewertete Runde':''}.</div>`;
   const keinPve=`<div class="mut">${(d.pve_gamertags||[]).length?'Für diese Auswahl gibt es noch keine PvE-Daten.':'Dir ist noch kein PvE-Gamertag zugeordnet.'}</div>`;
   const wahlTxt=v?(v.zusammen&&v.zusammen.length>1?'Alle zusammen: '+v.zusammen.map(esc).join(', '):esc(v.name)):'';
   // Übersicht
   $('#mr-uebersicht').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}${d.dm_titel?`<span class="titel">${esc(d.dm_titel)}</span>`:''}</h3>${m?kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.siege+' / '+m.runden,'Siege / Runden']]):keinDm}
     <h3 class="bereich pve">🌲 PvE Chernarus${v?' · '+wahlTxt:''}</h3>${v?kach([[dauer(v.spielzeit),'Spielzeit'],[v.strecke+' km','gelaufen'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[(v.schatz.funde||0),'Schätze']]):keinPve}
-    ${D&&D.nachtrag&&D.nachtrag.archiv?`<div class="mut" style="margin-top:8px">Rückwirkend aus ${D.nachtrag.archiv.logs} Server-Logs nachgetragen (Waffen, Treffer, Zonen, Distanzen).</div>`:''}</div>`;
+    ${nachtragText()}</div>`;
   // Deathmatch
   if(m){const p=m.profil||{};
     $('#mr-dm').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch · ${esc(m.name)}</h3>`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
@@ -469,7 +518,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(mehrfach holba
   $('#mr-waffen').innerHTML=`<div class="panel"><div class="hinweis">ℹ️ ${esc(d.waffen_hinweis||'')}</div>
     <h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe)+waffenTabelle(m.waffen_detail):keinDm}
     <h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe)+waffenTabelle(v.waffen_detail):keinPve}
-    <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).</div></div>`;
+    <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).${d.schrot_hinweis?' '+esc(d.schrot_hinweis):''}</div></div>`;
   // Erfolge
   $('#mr-erfolge').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Meilensteine</h4><div class="bgs">${m.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
     <h3 class="bereich pve">🌲 PvE-Erfolge${v?' · '+wahlTxt:''}</h3>${v?`<h4>🏅 Meilensteine</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`:keinPve}</div>`;
@@ -484,10 +533,30 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(mehrfach holba
   $$('#mr-titel [data-titel]').forEach(s=>s.onchange=async()=>{const [b,id]=(s.value||(s.dataset.bereich+':')).split(':');
     const r=await fetch('/zuschauer/titel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gamertag:s.dataset.titel,bereich:b||s.dataset.bereich,id})});
     const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Ging nicht');return}delete $('#mStat').dataset.sig;meineLaden();laden()})}
+// ---------------- Regeln & Punkte (Werte kommen aus der App, nicht aus dieser Seite)
+function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R.punkte,E=R.elo,g=P.distanz_grenzen,dp=P.distanz_punkte;
+  const zeile=(a,b)=>`<tr><td>${a}</td><td><b>${b}</b></td></tr>`;
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 8px">❓ Regeln &amp; Punkte</h2>
+  <h4>🎯 Punkte je Runde</h4><table class="rg">${zeile('Kill',(P.kill>0?'+':'')+P.kill+' Punkt')}
+    ${zeile('Mit Distanzwertung (je nach Runde)',`unter ${g[0]} m: ${dp[0]} · ${g[0]}–${g[1]} m: ${dp[1]} · über ${g[1]} m: ${dp[2]} Punkte, Kopfschuss +${P.kopfschuss}`)}
+    ${zeile('Kopfgeld 💰 (je nach Runde)',`Der Führende trägt das Kopfgeld, sobald er mindestens ${P.kopfgeld_ab} Punkte hat. Wer ihn erlegt: +${P.kopfgeld_bonus} extra`)}
+    ${zeile('Juggernaut 🛡️ (Modus)',`Juggernaut erlegen: +${P.jugg_bonus} extra. Juggernaut-Waffen: ${P.jugg_waffen.map(esc).join(', ')}`)}
+    ${zeile('Selbstmord',P.selbstmord+' Punkte')}${zeile('Tod durch Umgebung (Sturz, Zone …)',P.umwelt+' Punkte')}
+    ${zeile('Ziel-Kills (Modus „Ziel“)',P.ziel_kills.join(' / ')+' Kills, wer zuerst da ist, gewinnt')}</table>
+  <div class="mut">Rundensieger: die meisten Punkte, bei Gleichstand mehr Kills, dann weniger Tode; mindestens 1 Kill. Gewertet werden nur Runden mit mindestens ${R.min_spieler} Spielern.
+    Als Teilnehmer zählt, wer einen Kill oder Tod hat oder mindestens ${Math.round(R.leben_min_s/60)} Minute am Leben war.</div>
+  <h4>📈 Elo</h4><div>Start ${E.start}. Nach jedem Kill wechselt Elo vom Opfer zum Schützen:</div>
+  <div class="formel">Erwartung E = 1 / (1 + 10^((Elo Opfer − Elo Schütze) / 400))<br>Gewinn = ${E.k} × (1 − E)  · das Opfer verliert genauso viel</div>
+  <div class="mut">Wer einen Stärkeren erlegt, bekommt mehr (bis ${E.k}), gegen Schwächere weniger. Im Killfeed steht der Gewinn als „+x Elo“. Rache = Kill an dem, der dich in den letzten ${Math.round(E.rache_s/60)} Minuten erwischt hat.</div>
+  <h4>🏅 Erfolge (Deathmatch)</h4><table class="rg">${(R.erfolge||[]).map(e=>zeile(e[2]+' '+esc(e[3]),esc(e[4]))).join('')}</table>
+  <h4>🎖 Stil-Erfolge mit Stufen</h4><div class="mut">🥉 Bronze → 🥈 Silber → 🥇 Gold → 💎 Platin, jede Stufe mit höherer Anforderung. Wer Platin noch einmal schafft, bekommt ihn erneut (2×, 3× Platin …).</div>
+  <table class="rg">${(R.stil||[]).map(e=>zeile(e[1]+' '+esc(e[2]),esc(e[3]))).join('')}</table>
+  <h4>ℹ️ Treffer</h4><div class="mut">${esc(D.schrot_hinweis||'')} Schüsse daneben stehen nicht im Server-Log.</div>`;
+  if(!$('#dlg').open)$('#dlg').showModal()}
 // ---------------- Öffentliche Profile (ohne Login, ohne Positionen) mit Reitern
-const STUF=[1,5,10,25,50],STK=['bronze','silber','gold','platin','diamant'];
-function stilOeff(defs,hab){const h={};(hab||[]).forEach(x=>h[x.id]=x);return Object.entries(defs||{}).map(([id,dd])=>{const x=h[id]||{n:0};const i=STUF.filter(s=>x.n>=s).length;
-  return {id,icon:dd[0],titel:dd[1],erklaerung:dd[2],schaetzung:dd[3],n:x.n||0,stufe:i?STK[i-1]:null,zuerst:x.zuerst,zuletzt:x.zuletzt,naechste:i<5?[STUF[i],STN[STK[i]]]:null}})}
+function stilOeff(defs,hab){const h={};(hab||[]).forEach(x=>h[x.id]=x);return Object.entries(defs||{}).map(([id,dd])=>{const x=h[id]||{n:0};
+  return {id,icon:dd[0],titel:dd[1],erklaerung:dd[2],schaetzung:dd[3],schwellen:dd[4]||'',n:x.n||0,stufe:x.stufe||null,stufe_name:x.stufe_name,pn:x.pn||0,stufen:x.stufen||[],
+    zuerst:x.zuerst,zuletzt:x.zuletzt,naechste:null}})}
 function profilDialog(kopf,reiter){const id='pr'+Math.random().toString(36).slice(2,7);
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button>${kopf}<div class="reiter klein" id="${id}">${reiter.map((r,i)=>`<button data-pr="${i}" class="${i?'':'an'}">${r[0]}</button>`).join('')}</div>${reiter.map((r,i)=>`<div class="prr" data-prr="${i}" ${i?'hidden':''}>${r[1]}</div>`).join('')}`;
   $$('#'+id+' [data-pr]').forEach(b=>b.onclick=()=>{$$('#'+id+' [data-pr]').forEach(x=>x.classList.toggle('an',x===b));$$('#dlgIn [data-prr]').forEach(x=>x.hidden=x.dataset.prr!==b.dataset.pr)});
@@ -504,11 +573,11 @@ function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile
   const ueb=`${s?kach([[s.elo,'Elo'],[s.kd,'K/D'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']]):''}${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}
     ${(pr.elo_verlauf||[]).length>1?`<h4>📈 Elo-Verlauf</h4>${eloBild(pr.elo_verlauf.map((x,i)=>[i,x]))}`:''}
     ${(pr.saisons||[]).length?`<h4>👑 Saisons</h4>${pr.saisons.map(x=>`<span class="chip">${MN[+x[0].slice(5)-1]} ${x[0].slice(0,4)}: Platz ${x[1]}</span>`).join('')}`:''}`;
-  const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
+  const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
   const erf=`<h4>🏅 DM-Erfolge (${Object.keys(hab).filter(k=>ED[k]).length} von ${Object.keys(ED).length})</h4><div class="bgs">${Object.entries(ED).map(([id,e])=>meilenKarte({icon:e[0],titel:e[1],text:e[2],erreicht:id in hab,t:hab[id],stufe:'gold',wert:(fs[id]||[0])[0],schwelle:(fs[id]||[0,1])[1],einheit:''})).join('')}</div>
     <h4>🎖 DM-Stil-Erfolge</h4><div class="bgs">${stilOeff(D.dm.stil_def,s&&s.stil).map(x=>badgeKarte(x,'dm')).join('')}</div>`;
   const run=rn.length?rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode · <a href="/zuschauer/runde/${r.id}" style="color:inherit">ansehen</a></div>`).join(''):'<div class="mut">Keine Runde in der letzten Zeit.</div>';
-  profilDialog(`<h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div>`,
+  profilDialog(`<div class="prkopf"><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div></div>`,
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf],['📜 Runden',run+'<div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>']]);
   const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n)}
 function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
@@ -517,14 +586,16 @@ function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n]
     +kach([[s.kd,'K/D'],[s.weitester?s.weitester+' m':'–','weitester Kill'],[s.kopf,'Kopfschüsse'],[s.sitzungen,'Mal eingeloggt']])
     +`<h4>Wann spielt ${esc(n)}?</h4>${(pr.wochentag||[]).map((x,i)=>`<div class="wbar"><span style="width:24px">${WT[i]}</span><i style="width:${Math.round(x/mx*70)}%"></i><span class="mut">${x?dauer(x):''}</span></div>`).join('')}
     ${pr.tage.length?`<h4>Letzte Tage</h4><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${pr.tage.map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:''}`;
-  const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
+  const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
   const erf=`<h4>🏅 PvE-Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h4><div class="bgs">${p.erfolge_alle.map(e=>meilenKarte({icon:e[1],titel:e[2],text:e[3],erreicht:e[0] in zt,t:zt[e[0]],stufe:'gold',wert:(fs[e[0]]||[0])[0],schwelle:(fs[e[0]]||[0,1])[1],einheit:''})).join('')}</div>
     <h4>🎖 PvE-Stil-Erfolge</h4><div class="bgs">${stilOeff(p.stil_def,pr.stil).map(x=>badgeKarte(x,'pve')).join('')}</div>`;
-  profilDialog(`<h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div>`,
+  profilDialog(`<div class="prkopf"><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div></div>`,
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf]]);
   const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n)}
 const _tab=tab;tab=t=>{_tab(t);if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+$('#regelnBtn').onclick=regelnDialog;
+holeJson('/zuschauer/waffen_bilder.json').then(x=>{if(x&&x.namen){WB=x.namen;if(D)zeichnen();if(MDATEN){delete $('#mStat').dataset.sig;meineStat(MDATEN)}}});
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 $('#takt').textContent='Aktualisiert sich alle '+(DIREKT?10:TAKT)+' Sekunden von selbst.';
 setInterval(()=>{$$('.countdown').forEach(x=>x.textContent=countdown(+x.dataset.bis));if(D)statusZeichnen()},1000);
