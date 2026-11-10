@@ -162,12 +162,26 @@ dialog{max-width:calc(100vw - 16px);overflow-x:hidden}#dlgIn{min-width:0;max-wid
 .panel,.zwei>*,.grid>*,main>*{min-width:0}
 td,th,.rh,.chip,.badge,.bg{overflow-wrap:anywhere}
 @media (max-width:480px){dialog{width:calc(100vw - 16px)}table.rg td:first-child{width:42%}}
+/* Update 4.2: Status-Punkt (gruen nur, wenn der Modus laeuft), Reiter und Tabellen auf dem Handy, Badge-Karten mit Details */
+nav .live[hidden]{display:none}
+nav .live.aus{background:#80857e;animation:none;box-shadow:none;opacity:.75}
+@media(min-width:521px){.kurz{display:none}}
+@media(max-width:520px){nav{flex-wrap:wrap;overflow-x:visible;gap:3px;padding:6px 6px 0} nav button{flex:1 1 auto;padding:8px 6px;font-size:11.5px;letter-spacing:.03em;white-space:nowrap} .lang{display:none}
+  table{font-size:12.5px} th{font-size:10px;letter-spacing:.02em;white-space:normal;padding:5px 4px;vertical-align:bottom} td{padding:6px 4px}
+  .nm{display:none} table.wt th,table.wt td{padding:4px 5px;font-size:12px} .panel.scroll,.scroll{overflow-x:auto}}
+.bg{cursor:pointer;position:relative} .bg:focus-visible{outline:2px solid var(--acc)} .bg .bgt{min-width:0;flex:1}
+.bg .det{display:none;margin-top:4px} .bg.auf .det{display:block}
+.bg .tipp{font-size:10px;opacity:.6;margin-left:4px}
+@media(hover:hover){.bg:hover{z-index:6} .bg:not(.auf):hover .det{display:block;position:absolute;left:-1px;right:-1px;top:calc(100% - 2px);z-index:20;background:var(--panel2);border:1px solid var(--line2);border-top:0;padding:4px 10px 10px;box-shadow:0 10px 22px rgba(0,0,0,.45)}}
+.bg.offen .fort i{opacity:.8}
+.kf-erf{color:var(--acc2);font-weight:700}
+.rerf{display:block;margin-top:2px}
 </style>
 </head>
 <body>
 <header>
   <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span style="display:flex;gap:10px;align-items:center"><span class="mut" id="stand">lade …</span><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button></span></div>
-  <nav><button data-t="pve" class="an">🌲 PvE Chernarus<span class="live" id="pveLive" hidden></span></button><button data-t="dm">⚔ Deathmatch<span class="live" id="dmLive" hidden></span></button><button data-t="meine" id="meineTab" hidden>👤 Meine Statistik</button></nav>
+  <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="meine" id="meineTab" hidden>👤 Meine<span class="lang"> Statistik</span></button></nav>
 </header>
 <main>
   <div class="status" id="sStatus" hidden></div>
@@ -264,7 +278,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   const kal=d.kalender||[],AR={dm:'⚔️',pve:'🌲',schatz:'🗝️',wartung:'🛠️',event:'🎉',neustart:'🔄'};
   $('#pKal').innerHTML=kal.map(t=>`<div class="spl"><span>${AR[t.art]||'•'}</span><div class="mitte"><b>${esc(t.titel)}</b><span class="mut">${new Date(t.start*1000).toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}${t.text?' · '+esc(t.text):''}</span></div></div>`).join('')||'<div class="mut">Gerade keine Termine.</div>';
   $('#pKalIcs').innerHTML=DIREKT?'📆 <a href="/zuschauer/kalender.ics" style="color:inherit">Kalender abonnieren (.ics)</a>':'';
-  $('#pveLive').hidden=!p.laeuft;$('#dmLive').hidden=!m.laeuft;
+  [['#pveLive',p.laeuft,'PvE'],['#dmLive',m.laeuft,'Deathmatch']].forEach(([id,an,nm])=>{const x=$(id);x.classList.toggle('aus',!an);x.title=nm+(an?' läuft gerade':' läuft gerade nicht')});
   // PvE
   $('#pBanner').innerHTML=p.laeuft?'':'<div class="hinweis">Gerade läuft eine Deathmatch-Runde, der PvE-Server ist kurz aus. Hier steht der letzte Stand.</div>';
   const sp=p.spieler,bis=p.neustart?Math.round((p.neustart-60-Date.now()/1000)/60):null;
@@ -282,7 +296,8 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   if(!SP.some(x=>x[0]===RS))RS='spielzeit';
   const rs=[...rows].sort((a,b)=>RS==='name'?a.name.localeCompare(b.name):(b[RS]-a[RS]));
   const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${esc(s.name)}</b>${TT(s.name)}`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
-  $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
+  const NM=new Set(['strecke','erfolge','zuletzt']);   // Update 4.2: auf dem Handy ausgeblendet
+  $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}${NM.has(k)?' nm':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td${NM.has(k)?' class="nm"':''}>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
   $$('#pRang th').forEach(th=>th.onclick=()=>{RS=th.dataset.s;zeichnen()});
   $$('[data-n]').forEach(b=>b.onclick=()=>profil(b.dataset.n));
   // Deathmatch
@@ -302,18 +317,19 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>'+(plan?`<div class="panel runde">${plan}</div>`:'');
   const pkt=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
   $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
-    (m.kills.map(k=>k.taeter?`<div><b>${esc(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}${k.elo?` <span class="elo" title="Elo-Gewinn des Schützen (der Getötete verliert genauso viel)">+${k.elo} Elo</span>`:''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
+    (m.kills.map(k=>k.erfolg?`<div class="kf-erf">${esc(k.erfolg)}</div>`:k.taeter?`<div><b>${esc(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}${k.elo?` <span class="elo" title="Elo-Gewinn des Schützen (der Getötete verliert genauso viel)">+${k.elo} Elo</span>`:''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
   $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
-  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th title="Kills geteilt durch Tode">Kills pro Tod</th><th>Siege</th><th>Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${esc(s.name)}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td>${s.siege}</td><td>${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
+  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th title="Kills geteilt durch Tode"><span class="lang">Kills pro Tod</span><span class="kurz">K/D</span></th><th class="nm">Siege</th><th class="nm">Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${esc(s.name)}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td class="nm">${s.siege}</td><td class="nm">${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
   $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
-    <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span></div></summary>
+    <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span>${(r.erfolge||[]).length?`<span class="mut rerf">🏅 ${r.erfolge.slice(0,3).map(x=>esc(x[0])+': '+esc(x[3])).join(' · ')}${r.erfolge.length>3?' · +'+(r.erfolge.length-3)+' weitere':''}</span>`:''}</div></summary>
     <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
     ${r.weitester?`<div>🎯 Weitester Kill: <b>${esc(r.weitester[0])}</b> ➜ ${esc(r.weitester[1])} · ${esc(r.weitester[2]||'')} · ${r.weitester[3]} m</div>`:''}
+    ${(r.erfolge||[]).length?`<div>🏅 Erfolge dieser Runde: ${r.erfolge.map(x=>'<b>'+esc(x[0])+'</b> '+esc(x[3])).join(' · ')}</div>`:''}
     ${r.leben&&r.leben.length?`<div>⏱️ Am längsten überlebt: ${r.leben.map(l=>'<b>'+esc(l[0])+'</b> '+dauer(l[1])).join(' · ')}</div>`:''}
     ${r.kopfschuesse?`<div>💀 Kopfschüsse: ${r.kopfschuesse}</div>`:''}${r.kopfgeld?`<div>💰 Kopfgeld kassiert: ${r.kopfgeld}-mal</div>`:''}
     ${DIREKT&&r.id?`<div style="margin-top:6px"><a href="/zuschauer/runde/${+r.id}" style="color:var(--gold,#e0b44c)">🔗 Eigene Seite dieser Runde (zum Teilen)</a></div>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
   $('#dSaison').innerHTML=(m.saisons||[]).slice(0,6).map(s=>`<div class="rh"><span>${MN[+s.monat.slice(5)-1]} ${s.monat.slice(0,4)}</span><b class="name" data-dm="${esc(s.meister||'')}">${s.meister?'👑 '+esc(s.meister):'–'}</b><span class="mut">${s.runden} Runden${s.top&&s.top[0]?' · '+s.top[0][1]+' Siege · '+s.top[0][2]+' Kills':''}</span></div>`).join('')||'<div class="mut">Noch keine Saison.</div>';
-  $('#dWaffen').innerHTML=(m.waffen||[]).length?'<tr><th>Waffe</th><th>Kills</th><th>Kopfschüsse</th><th title="weitester tödlicher Schuss">weitester Kill</th><th>Treffer</th><th title="weitester Treffer, auch ohne Kill">weitester Treffer</th></tr>'+m.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3]?w[3]+' m':'–'}</td><td>${w[4]??'–'}</td><td>${w[5]?w[5]+' m':'–'}</td></tr>`).join(''):'<tr><td class="mut">Noch keine Kills gezählt.</td></tr>';
+  $('#dWaffen').innerHTML=(m.waffen||[]).length?'<tr><th>Waffe</th><th>Kills</th><th>Kopfschüsse</th><th title="weitester tödlicher Schuss">weitester Kill</th><th class="nm">Treffer</th><th class="nm" title="weitester Treffer, auch ohne Kill">weitester Treffer</th></tr>'+m.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3]?w[3]+' m':'–'}</td><td class="nm">${w[4]??'–'}</td><td class="nm">${w[5]?w[5]+' m':'–'}</td></tr>`).join(''):'<tr><td class="mut">Noch keine Kills gezählt.</td></tr>';
   $('#dSchrot').textContent=d.schrot_hinweis||'';
   $$('#dRunden details').forEach(x=>x.ontoggle=()=>{const k=+x.dataset.rd;if(x.open)OFFEN.add(k);else OFFEN.delete(k)});
   $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b><span class="mut">${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt</span>
@@ -476,16 +492,20 @@ function heatBild(h){const P=h.punkte||[],U=h.umriss||[];const alle=[...P.map(p=
     P.map(p=>`<circle cx="${X(p[1])}" cy="${Z(p[2])}" r="16" fill="url(#h${p[0]==='k'?'k':'t'})"/>`).join('')+
     P.map(p=>`<circle cx="${X(p[1])}" cy="${Z(p[2])}" r="2.2" fill="${p[0]==='k'?'#ff5a3c':'#8fb0ff'}"/>`).join('')+
     `<text x="8" y="${W-8}" font-size="12" fill="#ccc">↑ Norden · ${k} Kills (rot) · ${t} Tode (blau)</text></svg>`}
-function badgeKarte(x,bereich,defs){const offen=!x.stufe,st=x.stufe;const nx=x.naechste;const sw=x.stufen||[];const li=sw.findIndex(z=>z[0]===st);
-  const stufenZ=sw.length?`<div class="mut" style="margin-top:3px">${sw.map((z,i)=>`<span title="${z[3]?esc(z[1])+' am '+datumB(z[3]):esc(z[1])+': noch offen'}" style="${i<=li?'color:'+STF[z[0]]+';font-weight:700':'opacity:.55'}">${STI[z[0]]} ${esc(String(z[2]))}</span>`).join(' · ')}</div>`:'';
-  return `<div class="bg ${offen?'offen':''}">${medaille(x.icon,st,(x.pn||0)>1?x.pn:0)}<div><b>${esc(x.titel)}${x.schaetzung?'<span class="schaetz" title="Aus den Log-Positionen geschätzt, nicht exakt">Schätzung</span>':''}</b>
-    <span class="stufe st-${st||'offen'}">${st?esc(x.stufe_name||STN[st]):'noch nicht geholt'}</span>
-    <div class="mut">So bekommst du ihn: ${esc(x.erklaerung)}</div>${x.schwellen?`<div class="mut">Stufen: ${esc(x.schwellen)}</div>`:''}${stufenZ}
-    ${x.n&&st?`<div class="mut">${sw.filter(z=>z[3]).map(z=>esc(z[1])+': '+datumB(z[3])).join(' · ')}</div>`:''}
-    ${nx?`<div class="mut">nächste Stufe ${esc(nx[1])} bei ${esc(String(nx[0]))}${x.wert!=null&&x.wert!==undefined?' (bisher bestes: '+esc(String(x.wert))+')':''}</div>`:''}</div></div>`}
+function fortP(x){const f=x.fortschritt!=null?x.fortschritt:(x.stufe==='platin'?1:0);return Math.max(0,Math.min(100,Math.round(f*100)))}
+function badgeKarte(x,bereich,defs){const offen=!x.stufe,st=x.stufe;const nx=x.naechste;const sw=x.stufen||[];const li=sw.findIndex(z=>z[0]===st);const f=fortP(x);
+  const vor=x.klein?'höchstens ':'';const eh=x.einheit?' '+esc(x.einheit):'';
+  const stufenZ=sw.length?`<div class="mut" style="margin-top:3px">${sw.map((z,i)=>`<span style="${i<=li?'color:'+STF[z[0]]+';font-weight:700':'opacity:.6'}">${STI[z[0]]} ${esc(z[1])} ${vor}${esc(String(z[2]))}${eh}${z[3]?' · '+datumB(z[3]):''}</span>`).join('<br>')}</div>`:'';
+  return `<div class="bg ${offen?'offen':''}" tabindex="0" role="button" aria-expanded="false" title="Antippen für Details">${medaille(x.icon,st,(x.pn||0)>1?x.pn:0)}<div class="bgt"><b>${esc(x.titel)}${x.schaetzung?'<span class="schaetz" title="Aus den Log-Positionen geschätzt, nicht exakt">Schätzung</span>':''}</b>
+    <span class="stufe st-${st||'offen'}">${st?esc(x.stufe_name||STN[st]):'noch nicht geholt'}</span><span class="tipp">ⓘ</span>
+    <div class="fort" title="${f} % bis zur nächsten Stufe"><i style="width:${f}%"></i></div>
+    <div class="mut">${nx?`nächste: ${esc(nx[1])} bei ${vor}${esc(String(nx[0]))}${eh}`:''}${x.wert!=null&&x.wert!==undefined&&x.wert!==0?` · bisher ${x.art==='summe'?'':'bestes '}${esc(String(x.wert))}`:''}</div>
+    <div class="det"><div class="mut">So bekommst du ihn: ${esc(x.erklaerung||'')}</div>${stufenZ}</div></div></div>`}
 function meilenKarte(e){const prog=Math.round(Math.min(1,(e.wert||0)/e.schwelle)*100);
   return `<div class="bg ${e.erreicht?'':'offen'}">${medaille(e.icon,e.erreicht?e.stufe:null,0)}<div><b>${esc(e.titel)}</b><span class="stufe st-${e.erreicht?e.stufe:'offen'}">${e.erreicht?STN[e.stufe]:'offen'}</span>
-    <div class="mut">${esc(e.text)}</div>${e.erreicht?`<div class="mut">Erreicht: ${datumB(e.t)}</div>`:`<div class="fort"><i style="width:${prog}%"></i></div><div class="mut">${e.wert} von ${e.schwelle}${e.einheit?' '+esc(e.einheit):''}</div>`}</div></div>`}
+    <div class="mut">${esc(e.text)}</div>${e.erreicht?`<div class="fort"><i style="width:100%"></i></div><div class="mut">Erreicht: ${datumB(e.t)}</div>`:`<div class="fort"><i style="width:${prog}%"></i></div><div class="mut">${e.wert} von ${e.schwelle}${e.einheit?' '+esc(e.einheit):''}</div>`}</div></div>`}
+if(typeof document!=='undefined'&&document.addEventListener){document.addEventListener('click',ev=>{const b=ev.target.closest&&ev.target.closest('.bg[role=button]');if(!b||ev.target.closest('a,select,input'))return;b.classList.toggle('auf');b.setAttribute('aria-expanded',b.classList.contains('auf'))});
+document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')return;const b=ev.target.closest&&ev.target.closest('.bg[role=button]');if(!b)return;ev.preventDefault();b.click()})}
 const kach=l=>`<div class="kacheln" style="margin-top:8px">${l.map(([a,b])=>`<div class="kachel"><b style="font-size:19px">${a}</b><span>${b}</span></div>`).join('')}</div>`;
 const ZN={kopf:'Kopf',torso:'Torso',arme:'Arme',beine:'Beine'};
 function zonenText(z){return z?Object.keys(ZN).map(k=>`${ZN[k]} ${z[k]||0} %`).join(' · '):'–'}
@@ -529,7 +549,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
     <h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe)+waffenTabelle(v.waffen_detail):keinPve}
     <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).${d.schrot_hinweis?' '+esc(d.schrot_hinweis):''}</div></div>`;
   // Erfolge
-  $('#mr-erfolge').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Meilensteine</h4><div class="bgs">${m.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
+  $('#mr-erfolge').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Haupterfolge ${ST}</h4><div class="bgs">${(m.haupt||[]).map(x=>badgeKarte(x,'dm')).join('')}</div><h4>🎖 Stil-Erfolge</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
     <h3 class="bereich pve">🌲 PvE-Erfolge${v?' · '+wahlTxt:''}</h3>${v?`<h4>🏅 Meilensteine</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`:keinPve}</div>`;
   // Karte & Heatmap (Karte selbst: karteZeichnen)
   const km=d.karte||{};
@@ -558,7 +578,7 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
   <div class="formel">Erwartung = 1 ÷ (1 + 10 hoch ((Elo des Opfers − Elo des Schützen) ÷ 400))<br>Gewinn = ${E.k} × (1 − Erwartung) · das Opfer verliert genauso viel</div>
   <div class="mut">In Worten: Die „Erwartung“ ist die geschätzte Chance des Schützen, gegen dieses Opfer zu gewinnen (zwischen 0 und 1). Sind beide gleich stark, ist sie 0,5 – der Schütze bekommt ${E.k} × 0,5 = ${E.k/2} Elo. Ist das Opfer viel stärker, liegt sie nahe 0 und es gibt fast ${E.k} Elo; ist es viel schwächer, fast nichts. ${E.k} ist also der höchste Gewinn pro Kill.</div>
   <div class="mut">Wer einen Stärkeren erlegt, bekommt mehr (bis ${E.k}), gegen Schwächere weniger. Im Killfeed steht der Gewinn als „+x Elo“. Rache = Kill an dem, der dich in den letzten ${Math.round(E.rache_s/60)} Minuten erwischt hat.</div>
-  <h4>🏅 Erfolge (Deathmatch)</h4><table class="rg">${(R.erfolge||[]).map(e=>zeile(e[1]+' '+esc(e[2]),esc(e[3]))).join('')}</table>
+  <h4>🏅 Haupterfolge (Deathmatch) mit Stufen</h4><table class="rg">${(R.erfolge||[]).map(e=>zeile(e[1]+' '+esc(e[2]),esc(e[3])+(e[6]?' · 🥉 '+e[6][0]+' · 🥈 '+e[6][1]+' · 🥇 '+e[6][2]+' · 💎 '+e[6][3]+' '+esc(e[7]||''):''))).join('')}</table>
   <h4>🎖 Stil-Erfolge mit Stufen</h4><div class="mut">🥉 Bronze → 🥈 Silber → 🥇 Gold → 💎 Platin, jede Stufe mit höherer Anforderung. Wer Platin noch einmal schafft, bekommt ihn erneut (2×, 3× Platin …).</div>
   <table class="rg">${(R.stil||[]).map(e=>zeile(e[1]+' '+esc(e[2]),esc(e[3]))).join('')}</table>
   <h4>ℹ️ Treffer</h4><div class="mut">${esc(D.schrot_hinweis||'')} Schüsse daneben stehen nicht im Server-Log.</div>`;
@@ -566,7 +586,7 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
 // ---------------- Öffentliche Profile (ohne Login, ohne Positionen) mit Reitern
 function stilOeff(defs,hab){const h={};(hab||[]).forEach(x=>h[x.id]=x);return Object.entries(defs||{}).map(([id,dd])=>{const x=h[id]||{n:0};
   return {id,icon:dd[0],titel:dd[1],erklaerung:dd[2],schaetzung:dd[3],schwellen:dd[4]||'',n:x.n||0,stufe:x.stufe||null,stufe_name:x.stufe_name,pn:x.pn||0,stufen:x.stufen||[],
-    zuerst:x.zuerst,zuletzt:x.zuletzt,naechste:null}})}
+    zuerst:x.zuerst,zuletzt:x.zuletzt,naechste:x.naechste||null,wert:x.wert,fortschritt:x.fortschritt,klein:dd[5]}})}
 function profilDialog(kopf,reiter){const id='pr'+Math.random().toString(36).slice(2,7);
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button>${kopf}<div class="reiter klein" id="${id}">${reiter.map((r,i)=>`<button data-pr="${i}" class="${i?'':'an'}">${r[0]}</button>`).join('')}</div>${reiter.map((r,i)=>`<div class="prr" data-prr="${i}" ${i?'hidden':''}>${r[1]}</div>`).join('')}`;
   $$('#'+id+' [data-pr]').forEach(b=>b.onclick=()=>{$$('#'+id+' [data-pr]').forEach(x=>x.classList.toggle('an',x===b));$$('#dlgIn [data-prr]').forEach(x=>x.hidden=x.dataset.prr!==b.dataset.pr)});
@@ -584,7 +604,8 @@ function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile
     ${(pr.elo_verlauf||[]).length>1?`<h4>📈 Elo-Verlauf</h4>${eloBild(pr.elo_verlauf.map((x,i)=>[i,x]))}`:''}
     ${(pr.saisons||[]).length?`<h4>👑 Saisons</h4>${pr.saisons.map(x=>`<span class="chip">${MN[+x[0].slice(5)-1]} ${x[0].slice(0,4)}: Platz ${x[1]}</span>`).join('')}`:''}`;
   const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table></div>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
-  const erf=`<h4>🏅 DM-Erfolge (${Object.keys(hab).filter(k=>ED[k]).length} von ${Object.keys(ED).length})</h4><div class="bgs">${Object.entries(ED).map(([id,e])=>meilenKarte({icon:e[0],titel:e[1],text:e[2],erreicht:id in hab,t:hab[id],stufe:'gold',wert:(fs[id]||[0])[0],schwelle:(fs[id]||[0,1])[1],einheit:''})).join('')}</div>
+  const HP=pr.haupt||[];
+  const erf=`<h4>🏅 DM-Haupterfolge (${HP.filter(x=>x.stufe).length} von ${HP.length})</h4><div class="bgs">${HP.map(x=>badgeKarte(x,'dm')).join('')}</div>
     <h4>🎖 DM-Stil-Erfolge</h4><div class="bgs">${stilOeff(D.dm.stil_def,s&&s.stil).map(x=>badgeKarte(x,'dm')).join('')}</div>`;
   const run=rn.length?rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode · <a href="/zuschauer/runde/${r.id}" style="color:inherit">ansehen</a></div>`).join(''):'<div class="mut">Keine Runde in der letzten Zeit.</div>';
   profilDialog(`<div class="prkopf"><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div></div>`,
