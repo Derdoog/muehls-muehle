@@ -16,7 +16,8 @@
   .kopf{max-width:1200px;margin:auto;padding:14px 16px 0;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between}
   h1{font-size:19px;margin:0} h1 span{color:var(--acc)} .mut{color:var(--mut);font-size:13px}
   nav{max-width:1200px;margin:auto;padding:8px 16px 0;display:flex;gap:2px}
-  nav button{background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;color:var(--mut);font-weight:600}
+  nav button{background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;color:var(--mut);font-weight:600;white-space:nowrap}
+  @media(max-width:520px){nav{padding:6px 8px 0;overflow-x:auto} nav button{padding:8px 9px;font-size:14px}}
   nav button.an{color:var(--text);border-color:var(--acc)} nav .live{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--gr);margin-left:6px;vertical-align:middle}
   main{max-width:1200px;margin:auto;padding:16px 16px 60px}
   .tab{display:none} .tab.an{display:block}
@@ -50,14 +51,22 @@
   .wbar{display:flex;align-items:center;gap:8px;font-size:13px;margin:3px 0} .wbar i{display:block;height:11px;background:var(--acc);border-radius:3px}
   dialog{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:0;width:min(760px,calc(100vw - 24px));max-height:calc(100vh - 40px)}
   dialog::backdrop{background:rgba(0,0,0,.6)} .dlg{padding:16px} .zu{float:right;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:4px 10px}
+  .vote{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;margin-bottom:12px}
+  .vote button{position:relative;text-align:left;background:var(--panel2);border:2px solid var(--line);border-radius:10px;padding:9px 11px;overflow:hidden}
+  .vote button.an{border-color:var(--acc)} .vote button b{display:block;font-size:14px;position:relative} .vote button span{font-size:12px;color:var(--mut);position:relative}
+  .vote button i{position:absolute;left:0;top:0;bottom:0;background:rgba(217,171,46,.18)}
+  .login{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:5px 11px;font-size:13px}
+  input.feld{width:100%;font:inherit;padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);margin-bottom:10px}
+  #mKarte{height:min(70vh,640px);border-radius:12px;border:1px solid var(--line);background:#1b1d18}
+  .basis{font-size:18px;line-height:22px;text-align:center}
   footer{max-width:1200px;margin:auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
   @media(max-width:760px){.kacheln{grid-template-columns:1fr 1fr}.zwei{grid-template-columns:1fr}.ev .uhr{width:44px;white-space:normal;font-size:11px}h1{font-size:17px}}
 </style>
 </head>
 <body>
 <header>
-  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="mut" id="stand">lade …</span></div>
-  <nav><button data-t="pve" class="an">🌲 PvE Chernarus<span class="live" id="pveLive" hidden></span></button><button data-t="dm">⚔ Deathmatch<span class="live" id="dmLive" hidden></span></button></nav>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span style="display:flex;gap:10px;align-items:center"><span class="mut" id="stand">lade …</span><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button></span></div>
+  <nav><button data-t="pve" class="an">🌲 PvE Chernarus<span class="live" id="pveLive" hidden></span></button><button data-t="dm">⚔ Deathmatch<span class="live" id="dmLive" hidden></span></button><button data-t="meine" id="meineTab" hidden>🗺 Meine Karte</button></nav>
 </header>
 <main>
   <section class="tab an" id="t-pve">
@@ -72,6 +81,7 @@
   </section>
   <section class="tab" id="t-dm">
     <div id="dRunde"></div>
+    <div class="panel" id="dVote" hidden></div>
     <div class="zwei">
       <div class="panel"><h3>🎯 Killfeed</h3><div id="dKf" class="kf"></div></div>
       <div class="panel scroll"><h3>Stand dieser Runde</h3><table id="dStand"></table></div>
@@ -81,8 +91,13 @@
       <div class="panel"><h3>📜 Letzte Runden</h3><div id="dRunden"></div></div>
     </div>
   </section>
+  <section class="tab" id="t-meine">
+    <div class="panel"><h3 id="mTitel">Meine Charaktere</h3><div id="mListe"></div></div>
+    <div id="mKarte"></div>
+    <div class="mut" style="margin-top:8px">Nur für dich sichtbar: deine Charaktere auf Chernarus, Wege der letzten Zeit, deine Kills und Tode und Basen, an denen du gebaut hast. Positionen kommen aus dem Server-Log und sind einige Minuten alt.</div>
+  </section>
 </main>
-<footer><span id="takt">Aktualisiert sich alle 30 Sekunden von selbst.</span> Positionen und Basen werden hier bewusst nicht gezeigt.</footer>
+<footer><span id="takt">Aktualisiert sich alle 30 Sekunden von selbst.</span> Positionen und Basen werden hier nur dem jeweiligen Spieler nach dem Login gezeigt.</footer>
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
 <script>
 const REPO='Derdoog/muehls-muehle';
@@ -158,9 +173,61 @@ function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n]
     ${pr.tage.length?`<h3 style="font-size:15px;margin-top:12px">Letzte Tage</h3><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${pr.tage.map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:''}
     ${pr.waffen.length?`<h3 style="font-size:15px;margin-top:12px">Lieblingswaffen</h3>${pr.waffen.map(w=>`<span class="chip">${esc(w[0])} · ${w[1]}</span>`).join('')}`:''}`;
   $('#dlg').showModal()}
+// ---------------- Abstimmung (nur direkt vom Server)
+let VOTE=null;
+async function voteLaden(){if(!DIREKT)return;const v=await holeJson('/zuschauer/abstimmung');VOTE=v;if(v)v._t=Date.now()/1000;voteZeichnen()}
+function voteZeichnen(){const v=VOTE,el=$('#dVote');if(!v||!v.offen){el.hidden=true;return}el.hidden=false;
+  const st=v.stand,me=st.meine||{},mxk=Math.max(1,...Object.values(st.karten)),mxm=Math.max(1,...Object.values(st.modi));
+  const rest=Math.max(0,v.rest-(Date.now()/1000-VOTE._t));
+  el.innerHTML=`<h3>🗳️ Was kommt als Nächstes?</h3><div class="mut" style="margin-bottom:10px">Abstimmen bis zum Wechsel in ca. <b>${dauer(rest)}</b> · ${st.anzahl} ${st.anzahl===1?'Stimme':'Stimmen'} bisher · du kannst deine Wahl jederzeit ändern</div>
+    <div class="mut" style="margin-bottom:4px">Karte</div><div class="vote">${v.karten.map(k=>{const n=st.karten[k.id]||0;return `<button data-vk="${esc(k.id)}" class="${me.karte===k.id?'an':''}"><i style="width:${Math.round(n/mxk*100)}%"></i><b>${esc(k.titel)}</b><span>${n} ${n===1?'Stimme':'Stimmen'}</span></button>`}).join('')}</div>
+    <div class="mut" style="margin-bottom:4px">Modus</div><div class="vote">${v.modi.map(m=>{const n=st.modi[m.id]||0;return `<button data-vm="${esc(m.id)}" class="${me.modus===m.id?'an':''}"><i style="width:${Math.round(n/mxm*100)}%"></i><b>${esc(m.name)}</b><span>${n} ${n===1?'Stimme':'Stimmen'}</span></button>`}).join('')}</div>
+    <div class="mut">Gewinnt die Karte mit den meisten Stimmen, dazu der beliebteste Modus, den es auf dieser Karte gibt. Ohne Stimmen läuft die Automatik wie geplant.</div>`;
+  $$('[data-vk]').forEach(b=>b.onclick=()=>stimme({karte:b.dataset.vk,modus:me.modus||null}));
+  $$('[data-vm]').forEach(b=>b.onclick=()=>stimme({karte:me.karte||null,modus:b.dataset.vm}))}
+async function stimme(d){try{const r=await fetch('/zuschauer/abstimmung',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  if(!r.ok){const j=await r.json().catch(()=>({}));alert(j.meldung||'Abstimmen ging nicht')}}catch(e){}await voteLaden()}
+// ---------------- Spieler-Login und eigene Karte
+let ICH=null,MK=null,MG=null;
+async function ichLaden(){if(!DIREKT)return;$('#loginBtn').hidden=false;ICH=await holeJson('/zuschauer/ich');
+  const da=ICH&&ICH.benutzer;$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;
+  if(!da&&$('#t-meine').classList.contains('an'))tab('pve')}
+$('#loginBtn').onclick=async()=>{if(ICH&&ICH.benutzer){await fetch('/zuschauer/logout',{method:'POST'});MK&&MK.remove();MK=null;await ichLaden();return}
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">Spieler-Login</h2>
+    <div class="mut" style="margin-bottom:12px">Mit deinem Zugang siehst du deine eigenen Charaktere auf der PvE-Karte. Zugänge vergibt der Admin.</div>
+    <form id="lf"><input class="feld" id="lb" placeholder="Benutzername" autocomplete="username"><input class="feld" id="lp" type="password" placeholder="Passwort" autocomplete="current-password">
+    <div class="mut" id="lm" style="color:#e8775f;margin-bottom:8px"></div><button class="login" style="width:100%;padding:10px;background:var(--acc);color:#141414;font-weight:800">Anmelden</button></form>`;
+  $('#dlg').showModal();$('#lb').focus();
+  $('#lf').onsubmit=async ev=>{ev.preventDefault();const r=await fetch('/zuschauer/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({benutzer:$('#lb').value,passwort:$('#lp').value})});
+    const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').textContent=j.meldung||'Anmeldung fehlgeschlagen';return}dlg.close();await ichLaden();tab('meine');meineLaden()}};
+function skript(u){return new Promise((ok,f)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=f;document.head.appendChild(s)})}
+let MLAEUFT=false;
+async function meineLaden(){if(!ICH||!ICH.benutzer||MLAEUFT)return;MLAEUFT=true;try{await meineLaden2()}finally{MLAEUFT=false}}
+async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)return;
+  $('#mTitel').textContent='Meine Charaktere ('+ICH.benutzer+')';
+  $('#mListe').innerHTML=d.charaktere.length?d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem Server gesehen</span></div></div>`
+    :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('')
+    :'<div class="mut">Dir ist noch kein Gamertag zugeordnet. Sag dem Admin Bescheid.</div>';
+  if(!window.L){const c=document.createElement('link');c.rel='stylesheet';c.href='/zuschauer/leaflet.css';document.head.appendChild(c);try{await skript('/zuschauer/leaflet.js')}catch(e){$('#mKarte').innerHTML='<div class="mut" style="padding:16px">Karte konnte nicht geladen werden.</div>';return}}
+  const B=[[0,0],[15360,15360]],ll=p=>[p[1],p[0]],pts=[];
+  if(!MK){MK=L.map('mKarte',{crs:L.CRS.Simple,minZoom:-5,maxZoom:1,zoomSnap:.25,attributionControl:false});L.imageOverlay('/zuschauer/karte.jpg',B).addTo(MK);MG=L.layerGroup().addTo(MK);MK.fitBounds(B);MK._erst=true}
+  MG.clearLayers();if(!$('#mKarte').offsetWidth)return;MK.invalidateSize();
+  const FARBE=['#3fa66b','#4c8fd6','#d9ab2e','#c060c0','#e0703a','#50c0c0'];
+  d.charaktere.filter(c=>!c.unbekannt).forEach((c,i)=>{const f=FARBE[i%FARBE.length];
+    let seg=[];(c.spur||[]).forEach((q,j)=>{const v=c.spur[j-1];if(v&&(Math.hypot(q[0]-v[0],q[1]-v[1])>2500||q[2]-v[2]>900)){if(seg.length>1)L.polyline(seg,{color:f,weight:2,opacity:.75}).addTo(MG);seg=[]}seg.push(ll(q));pts.push(ll(q))});
+    if(seg.length>1)L.polyline(seg,{color:f,weight:2,opacity:.75}).addTo(MG);
+    (c.kills||[]).forEach(k=>{if(!k.pos)return;const eig=k.taeter===c.name;L.circleMarker(ll(k.pos),{radius:5,color:eig?'#ff5a3c':'#b9b2a6',weight:2,fillOpacity:.6})
+      .bindPopup(k.taeter?`${esc(k.taeter)} ➜ ${esc(k.opfer)}<br>${esc(k.waffe||'')} · ${k.m||0} m<br><span class="mut">${uhr(k.t)}</span>`:`${esc(k.opfer)} ✝ ${esc(k.ursache||'')}<br><span class="mut">${uhr(k.t)}</span>`).addTo(MG)});
+    (c.basen||[]).forEach(b=>{pts.push(ll(b.pos));L.marker(ll(b.pos),{icon:L.divIcon({className:'basis',html:b.flagge?'🚩':(b.n>=3?'🏠':'⛺'),iconSize:[22,22]})}).bindPopup(`${b.n>=3?'Basis':'Lager'} von ${esc(c.name)}<br><span class="mut">zuletzt ${vor(b.zuletzt)}</span>`).addTo(MG)});
+    if(c.pos){pts.push(ll(c.pos));L.circleMarker(ll(c.pos),{radius:8,color:'#fff',weight:2,fillColor:c.online?f:'#777',fillOpacity:1}).bindTooltip(esc(c.name)+(c.online?' (online)':' (letzte Position)'),{permanent:true,direction:'top',offset:[0,-8]}).addTo(MG)}});
+  if(MK._erst&&pts.length){MK.fitBounds(L.latLngBounds(pts).pad(.4),{maxZoom:-1});MK._erst=false}}
+const _tab=tab;tab=t=>{_tab(t);if(t==='meine')meineLaden();if(t==='dm')voteLaden()};
+$$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 if(!REPO)$('#takt').textContent='Aktualisiert sich alle 10 Sekunden von selbst.';
-laden();
+laden();ichLaden().then(()=>{try{if(localStorage.getItem('tab')==='meine'&&ICH&&ICH.benutzer){tab('meine')}}catch(e){}});voteLaden();
+if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an'))meineLaden()},15000);
+setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
 function naechster(){const s=DIREKT?10:TAKT-(Date.now()/1000)%TAKT+9;setTimeout(()=>{if(!document.hidden)laden();naechster()},s*1000)}naechster();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)laden()});setInterval(()=>{if(D)zeichnen()},30000);
 </script>
