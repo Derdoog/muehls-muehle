@@ -88,6 +88,17 @@
   details.rd summary::-webkit-details-marker{display:none} details.rd summary::before{content:"▸";color:var(--mut);margin-right:8px} details.rd[open] summary::before{content:"▾"}
   .rdin{padding:8px 0 4px 18px;font-size:14px} .rdin table{margin:4px 0 8px}
   .rh{display:flex;gap:8px;align-items:baseline;padding:5px 0;border-top:1px solid var(--line);flex-wrap:wrap} .rh:first-child{border-top:0} .rh span:first-child{flex:0 0 190px;color:var(--mut);font-size:13px}
+  .titel{display:inline-block;font-size:11px;font-weight:600;color:var(--acc2);border:1px solid var(--line);border-radius:99px;padding:0 7px;margin-left:6px;vertical-align:middle;white-space:nowrap}
+  .bgs{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin:8px 0 14px}
+  .bg{display:flex;gap:10px;align-items:flex-start;background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px}
+  .bg.offen{opacity:.55} .bg b{display:block;font-size:14px} .bg .mut{font-size:12px;line-height:1.35}
+  .bg svg{flex:0 0 52px} .stufe{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .st-bronze{color:#cd7f32} .st-silber{color:#b8c0c8} .st-gold{color:#f2c84e} .st-platin{color:#9fd8e8} .st-diamant{color:#7fe0ff} .st-offen{color:var(--mut)}
+  .fort{height:6px;background:var(--line);border-radius:3px;margin-top:5px;overflow:hidden} .fort i{display:block;height:100%;background:var(--acc)}
+  .schaetz{font-size:10px;border:1px dashed var(--mut);border-radius:6px;padding:0 4px;margin-left:4px;color:var(--mut)}
+  .bereich{border-left:4px solid var(--acc);padding-left:12px;margin:18px 0 6px} .bereich.pve{border-color:var(--gr)}
+  .heat{width:100%;max-width:520px;background:#1b1d18;border:1px solid var(--line);border-radius:10px}
+  .stunden{display:flex;align-items:flex-end;gap:2px;height:60px} .stunden i{flex:1;background:var(--acc);border-radius:2px 2px 0 0;min-height:1px}
   footer{max-width:1200px;margin:auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
   @media(max-width:760px){.kacheln{grid-template-columns:1fr 1fr}.zwei{grid-template-columns:1fr}.ev .uhr{width:44px;white-space:normal;font-size:11px}h1{font-size:17px}}
 </style>
@@ -95,13 +106,15 @@
 <body>
 <header>
   <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span style="display:flex;gap:10px;align-items:center"><span class="mut" id="stand">lade …</span><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button></span></div>
-  <nav><button data-t="pve" class="an">🌲 PvE Chernarus<span class="live" id="pveLive" hidden></span></button><button data-t="dm">⚔ Deathmatch<span class="live" id="dmLive" hidden></span></button><button data-t="meine" id="meineTab" hidden>🗺 Meine Karte</button></nav>
+  <nav><button data-t="pve" class="an">🌲 PvE Chernarus<span class="live" id="pveLive" hidden></span></button><button data-t="dm">⚔ Deathmatch<span class="live" id="dmLive" hidden></span></button><button data-t="meine" id="meineTab" hidden>👤 Meine Statistik</button></nav>
 </header>
 <main>
   <div class="status" id="sStatus" hidden></div>
+  <div id="banner"></div>
   <section class="tab an" id="t-pve">
     <div id="pBanner"></div>
     <div class="kacheln" id="pKacheln"></div>
+    <div class="panel" id="pSchatz" hidden></div>
     <div class="zwei">
       <div class="panel"><h3>Gerade online</h3><div id="pOnline"></div></div>
       <div class="panel"><h3>Ereignisse</h3><div id="pEv" style="max-height:520px;overflow:auto"></div></div>
@@ -109,6 +122,7 @@
     <div class="panel scroll"><h3>🏆 Rangliste</h3><div class="seg" id="pZeit"></div><table id="pRang"></table>
       <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil mit Erfolgen. K/D = Kills geteilt durch Tode durch Spieler.</div></div>
     <div class="panel"><h3>🏛 Ruhmeshalle PvE</h3><div id="pRuhm"></div></div>
+    <div class="panel"><h3>📅 Termine</h3><div id="pKal"></div><div class="mut" style="margin-top:6px" id="pKalIcs"></div></div>
   </section>
   <section class="tab" id="t-dm">
     <div id="dRunde"></div>
@@ -126,9 +140,15 @@
       <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div>
       <div class="panel"><h3>🏛 Ruhmeshalle Deathmatch</h3><div id="dRuhm"></div></div>
     </div>
+    <div class="zwei">
+      <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
+      <div class="panel scroll"><h3>🔫 Waffen</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Gezählt ab dem 10.11.2026.</div></div>
+    </div>
   </section>
   <section class="tab" id="t-meine">
     <div class="panel"><h3 id="mTitel">Meine Charaktere</h3><div id="mListe"></div></div>
+    <div id="mStat"></div>
+    <h3 style="margin:18px 0 8px">🗺 Meine Karte (PvE Chernarus)</h3>
     <div id="mKarte"></div>
     <div class="mut" style="margin-top:8px">Nur für dich sichtbar: deine Charaktere auf Chernarus, Wege der letzten Zeit, deine Kills und Tode und Basen, an denen du gebaut hast. Positionen kommen aus dem Server-Log und sind einige Minuten alt.</div>
   </section>
@@ -144,6 +164,13 @@ const uhr=t=>{const d=new Date(t*1000),h=new Date(),hm=d.toLocaleTimeString('de-
 const vor=t=>{if(!t)return '–';const s=Date.now()/1000-t;return s<120?'gerade eben':s<3600?`vor ${Math.round(s/60)} min`:s<86400?`vor ${Math.round(s/3600)} h`:`vor ${Math.round(s/86400)} T.`};
 const ICON={kill:'🎯',tod:'✝️',verbindung:'🔌',bewusstlos:'😵',erfolg:'🏅',kampflog:'⚠️'};
 const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const TT=n=>{const t=D&&D.titel&&D.titel[n];return t?`<span class="titel">${esc(t)}</span>`:''};
+const STN={bronze:'Bronze',silber:'Silber',gold:'Gold',platin:'Platin',diamant:'Diamant'},STF={bronze:'#cd7f32',silber:'#c0c8d0',gold:'#f2c84e',platin:'#a8e0ee',diamant:'#7fe0ff'};
+const datumB=t=>t?new Date(t*1000).toLocaleString('de-DE',{timeZone:'Europe/Berlin',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'})+' Uhr':'vor 10.11.2026';
+function medaille(icon,stufe,n){const f=STF[stufe]||'#555';const z=n>1?`<circle cx="42" cy="42" r="9" fill="#111" stroke="${f}" stroke-width="1.5"/><text x="42" y="45.5" font-size="9" text-anchor="middle" fill="${f}" font-weight="700">${n>99?'99+':n}</text>`:'';
+  return `<svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><defs><radialGradient id="g${stufe||'x'}" cx="40%" cy="35%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="${f}" stop-opacity=".9"/></radialGradient></defs>`+
+    `<circle cx="24" cy="24" r="21" fill="${stufe?`url(#g${stufe})`:'#2a2e35'}" stroke="${f}" stroke-width="3"/>${stufe==='diamant'||stufe==='platin'?`<circle cx="24" cy="24" r="16.5" fill="none" stroke="#fff" stroke-opacity=".5" stroke-dasharray="3 2"/>`:''}`+
+    `<text x="24" y="31" font-size="19" text-anchor="middle">${icon}</text>${z}</svg>`}
 let D=null,RZ='gesamt',RS='spielzeit',ersterTab=true;const OFFEN=new Set();
 function tab(t){$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{localStorage.setItem('tab',t)}catch(e){}}
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
@@ -167,6 +194,11 @@ async function laden(){
 function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   $('#stand').textContent=(alt>600?'⚠ letzter Stand ':'Stand ')+uhr(d.stand)+(alt>600?' (Steuerung gerade nicht erreichbar)':'');
   statusZeichnen();
+  $('#banner').innerHTML=d.banner&&d.banner.text?`<div class="hinweis" style="margin-bottom:12px">${d.banner.art==='wartung'?'🛠':'ℹ️'} ${esc(d.banner.text)}</div>`:'';
+  schatzZeichnen(d);
+  const kal=d.kalender||[],AR={dm:'⚔️',pve:'🌲',schatz:'🗝️',wartung:'🛠️',event:'🎉',neustart:'🔄'};
+  $('#pKal').innerHTML=kal.map(t=>`<div class="spl"><span>${AR[t.art]||'•'}</span><div class="mitte"><b>${esc(t.titel)}</b><span class="mut">${new Date(t.start*1000).toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}${t.text?' · '+esc(t.text):''}</span></div></div>`).join('')||'<div class="mut">Gerade keine Termine.</div>';
+  $('#pKalIcs').innerHTML=DIREKT?'📆 <a href="/zuschauer/kalender.ics" style="color:inherit">Kalender abonnieren (.ics)</a>':'';
   $('#pveLive').hidden=!p.laeuft;$('#dmLive').hidden=!m.laeuft;
   // PvE
   $('#pBanner').innerHTML=p.laeuft?'':'<div class="hinweis">Gerade läuft eine Deathmatch-Runde, der PvE-Server ist kurz aus. Hier steht der letzte Stand.</div>';
@@ -184,7 +216,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     :[['name','Spieler'],['spielzeit','Spielzeit'],['kills','Kills'],['tode','Tode'],['kd','K/D'],['weitester','Weitester'],['strecke','Strecke'],['erfolge','🏅'],['zuletzt','Zuletzt']];
   if(!SP.some(x=>x[0]===RS))RS='spielzeit';
   const rs=[...rows].sort((a,b)=>RS==='name'?a.name.localeCompare(b.name):(b[RS]-a[RS]));
-  const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${esc(s.name)}</b>`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
+  const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${esc(s.name)}</b>${TT(s.name)}`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
   $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
   $$('#pRang th').forEach(th=>th.onclick=()=>{RS=th.dataset.s;zeichnen()});
   $$('[data-n]').forEach(b=>b.onclick=()=>profil(b.dataset.n));
@@ -205,15 +237,18 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>'+(plan?`<div class="panel runde">${plan}</div>`:'');
   const pkt=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
   $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
-    (m.kills.map(k=>k.taeter?`<div><b>${esc(k.taeter)}</b> ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
-  $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span>${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
-  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th>K/D</th><th>Siege</th><th>Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${esc(s.name)}</b></td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td>${s.siege}</td><td>${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
+    (m.kills.map(k=>k.taeter?`<div><b>${esc(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
+  $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
+  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th>K/D</th><th>Siege</th><th>Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${esc(s.name)}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td>${s.siege}</td><td>${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
   $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
     <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span></div></summary>
     <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${esc(s[0])}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table>
     ${r.weitester?`<div>🎯 Weitester Kill: <b>${esc(r.weitester[0])}</b> ➜ ${esc(r.weitester[1])} · ${esc(r.weitester[2]||'')} · ${r.weitester[3]} m</div>`:''}
     ${r.leben&&r.leben.length?`<div>⏱️ Am längsten überlebt: ${r.leben.map(l=>'<b>'+esc(l[0])+'</b> '+dauer(l[1])).join(' · ')}</div>`:''}
-    ${r.kopfschuesse?`<div>💀 Kopfschüsse: ${r.kopfschuesse}</div>`:''}${r.kopfgeld?`<div>💰 Kopfgeld kassiert: ${r.kopfgeld}-mal</div>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
+    ${r.kopfschuesse?`<div>💀 Kopfschüsse: ${r.kopfschuesse}</div>`:''}${r.kopfgeld?`<div>💰 Kopfgeld kassiert: ${r.kopfgeld}-mal</div>`:''}
+    ${DIREKT&&r.id?`<div style="margin-top:6px"><a href="/zuschauer/runde/${+r.id}" style="color:var(--gold,#e0b44c)">🔗 Eigene Seite dieser Runde (zum Teilen)</a></div>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
+  $('#dSaison').innerHTML=(m.saisons||[]).slice(0,6).map(s=>`<div class="rh"><span>${MN[+s.monat.slice(5)-1]} ${s.monat.slice(0,4)}</span><b class="name" data-dm="${esc(s.meister||'')}">${s.meister?'👑 '+esc(s.meister):'–'}</b><span class="mut">${s.runden} Runden${s.top&&s.top[0]?' · '+s.top[0][1]+' Siege · '+s.top[0][2]+' Kills':''}</span></div>`).join('')||'<div class="mut">Noch keine Saison.</div>';
+  $('#dWaffen').innerHTML=(m.waffen||[]).length?'<tr><th>Waffe</th><th>Kills</th><th>Kopfschüsse</th><th>Weitester</th></tr>'+m.waffen.map(w=>`<tr><td>${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3]} m</td></tr>`).join(''):'<tr><td class="mut">Noch keine Kills gezählt.</td></tr>';
   $$('#dRunden details').forEach(x=>x.ontoggle=()=>{const k=+x.dataset.rd;if(x.open)OFFEN.add(k);else OFFEN.delete(k)});
   $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b><span class="mut">${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt</span>
     <span class="mut" style="display:block">${Object.entries(k.modi).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,z])=>esc(n)+' '+z+'×').join(' · ')}</span></div></div>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
@@ -228,6 +263,17 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   $$('[data-n]').forEach(b=>b.onclick=()=>profil(b.dataset.n));
   $$('[data-dm]').forEach(b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();dmProfil(b.dataset.dm)});
 }
+function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
+  if(!s.schaetze||!s.schaetze.length){el.hidden=!(s.rang&&s.rang.length);el.innerHTML=s.rang&&s.rang.length?`<h3>🏴‍☠️ Schatz-Rangliste</h3>${s.rang.slice(0,5).map((r,i)=>`<div class="rh"><span>${i+1}.</span><b>${esc(r[0])}</b><span class="mut">${r[1]} Funde${r[2]?' · ⛓ '+r[2]+' Ketten':''}</span></div>`).join('')}`:'';return}
+  el.hidden=false;const alt=Date.now()/1000-d.stand;
+  const ST={aktiv:'🔎 wird gesucht',gesperrt:'🔒 noch gesperrt',gefunden:'🏆 gefunden',abgelaufen:'⌛ nicht gefunden'};
+  el.innerHTML=`<h3>🗝️ Schatzsuche ${s.laeuft?'läuft':'ist vorbei'}${s.pausiert&&s.laeuft?' <span class="mut">(Uhr pausiert, gerade Deathmatch)</span>':''}</h3>
+    ${s.schaetze.map(x=>`<div class="spl" style="align-items:flex-start"><span style="font-size:22px">${(ST[x.status]||'').split(' ')[0]}</span><div class="mitte"><b>Schatz ${x.nr} · ${esc((ST[x.status]||x.status).split(' ').slice(1).join(' '))}${x.finder?' von '+esc(x.finder):''}</b>
+      ${x.hinweise.map(h=>`<div>${esc(h.replace(/\*\*/g,''))}</div>`).join('')||'<div class="mut">Noch keine Hinweise.</div>'}
+      ${x.status==='aktiv'&&x.naechster_in!=null?`<div class="mut">⏳ nächster Hinweis in etwa ${Math.max(1,Math.round((x.naechster_in-(s.pausiert?0:alt))/60))} min (früher, wenn jemand nah dran ist)</div>`:''}
+      ${x.status==='abgelaufen'&&x.planquadrat?`<div class="mut">Lag in Planquadrat ${esc(x.planquadrat)}</div>`:''}</div></div>`).join('')}
+    ${s.rang&&s.rang.length?`<div class="mut" style="margin-top:6px">🏴‍☠️ Rangliste: ${s.rang.slice(0,5).map((r,i)=>esc(r[0])+' '+r[1]).join(' · ')}</div>`:''}
+    <div class="mut" style="margin-top:6px">Gefunden ist ein Schatz, wenn du direkt daneben stehst (Spielerliste alle 5 min) oder dort ein Emote machst.</div>`}
 function ruhm(liste,felder,attr){return felder.map(([k,t,f])=>{const best=[...(liste||[])].filter(s=>(s[k]||0)>0).sort((a,b)=>b[k]-a[k])[0];
   return best?`<div class="rh"><span>${t}</span><b class="name" ${attr}="${esc(best.name)}">${esc(best.name)}</b><span class="mut">${f(best[k])}</span></div>`:''}).join('')}
 function countdown(bis){const s=Math.max(0,Math.round(bis-Date.now()/1000));return s<=0?'gleich':Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' min'}
@@ -242,20 +288,28 @@ function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n);
     if(s.weitester)z.push(['🎯 Weitester Kill',s.weitester+' m']);if(s.kopf)z.push(['💀 Kopfschüsse',s.kopf]);if(s.rache)z.push(['⚔️ Rache',s.rache+'×']);
     if(s.ziel_siege)z.push(['🏁 Ziel-Siege',s.ziel_siege]);if(s.jugg_runden||s.jugg_kills)z.push(['🛡️ Juggernaut',(s.jugg_runden||0)+'× gewesen, '+(s.jugg_kills||0)+'× erlegt']);
     if(s.kopfgeld_kills)z.push(['💰 Kopfgeld kassiert',s.kopfgeld_kills+'×'])}
-  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 2px">${esc(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div>
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div>
     ${s?`<div class="kacheln" style="margin-top:12px">${[[s.elo,'Elo'],[s.kd,'K/D'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']].map(([a,b])=>`<div class="kachel"><b style="font-size:19px">${a}</b><span>${b}</span></div>`).join('')}</div>`:''}
     ${z.length?`<div>${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}</div>`:''}
+    ${(()=>{const pr=(D.dm.profile||{})[n];if(!pr)return '';const ED=D.dm.erfolge_def||{},hab=new Set((pr.erfolge||[]).map(e=>e[0]));const t=[];
+      if(pr.nemesis)t.push(['😈 Nemesis',pr.nemesis[0]+' ('+pr.nemesis[1]+'× erwischt)']);if(pr.opfer)t.push(['🎯 Lieblingsopfer',pr.opfer[0]+' ('+pr.opfer[1]+'×)']);
+      if(pr.rivale)t.push(['⚔️ Rivale',pr.rivale[0]+' · '+pr.rivale[1]+' : '+pr.rivale[2]]);
+      return (t.length?`<div>${t.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}</div>`:'')
+        +((pr.waffen||[]).length?`<h3 style="font-size:15px;margin-top:12px">Lieblingswaffen</h3>${pr.waffen.map(w=>`<span class="chip">${esc(w[0])} · ${w[1]}</span>`).join('')}`:'')
+        +((s&&s.stil||[]).length?`<h3 style="font-size:15px;margin-top:12px">🎖 DM-Stil-Erfolge</h3><div>${s.stil.map(x=>`<span class="erf" title="${esc(((D.dm.stil_def||{})[x.id]||[])[2]||'')} · zuletzt ${datumB(x.zuletzt)}">${x.icon} ${esc(x.titel)} <span class="stufe st-${x.stufe}">${STN[x.stufe]||''}</span> ×${x.n}</span>`).join('')}</div>`:'')
+        +(Object.keys(ED).length?`<h3 style="font-size:15px;margin-top:12px">🏅 DM-Erfolge (${hab.size} von ${Object.keys(ED).length})</h3><div>${Object.entries(ED).map(([id,e])=>`<span class="erf ${hab.has(id)?'':'offen'}" title="${esc(e[2])}">${e[0]} ${esc(e[1])}</span>`).join('')}</div>`:'')})()}
     ${rn.length?`<h3 style="font-size:15px;margin-top:12px">Letzte Runden</h3>${rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode</div>`).join('')}`:''}
     <div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>`;
   const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n);
   if(!$('#dlg').open)$('#dlg').showModal()}
 function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
   const hab=new Set(pr.erfolge.map(e=>e[1])),WT=['Mo','Di','Mi','Do','Fr','Sa','So'],mx=Math.max(1,...(pr.wochentag||[0]));
-  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 2px">${esc(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}</div>
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 2px">${esc(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}</div>
     <div class="kacheln" style="margin-top:12px">${[[dauer(s.spielzeit),'Spielzeit'],[dauer(pr.ueberlebt),'am Leben seit'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.strecke+' km','gelaufen']].map(([z,t])=>`<div class="kachel"><b style="font-size:19px">${z}</b><span>${t}</span></div>`).join('')}</div>
     ${(D.dm.elo||[]).some(x=>x.name===n)?`<div class="mut" style="margin-top:6px"><span class="name" id="zuDm">Deathmatch-Profil ansehen</span></div>`:''}
     <h3 style="font-size:15px">🏅 Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h3>
     <div>${p.erfolge_alle.map(e=>`<span class="erf ${hab.has(e[2])?'':'offen'}" title="${esc(e[3])}">${e[1]} ${esc(e[2])}</span>`).join('')}</div>
+    ${(pr.stil||[]).length?`<h3 style="font-size:15px;margin-top:12px">🎖 PvE-Stil-Erfolge</h3><div>${pr.stil.map(x=>`<span class="erf" title="${esc(((p.stil_def||{})[x.id]||[])[2]||'')} · zuletzt ${datumB(x.zuletzt)}">${x.icon} ${esc(x.titel)} <span class="stufe st-${x.stufe}">${STN[x.stufe]||''}</span> ×${x.n}</span>`).join('')}</div>`:''}
     <h3 style="font-size:15px;margin-top:12px">Wann spielt ${esc(n)}?</h3>${(pr.wochentag||[]).map((x,i)=>`<div class="wbar"><span style="width:24px">${WT[i]}</span><i style="width:${Math.round(x/mx*70)}%"></i><span class="mut">${x?dauer(x):''}</span></div>`).join('')}
     ${pr.tage.length?`<h3 style="font-size:15px;margin-top:12px">Letzte Tage</h3><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${pr.tage.map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:''}
     ${pr.waffen.length?`<h3 style="font-size:15px;margin-top:12px">Lieblingswaffen</h3>${pr.waffen.map(w=>`<span class="chip">${esc(w[0])} · ${w[1]}</span>`).join('')}`:''}`;
@@ -305,8 +359,10 @@ function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)re
 let MLAEUFT=false;
 async function meineLaden(){if(!ICH||!ICH.benutzer||MLAEUFT)return;MLAEUFT=true;try{await meineLaden2()}finally{MLAEUFT=false}}
 async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)return;
+  try{if(!$('#mStat').dataset.offen||$('#mStat').dataset.sig!==JSON.stringify(d.charaktere.map(c=>c.statistik)).length+''){meineStat(d);$('#mStat').dataset.sig=JSON.stringify(d.charaktere.map(c=>c.statistik)).length+''}}catch(e){$('#mStat').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
   $('#mTitel').textContent='Meine Charaktere ('+ICH.benutzer+')';
   $('#mListe').innerHTML=d.charaktere.length?d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem Server gesehen</span></div></div>`
+    :c.nur_dm?`<div class="spl"><span class="av">⚔</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">bisher nur im Deathmatch gesehen</span></div></div>`
     :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('')
     :'<div class="mut">Dir ist noch kein Gamertag zugeordnet. Sag dem Admin Bescheid.</div>';
   if(!window.L){const c=document.createElement('link');c.rel='stylesheet';c.href='/zuschauer/leaflet.css';document.head.appendChild(c);try{await skript('/zuschauer/leaflet.js')}catch(e){$('#mKarte').innerHTML='<div class="mut" style="padding:16px">Karte konnte nicht geladen werden.</div>';return}}
@@ -337,6 +393,64 @@ async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)re
     if(c.pos){pts.push(ll(c.pos));L.circleMarker(ll(c.pos),{radius:9,color:'#fff',weight:2,fillColor:c.online?f:'#777',fillOpacity:1}).bindTooltip(esc(c.name),{permanent:true,direction:'top',offset:[0,-9]})
       .bindPopup(`<b>${esc(c.name)}</b> ${c.online?'🟢 online':'⚫ offline, zuletzt '+vor(c.zuletzt)}<br>${koordText(c.pos)}`).addTo(MG)}});
   if(MK._erst&&pts.length){MK.fitBounds(L.latLngBounds(pts).pad(.4),{maxZoom:-1});MK._erst=false}}
+// ---------------- Meine Statistik (nur nach Login, nur eigene Gamertags)
+const WTN=['Mo','Di','Mi','Do','Fr','Sa','So'];
+function balken(liste,fmt){const mx=Math.max(1,...liste.map(x=>x[1]));return liste.map(([a,b])=>`<div class="wbar"><span style="width:130px;overflow:hidden;text-overflow:ellipsis">${esc(a)}</span><i style="width:${Math.round(b/mx*55)}%"></i><span class="mut">${fmt?fmt(b):b}</span></div>`).join('')}
+function stundenBild(st){const mx=Math.max(1,...st);return `<div class="stunden">${st.map((x,i)=>`<i title="${i}–${i+1} Uhr: ${x}" style="height:${Math.round(x/mx*100)}%"></i>`).join('')}</div><div class="mut" style="display:flex;justify-content:space-between"><span>0 Uhr</span><span>6</span><span>12</span><span>18</span><span>23</span></div>`}
+function eloBild(v){if(!v||v.length<2)return '<div class="mut">Noch zu wenige gewertete Runden.</div>';const e=v.map(x=>x[1]),mn=Math.min(...e),mx=Math.max(...e),w=500,h=110,sp=Math.max(1,mx-mn);
+  const pt=e.map((y,i)=>[(i/(e.length-1))*w,h-8-((y-mn)/sp)*(h-16)]);return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;max-width:520px;height:120px"><polyline fill="none" stroke="var(--acc)" stroke-width="2.5" points="${pt.map(p=>p.map(x=>x.toFixed(1)).join(',')).join(' ')}"/><text x="4" y="12" font-size="11" fill="var(--mut)">${mx}</text><text x="4" y="${h-2}" font-size="11" fill="var(--mut)">${mn}</text></svg><div class="mut">Elo über die letzten ${e.length} gewerteten Runden, jetzt ${e[e.length-1]}</div>`}
+function heatBild(h){const P=h.punkte||[],U=h.umriss||[];const alle=[...P.map(p=>[p[1],p[2]]),...U];if(!alle.length)return '';
+  let x0=Math.min(...alle.map(p=>p[0])),x1=Math.max(...alle.map(p=>p[0])),z0=Math.min(...alle.map(p=>p[1])),z1=Math.max(...alle.map(p=>p[1]));const pad=Math.max(8,(x1-x0+z1-z0)*.04);x0-=pad;x1+=pad;z0-=pad;z1+=pad;
+  const s=Math.max(x1-x0,z1-z0),W=400,X=x=>((x-x0)/s*W).toFixed(1),Z=z=>(W-(z-z0)/s*W).toFixed(1);
+  const k=P.filter(p=>p[0]==='k').length,t=P.length-k;
+  return `<svg class="heat" viewBox="0 0 ${W} ${W}"><defs><radialGradient id="hk"><stop offset="0" stop-color="#ff5a3c" stop-opacity=".55"/><stop offset="1" stop-color="#ff5a3c" stop-opacity="0"/></radialGradient><radialGradient id="ht"><stop offset="0" stop-color="#8fb0ff" stop-opacity=".55"/><stop offset="1" stop-color="#8fb0ff" stop-opacity="0"/></radialGradient></defs>`+
+    (U.length>2?`<polygon points="${U.map(p=>X(p[0])+','+Z(p[1])).join(' ')}" fill="#23271f" stroke="#6b4f2a" stroke-width="2"/>`:'')+
+    P.map(p=>`<circle cx="${X(p[1])}" cy="${Z(p[2])}" r="16" fill="url(#h${p[0]==='k'?'k':'t'})"/>`).join('')+
+    P.map(p=>`<circle cx="${X(p[1])}" cy="${Z(p[2])}" r="2.2" fill="${p[0]==='k'?'#ff5a3c':'#8fb0ff'}"/>`).join('')+
+    `<text x="8" y="${W-8}" font-size="12" fill="#ccc">↑ Norden · ${k} Kills (rot) · ${t} Tode (blau)</text></svg>`}
+function badgeKarte(x,bereich,defs){const offen=!x.n,st=x.stufe;const nx=x.naechste;const prog=nx?Math.round(Math.min(1,x.n/nx[0])*100):100;
+  return `<div class="bg ${offen?'offen':''}">${medaille(x.icon,st,x.n)}<div><b>${esc(x.titel)}${x.schaetzung?'<span class="schaetz" title="Aus den Log-Positionen geschätzt, nicht exakt">Schätzung</span>':''}</b>
+    <span class="stufe st-${st||'offen'}">${st?STN[st]+' · '+x.n+'×':'noch nicht geholt'}</span>
+    <div class="mut">So bekommst du ihn: ${esc(x.erklaerung)}</div>
+    ${x.n?`<div class="mut">Zuerst: ${datumB(x.zuerst)} · zuletzt: ${datumB(x.zuletzt)}</div>`:''}
+    ${nx?`<div class="fort" title="${x.n} von ${nx[0]}"><i style="width:${prog}%"></i></div><div class="mut">nächste Stufe ${esc(nx[1])} bei ${nx[0]}× (noch ${nx[0]-x.n})</div>`:'<div class="mut">Höchste Stufe erreicht 💎</div>'}</div></div>`}
+function meilenKarte(e){const prog=Math.round(Math.min(1,(e.wert||0)/e.schwelle)*100);
+  return `<div class="bg ${e.erreicht?'':'offen'}">${medaille(e.icon,e.erreicht?e.stufe:null,0)}<div><b>${esc(e.titel)}</b><span class="stufe st-${e.erreicht?e.stufe:'offen'}">${e.erreicht?STN[e.stufe]:'offen'}</span>
+    <div class="mut">${esc(e.text)}</div>${e.erreicht?`<div class="mut">Erreicht: ${datumB(e.t)}</div>`:`<div class="fort"><i style="width:${prog}%"></i></div><div class="mut">${e.wert} von ${e.schwelle}${e.einheit?' '+esc(e.einheit):''}</div>`}</div></div>`}
+const kach=l=>`<div class="kacheln" style="margin-top:8px">${l.map(([a,b])=>`<div class="kachel"><b style="font-size:19px">${a}</b><span>${b}</span></div>`).join('')}</div>`;
+function titelWahl(c){const st=c.statistik||{},opt=[];
+  ((st.dm||{}).stil||[]).filter(x=>x.n).forEach(x=>opt.push(['dm:'+x.id,'⚔️ '+x.titel+' ('+STN[x.stufe]+')']));
+  ((st.pve||{}).stil||[]).filter(x=>x.n).forEach(x=>opt.push(['pve:'+x.id,'🌲 '+x.titel+' ('+STN[x.stufe]+')']));
+  const akt=st.titel_wahl?st.titel_wahl.bereich+':'+st.titel_wahl.id:'';
+  return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><span class="mut">🏷 Mein Titel unter dem Namen:</span><select data-titel="${esc(c.name)}" style="font:inherit;padding:4px;border-radius:8px;background:var(--panel2);color:var(--text);border:1px solid var(--line)"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===akt?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':'<span class="mut">Hol dir einen Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>'}</div>`}
+function meineStat(d){const out=[];
+  for(const c of d.charaktere){const st=c.statistik||{};if(!st.dm&&!st.pve)continue;
+    out.push(`<div class="panel"><h2 style="margin:0">${esc(c.name)}${st.titel?`<span class="titel">${esc(st.titel)}</span>`:''}</h2>${titelWahl(c)}`);
+    const m=st.dm;
+    if(m){const p=m.profil||{};
+      out.push(`<h3 class="bereich">⚔️ Deathmatch</h3>`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
+        +`<div class="zwei"><div><h4>🔫 Kills nach Waffe</h4>${balken(m.waffen)||'<div class="mut">–</div>'}</div><div><h4>☠️ Tode durch Waffe</h4>${balken(m.tode_waffen)||'<div class="mut">–</div>'}</div></div>`
+        +`<div class="zwei"><div><h4>📏 Kill-Entfernungen</h4>${balken(m.distanzen.map((n,i)=>[(i?m.faecher[i-1]:0)+(i<m.faecher.length?'–'+m.faecher[i]:'+')+' m',n]))}</div>`
+        +`<div><h4>🕐 Wann du killst (Stunde, Berliner Zeit)</h4>${stundenBild(m.stunden)}<h4>📅 Wochentage</h4>${balken(m.wochentage.map((n,i)=>[WTN[i],n]))}</div></div>`
+        +`<h4>📈 Elo-Verlauf</h4>${eloBild(m.elo_verlauf)}`
+        +((p.nemesis||p.opfer||p.rivale)?`<h4>😈 Nemesis &amp; Rivalen</h4>${p.nemesis?`<div class="rh"><span>Nemesis (erwischt dich am öftesten)</span><b>${esc(p.nemesis[0])} · ${p.nemesis[1]}×</b></div>`:''}${p.opfer?`<div class="rh"><span>Lieblingsopfer</span><b>${esc(p.opfer[0])} · ${p.opfer[1]}×</b></div>`:''}${p.rivale?`<div class="rh"><span>Rivale</span><b>${esc(p.rivale[0])} · ${p.rivale[1]} : ${p.rivale[2]}</b></div>`:''}`:'')
+        +(m.saisons.length?`<h4>👑 Saison-Platzierungen</h4>${m.saisons.map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)}: Platz ${s[1]}</span>`).join('')}`:'')
+        +`<h4>🏅 DM-Erfolge</h4><div class="bgs">${m.erfolge.map(meilenKarte).join('')}</div>`
+        +`<h4>🎖 DM-Stil-Erfolge <span class="mut">(mehrfach holbar: 1× Bronze · 5× Silber · 10× Gold · 25× Platin · 50× Diamant)</span></h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`
+        +(Object.keys(m.heat||{}).length?`<h4>🔥 Deine Heatmap je Arena <span class="mut">(nur für dich sichtbar)</span></h4><div class="bgs" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${Object.values(m.heat).map(h=>`<div><b>${esc(h.titel)}</b>${heatBild(h)}</div>`).join('')}</div><div class="mut">Brauner Rand = Arena-Mauer. Gezählt ab dem 10.11.2026.</div>`:'')
+        +(m.runden_liste.length?`<h4>📜 Deine letzten Runden</h4>${m.runden_liste.slice(0,15).map(r=>`<div class="mut">${uhr(r[3])} · ${esc(r[1])} · ${esc(r[2])}${r[4]?` · <b style="color:var(--text)">${r[4][0]} Kills / ${r[4][1]} Tode</b>`:''} · <a href="/zuschauer/runde/${r[0]}" style="color:inherit">Runde ansehen</a></div>`).join('')}`:''))}
+    const v=st.pve;
+    if(v){out.push(`<h3 class="bereich pve">🌲 PvE Chernarus</h3>`+kach([[dauer(v.spielzeit),'Spielzeit'],[dauer(v.ueberlebt),'am Leben seit'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[v.kd,'K/D'],[v.strecke+' km','gelaufen'],[v.werte.weitester?v.werte.weitester+' m':'–','weitester Kill'],[v.werte.bewusstlos,'mal bewusstlos'],[(v.schatz.funde||0)+' / '+(v.schatz.ketten||0),'Schätze / Ketten']])
+        +`<div class="zwei"><div><h4>🔫 Lieblingswaffen</h4>${balken(v.waffen)||'<div class="mut">–</div>'}</div><div><h4>📅 Spielzeit nach Wochentag</h4>${balken((v.wochentag||[]).map((n,i)=>[WTN[i],n]),dauer)}</div></div>`
+        +`<div class="zwei"><div><h4>🎯 Deine Opfer</h4>${balken(v.opfer)||'<div class="mut">–</div>'}</div><div><h4>☠️ Erwischt von</h4>${balken(v.getoetet_von)||'<div class="mut">–</div>'}</div></div>`
+        +`<h4>🏅 PvE-Erfolge</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div>`
+        +`<h4>🎖 PvE-Stil-Erfolge <span class="mut">(mehrfach holbar: 1× Bronze · 5× Silber · 10× Gold · 25× Platin · 50× Diamant)</span></h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`
+        +`<div class="mut">🔥 Deine PvE-Kill- und Todesorte (${v.heat.length}) siehst du unten auf deiner Karte – nur du.</div>`)}
+    out.push('</div>')}
+  $('#mStat').innerHTML=out.join('');$('#mStat').dataset.offen=1;
+  $$('#mStat [data-titel]').forEach(s=>s.onchange=async()=>{const [b,id]=(s.value||':').split(':');
+    const r=await fetch('/zuschauer/titel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gamertag:s.dataset.titel,bereich:b,id})});
+    const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Ging nicht');return}delete $('#mStat').dataset.offen;meineLaden();laden()})}
 const _tab=tab;tab=t=>{_tab(t);if(t==='meine')meineLaden();if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
