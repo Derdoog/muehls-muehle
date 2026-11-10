@@ -59,6 +59,14 @@
   input.feld{width:100%;font:inherit;padding:10px;border-radius:9px;border:1px solid var(--line);background:var(--panel2);color:var(--text);margin-bottom:10px}
   #mKarte{height:min(70vh,640px);border-radius:12px;border:1px solid var(--line);background:#1b1d18}
   .basis{font-size:18px;line-height:22px;text-align:center}
+  .ortlabel{color:#fff;font-weight:700;text-shadow:0 0 3px #000,0 0 6px #000;white-space:nowrap;font-size:12px;pointer-events:none}
+  .ortlabel.stadt{font-size:14px;color:#ffe9a8}
+  .pqlabel{color:rgba(255,255,255,.75);font:11px Consolas,monospace;text-shadow:0 0 3px #000;white-space:nowrap;pointer-events:none}
+  .legende{background:rgba(17,19,22,.88);color:#ece8df;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.7;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+  .legende i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:middle;margin-right:6px;border:2px solid #fff}
+  .legende i.linie{border:0;border-radius:2px;height:3px;width:16px} .legende i.ring{background:transparent!important}
+  .legende label{display:block;cursor:pointer} .legende input{margin:0 6px 0 0;vertical-align:middle}
+  .leaflet-popup-content{font-size:13px} .koord{font:12px Consolas,monospace}
   footer{max-width:1200px;margin:auto;padding:0 16px 30px;color:var(--mut);font-size:12px}
   @media(max-width:760px){.kacheln{grid-template-columns:1fr 1fr}.zwei{grid-template-columns:1fr}.ev .uhr{width:44px;white-space:normal;font-size:11px}h1{font-size:17px}}
 </style>
@@ -201,6 +209,19 @@ $('#loginBtn').onclick=async()=>{if(ICH&&ICH.benutzer){await fetch('/zuschauer/l
   $('#lf').onsubmit=async ev=>{ev.preventDefault();const r=await fetch('/zuschauer/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({benutzer:$('#lb').value,passwort:$('#lp').value})});
     const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').textContent=j.meldung||'Anmeldung fehlgeschlagen';return}dlg.close();await ichLaden();tab('meine');meineLaden()}};
 function skript(u){return new Promise((ok,f)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=f;document.head.appendChild(s)})}
+const pq=p=>p?`${String(Math.floor(p[0]/100)).padStart(3,'0')} ${String(Math.floor((15360-p[1])/100)).padStart(3,'0')}`:'';
+let ORTE=null;
+function ortBei(p){if(!ORTE||!p)return '';let best=null,bd=1e9;for(const o of ORTE){if(!['Capital','City','Village','Camp','Local','RailroadStation','LocalOffice','Marine'].includes(o[3]))continue;
+  const d=Math.hypot(o[1]-p[0],o[2]-p[1]);if(d<bd){bd=d;best=o}}return best?(bd<700?best[0]:bd<1800?'nahe '+best[0]:'Wildnis'):''}
+const koordText=p=>`<div class="koord">X ${Math.round(p[0])} · Y ${Math.round(p[1])}<br>Planquadrat ${pq(p)}</div><span class="mut">${esc(ortBei(p))}</span>`;
+let MEBENE={orte:true,raster:true};try{Object.assign(MEBENE,JSON.parse(localStorage.getItem('meine_ebenen')||'{}'))}catch(e){}
+let MO=null,MR=null;
+function rasterZeichnen(){if(!MK)return;MR.clearLayers();if(!MEBENE.raster)return;const z=MK.getZoom(),s=z>=-1.5?1000:(z>=-3?1000:3000);
+  for(let v=0;v<=15360;v+=s){L.polyline([[v,0],[v,15360]],{color:'#fff',weight:1,opacity:.18,interactive:false}).addTo(MR);L.polyline([[0,v],[15360,v]],{color:'#fff',weight:1,opacity:.18,interactive:false}).addTo(MR)}
+  if(z>=-3)for(let x=0;x<15360;x+=1000)for(let y=0;y<15360;y+=1000)L.marker([y+1000,x],{interactive:false,icon:L.divIcon({className:'pqlabel',html:`${String(x/100).padStart(3,'0')} ${String(Math.floor((15360-y-1000)/100)).padStart(3,'0')}`,iconSize:null,iconAnchor:[-3,-3]})}).addTo(MR)}
+function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)return;const z=MK.getZoom();
+  ORTE.forEach(o=>{const gross=['Capital','City'].includes(o[3]);if(!gross&&!(o[3]==='Village'&&z>=-3)&&!(['Camp','Local','LocalOffice','RailroadStation'].includes(o[3])&&z>=-1.5))return;
+    L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
 let MLAEUFT=false;
 async function meineLaden(){if(!ICH||!ICH.benutzer||MLAEUFT)return;MLAEUFT=true;try{await meineLaden2()}finally{MLAEUFT=false}}
 async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)return;
@@ -210,16 +231,31 @@ async function meineLaden2(){const d=await holeJson('/zuschauer/meine');if(!d)re
     :'<div class="mut">Dir ist noch kein Gamertag zugeordnet. Sag dem Admin Bescheid.</div>';
   if(!window.L){const c=document.createElement('link');c.rel='stylesheet';c.href='/zuschauer/leaflet.css';document.head.appendChild(c);try{await skript('/zuschauer/leaflet.js')}catch(e){$('#mKarte').innerHTML='<div class="mut" style="padding:16px">Karte konnte nicht geladen werden.</div>';return}}
   const B=[[0,0],[15360,15360]],ll=p=>[p[1],p[0]],pts=[];
-  if(!MK){MK=L.map('mKarte',{crs:L.CRS.Simple,minZoom:-5,maxZoom:1,zoomSnap:.25,attributionControl:false});L.imageOverlay('/zuschauer/karte.jpg',B).addTo(MK);MG=L.layerGroup().addTo(MK);MK.fitBounds(B);MK._erst=true}
-  MG.clearLayers();if(!$('#mKarte').offsetWidth)return;MK.invalidateSize();
+  if(!ORTE)ORTE=await holeJson('/zuschauer/orte.json');
+  if(!MK){MK=L.map('mKarte',{crs:L.CRS.Simple,minZoom:-5,maxZoom:1,zoomSnap:.25,attributionControl:false});L.imageOverlay('/zuschauer/karte.jpg',B).addTo(MK);
+    MR=L.layerGroup().addTo(MK);MO=L.layerGroup().addTo(MK);MG=L.layerGroup().addTo(MK);MK.fitBounds(B);MK._erst=true;
+    MK.on('zoomend',()=>{rasterZeichnen();orteZeichnen()});
+    MK.on('click',e=>L.popup().setLatLng(e.latlng).setContent(koordText([e.latlng.lng,e.latlng.lat])).openOn(MK));
+    const leg=L.control({position:'bottomleft'});leg.onAdd=()=>{const d=L.DomUtil.create('div','legende');
+      const zu=innerWidth<700;d.innerHTML=`<div class="legkopf" style="cursor:pointer;font-weight:600">🗺 Legende <span class="legpf">${zu?'▸':'▾'}</span></div><div class="leginhalt" style="display:${zu?'none':'block'}"><div><i style="background:#3fa66b"></i>dein Charakter (online)</div><div><i style="background:#777"></i>letzte Position (offline)</div>
+        <div><i class="linie" style="background:#3fa66b"></i>gelaufener Weg</div><div><i class="ring" style="border-color:#ff5a3c"></i>dein Kill</div>
+        <div><i class="ring" style="border-color:#b9b2a6"></i>dein Tod</div><div>🏠 Basis · ⛺ Lager · 🚩 Flagge</div>
+        <label><input type="checkbox" data-me="raster" ${MEBENE.raster?'checked':''}>Planquadrate</label><label><input type="checkbox" data-me="orte" ${MEBENE.orte?'checked':''}>Ortsnamen</label>
+        <div class="mut" style="color:#bbb">Tippen auf die Karte zeigt Koordinaten</div></div>`;
+      d.querySelector('.legkopf').onclick=()=>{const x=d.querySelector('.leginhalt'),o=x.style.display==='none';x.style.display=o?'block':'none';d.querySelector('.legpf').textContent=o?'▾':'▸';};
+      L.DomEvent.disableClickPropagation(d);
+      d.querySelectorAll('[data-me]').forEach(c=>c.onchange=()=>{MEBENE[c.dataset.me]=c.checked;try{localStorage.setItem('meine_ebenen',JSON.stringify(MEBENE))}catch(e){}rasterZeichnen();orteZeichnen()});return d};
+    leg.addTo(MK)}
+  MG.clearLayers();if(!$('#mKarte').offsetWidth)return;MK.invalidateSize();rasterZeichnen();orteZeichnen();
   const FARBE=['#3fa66b','#4c8fd6','#d9ab2e','#c060c0','#e0703a','#50c0c0'];
   d.charaktere.filter(c=>!c.unbekannt).forEach((c,i)=>{const f=FARBE[i%FARBE.length];
     let seg=[];(c.spur||[]).forEach((q,j)=>{const v=c.spur[j-1];if(v&&(Math.hypot(q[0]-v[0],q[1]-v[1])>2500||q[2]-v[2]>900)){if(seg.length>1)L.polyline(seg,{color:f,weight:2,opacity:.75}).addTo(MG);seg=[]}seg.push(ll(q));pts.push(ll(q))});
     if(seg.length>1)L.polyline(seg,{color:f,weight:2,opacity:.75}).addTo(MG);
     (c.kills||[]).forEach(k=>{if(!k.pos)return;const eig=k.taeter===c.name;L.circleMarker(ll(k.pos),{radius:5,color:eig?'#ff5a3c':'#b9b2a6',weight:2,fillOpacity:.6})
-      .bindPopup(k.taeter?`${esc(k.taeter)} ➜ ${esc(k.opfer)}<br>${esc(k.waffe||'')} · ${k.m||0} m<br><span class="mut">${uhr(k.t)}</span>`:`${esc(k.opfer)} ✝ ${esc(k.ursache||'')}<br><span class="mut">${uhr(k.t)}</span>`).addTo(MG)});
-    (c.basen||[]).forEach(b=>{pts.push(ll(b.pos));L.marker(ll(b.pos),{icon:L.divIcon({className:'basis',html:b.flagge?'🚩':(b.n>=3?'🏠':'⛺'),iconSize:[22,22]})}).bindPopup(`${b.n>=3?'Basis':'Lager'} von ${esc(c.name)}<br><span class="mut">zuletzt ${vor(b.zuletzt)}</span>`).addTo(MG)});
-    if(c.pos){pts.push(ll(c.pos));L.circleMarker(ll(c.pos),{radius:8,color:'#fff',weight:2,fillColor:c.online?f:'#777',fillOpacity:1}).bindTooltip(esc(c.name)+(c.online?' (online)':' (letzte Position)'),{permanent:true,direction:'top',offset:[0,-8]}).addTo(MG)}});
+      .bindPopup((k.taeter?`${esc(k.taeter)} ➜ ${esc(k.opfer)}<br>${esc(k.waffe||'')} · ${k.m||0} m`:`${esc(k.opfer)} ✝ ${esc(k.ursache||'')}`)+`<br><span class="mut">${uhr(k.t)}</span>`+koordText(k.pos)).addTo(MG)});
+    (c.basen||[]).forEach(b=>{pts.push(ll(b.pos));L.marker(ll(b.pos),{icon:L.divIcon({className:'basis',html:b.flagge?'🚩':(b.n>=3?'🏠':'⛺'),iconSize:[22,22]})}).bindPopup(`${b.n>=3?'Basis':'Lager'} von ${esc(c.name)}<br><span class="mut">zuletzt ${vor(b.zuletzt)}</span>`+koordText(b.pos)).addTo(MG)});
+    if(c.pos){pts.push(ll(c.pos));L.circleMarker(ll(c.pos),{radius:9,color:'#fff',weight:2,fillColor:c.online?f:'#777',fillOpacity:1}).bindTooltip(esc(c.name),{permanent:true,direction:'top',offset:[0,-9]})
+      .bindPopup(`<b>${esc(c.name)}</b> ${c.online?'🟢 online':'⚫ offline, zuletzt '+vor(c.zuletzt)}<br>${koordText(c.pos)}`).addTo(MG)}});
   if(MK._erst&&pts.length){MK.fitBounds(L.latLngBounds(pts).pad(.4),{maxZoom:-1});MK._erst=false}}
 const _tab=tab;tab=t=>{_tab(t);if(t==='meine')meineLaden();if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
