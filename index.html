@@ -618,6 +618,12 @@ document.querySelectorAll('[data-recht]').forEach(button=>{
 document.querySelectorAll('[data-speicher]').forEach(button=>{
   button.onclick=()=>{sichtSpeicher.setzen(button.dataset.speicher);speicherStatus();document.getElementById('recht-speicher').close()};
 });
+function rechtAusLink(){
+  const ziel={'#impressum':'impressum','#datenschutz':'datenschutz','#cookie-einstellungen':'speicher'}[location.hash];
+  if(ziel)document.querySelector('[data-recht="'+ziel+'"]').click();
+}
+window.addEventListener('hashchange',rechtAusLink);
+rechtAusLink();
 </script>
 
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
