@@ -147,6 +147,11 @@
   .zonen-raster dd{margin:0;font-weight:700}
   .zonen-symbol{display:block;font-size:18px}
   @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .stat-podest{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px}
+  .stat-podest-kachel{min-width:0;padding:10px;border:1px solid var(--line2);background:var(--panel2);overflow-wrap:anywhere}
+  .stat-podest-kachel small,.stat-podest-kachel .mut{display:block}
+  .stat-podest-kachel small{margin-bottom:5px;color:var(--acc2)}
+  .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
   .stat-uebersicht{display:grid;gap:12px;min-width:0}
   .stat-uebersicht>.panel{margin:0;padding:clamp(12px,2vw,20px)}
   .stat-uebersicht>.panel h4{margin:0 0 10px;color:var(--acc2)}
@@ -1201,11 +1206,31 @@ function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).ma
   const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
   return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
 const uebersichtPanel=(titel,inhalt)=>`<section class="panel"><h4>${esc(titel)}</h4>${inhalt}</section>`;
+function podestKartenRivalen(m){
+  const p=m.profil||{};
+  const kachel=(titel,inhalt,wert='')=>`<div class="stat-podest-kachel"><small>${titel}</small><b>${inhalt}</b>${wert?`<span class="mut">${wert}</span>`:''}</div>`;
+  const spieler=n=>`<button class="name" type="button" data-stat-rivale="${esc(n)}">${GT(n,'dm')}</button>`;
+  const kacheln=[
+    ...(p.podest||[]).slice(0,3).map((n,i)=>kachel(['🥇 Siege','🥈 Zweite Plätze','🥉 Dritte Plätze'][i],n)),
+    p.karte_fav&&kachel('🗺️ Lieblingskarte',esc(p.karte_fav[0]),p.karte_fav[1]+' Runden'),
+    p.modus_fav&&kachel('🎲 Lieblingsmodus',esc(p.modus_fav[0]),p.modus_fav[1]+' Runden'),
+    p.nemesis&&kachel('😈 Dein Nemesis',spieler(p.nemesis[0]),p.nemesis[1]+'× von diesem Spieler erwischt'),
+    p.opfer&&kachel('🎯 Häufigstes Opfer',spieler(p.opfer[0]),p.opfer[1]+'× erledigt'),
+    p.rivale&&kachel('⚔️ Dein Rivale',spieler(p.rivale[0]),p.rivale[1]+' Kills / '+p.rivale[2]+' Tode'),
+    (m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)&&kachel('💰 Kopfgeld und Juggernaut', (m.kopfgeld_kills||0)+' Kopfgelder', (m.jugg_runden||0)+'× Juggernaut · '+(m.jugg_kills||0)+' erlegt')
+  ].filter(Boolean);
+  const saison=(m.saisons||[]).map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)} · Platz ${s[1]}</span>`).join(' ');
+  return uebersichtPanel('Podest, Karten und Rivalen',`<div class="stat-podest">${kacheln.join('')}</div>${!kacheln.length?'<p class="mut">Noch keine Werte erfasst.</p>':''}${saison?`<p class="mut">👑 Saison-Platzierungen</p>${saison}`:''}`);
+}
+document.addEventListener('click',e=>{
+  const spieler=e.target.closest('[data-stat-rivale]');
+  if(spieler&&D)dmProfil(spieler.dataset.statRivale);
+});
 function letzteRunden(runden){
   const zeilen=(runden||[]).slice(0,15).map(r=>`<div class="stat-runde">
     <div><b>${esc(r[1])} · ${esc(r[2])}</b><small>${uhr(r[3])}</small></div>
     <div>${r[4]?`<b>${r[4][0]} Kills / ${r[4][1]} Tode</b><br>`:''}<a href="/zuschauer/runde/${esc(r[0])}">Runde ansehen</a></div></div>`).join('');
-  return uebersichtPanel('Meine letzten Runden',zeilen?`<div class="stat-runden">${zeilen}</div>`:'<div class="mut">Noch keine Runden erfasst.</div>');
+  return statistikBlock('Meine letzten Runden',zeilen?`<div class="stat-runden">${zeilen}</div>`:'<div class="mut">Noch keine Runden erfasst.</div>');
 }
 const statistikBlock=(titel,inhalt)=>`<details class="statistik-block" data-statistik="${esc(titel)}"><summary>${esc(titel)}</summary><div>${inhalt||'<p class="mut">Noch keine Daten.</p>'}</div></details>`;
 function dmPerformance(m){
@@ -1244,9 +1269,10 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
   // Übersicht
   $('#mUebersichtExtra').innerHTML=nachtragText()+vsTestkonto(d);
   // Deathmatch
-  if(m){const p=m.profil||{};
+  if(m){
     $('#mr-dm').innerHTML=`<div class="stat-uebersicht"><div class="panel"><h3 class="bereich">⚔️ Deathmatch · ${esc(m.name)}</h3>`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
-      +'</div>'+letzteRunden(m.runden_liste)
+      +'</div>'
+      +podestKartenRivalen(m)+letzteRunden(m.runden_liste)
       +dmPerformance(m)
       +uebersichtPanel('Elo-Verlauf',eloBild(m.elo_verlauf))
       +'<section class="panel"><h4>Rundenbilanz im Detail</h4><div class="stat-details">'
@@ -1255,13 +1281,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
       +statistikBlock('📏 Kill-Entfernungen',balken(m.distanzen.map((n,i)=>[(i?m.faecher[i-1]:0)+(i<m.faecher.length?'–'+m.faecher[i]:'+')+' m',n])))
       +statistikBlock('🕐 Kills nach Uhrzeit (Berlin)',stundenBild(m.stunden))
       +statistikBlock('📅 Kills nach Wochentag',balken(m.wochentage.map((n,i)=>[WTN[i],n])))
-      +'</div></section><section class="panel"><h4>Podest, Karten und Rivalen</h4>'
-      +(p.podest?`<div class="rh"><span>🏆 Podestplätze</span><b>🥇 ${p.podest[0]} · 🥈 ${p.podest[1]} · 🥉 ${p.podest[2]}</b></div>`:'')
-      +(p.karte_fav?`<div class="rh"><span>🗺 Lieblingskarte</span><b>${esc(p.karte_fav[0])} (${p.karte_fav[1]}×)</b></div>`:'')+(p.modus_fav?`<div class="rh"><span>🎲 Lieblingsmodus</span><b>${esc(p.modus_fav[0])} (${p.modus_fav[1]}×)</b></div>`:'')
-      +((m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)?`<div class="rh"><span>💰 Kopfgeld / 🛡️ Juggernaut</span><b>${m.kopfgeld_kills||0}× kassiert · ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0}× erlegt</b></div>`:'')
-      +((p.nemesis||p.opfer||p.rivale)?`<h4>😈 Nemesis &amp; Rivalen</h4>${p.nemesis?`<div class="rh"><span>Nemesis (erwischt dich am öftesten)</span><b>${esc(p.nemesis[0])} · ${p.nemesis[1]}×</b></div>`:''}${p.opfer?`<div class="rh"><span>Lieblingsopfer</span><b>${esc(p.opfer[0])} · ${p.opfer[1]}×</b></div>`:''}${p.rivale?`<div class="rh"><span>Rivale</span><b>${esc(p.rivale[0])} · ${p.rivale[1]} : ${p.rivale[2]}</b></div>`:''}`:'')
-      +(m.saisons.length?`<h4>👑 Saison-Platzierungen</h4>${m.saisons.map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)}: Platz ${s[1]}</span>`).join('')}`:'')
-+'</section></div>'}
++'</div></section></div>'}
   else $('#mr-dm').innerHTML=`<div class="panel">${keinDm}</div>`;
   // PvE
   $('#mr-pve').innerHTML=v?`<div class="stat-uebersicht"><div class="panel"><h3 class="bereich pve">🌲 PvE Chernarus · ${wahlTxt}</h3>`+kach([[dauer(v.spielzeit),'Spielzeit'],[dauer(v.ueberlebt),'am Leben seit'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[v.kd,'K/D'],[v.strecke+' km','gelaufen'],[v.werte.weitester?v.werte.weitester+' m':'–','weitester Kill'],[v.werte.bewusstlos,'mal bewusstlos'],[(v.schatz.funde||0)+' / '+(v.schatz.ketten||0),'Schätze / Ketten']])
