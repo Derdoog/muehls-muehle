@@ -175,6 +175,21 @@
   .stat-podest-kachel small{color:var(--acc2)}
   .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
   @media(max-width:950px){.stat-podest{grid-template-columns:minmax(0,1fr);gap:8px}}
+  .bewegung-kontext{margin:12px 0}
+  .bewegung-raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:8px;align-items:start}
+  .bewegung-karte{min-width:0;padding:10px 12px;background:var(--panel2);border:1px solid var(--line2)}
+  .bewegung-karte h5,.bewegung-karte h6{margin:0 0 6px}
+  .bewegung-karte h5{color:var(--acc2)}
+  .bewegung-karte h6{margin-top:10px;color:var(--mut);font-size:11px;text-transform:uppercase}
+  .bewegung-legende,.bewegung-werte{display:flex;gap:12px;flex-wrap:wrap}
+  .bewegung-legende{margin-bottom:6px;font-size:12px}
+  .bewegung-legende span:before{content:'';display:inline-block;width:8px;height:8px;margin-right:5px;background:currentColor}
+  .bewegung-legende span:first-child,.bewegung-werte span:first-child{color:#e9bb65}
+  .bewegung-legende span:last-child,.bewegung-werte span:last-child{color:#a9c184}
+  .bewegung-zeile{margin-bottom:7px}
+  .bewegung-zeile>div:first-child{display:flex;justify-content:space-between;flex-wrap:wrap;gap:3px 8px;font-size:12px}
+  .bewegung-balken{height:5px;margin-top:3px;background:#829c60}
+  .bewegung-balken i{display:block;height:100%;background:#d4a34d}
   .performance-liste{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
   .performance-liste li{display:grid;grid-template-columns:1em minmax(0,1fr);gap:6px}
   .performance-liste .plus{color:#8fd16a}
@@ -1289,12 +1304,25 @@ function gehaltenePosition(werte){
     <small class="mut">Anteile beziehen sich auf auswertbare Kills bzw. Tode. In der Gesamtbewertung erscheint ein Hinweis ab fünf auswertbaren Fällen, wenn mindestens die Hälfte auf gehaltene Positionen entfällt.</small>`;
 }
 function bewegungsKontext(daten){
-  const zeilen=(werte,namen,seite)=>werte?.[seite]?.flatMap(([ruhig,bewegt],i)=>ruhig+bewegt>=5
-    ?[[namen[i],positionsAnteil(ruhig,ruhig+bewegt)+' gehalten · '+positionsAnteil(bewegt,ruhig+bewegt)+' bewegt']]:[])||[];
-  const kills=zeilen(daten?.bewegung_distanz,distanzNamen,0).concat(zeilen(daten?.bewegung_hoehe,hoehenNamen,0));
-  const tode=zeilen(daten?.bewegung_distanz,distanzNamen,1).concat(zeilen(daten?.bewegung_hoehe,hoehenNamen,1));
-  const liste=(titel,werte)=>werte.length?`<h5>${titel}</h5><dl class="waffen-basis">${werte.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`:'';
-  return liste('Deine Kills nach Bewegung, Distanz und Höhe',kills)+liste('Bewegung deiner Gegner vor deinen Toden',tode);
+  const zeilen=(werte,namen,seite)=>werte?.[seite]?.flatMap(([ruhig,bewegt],i)=>{
+    const n=ruhig+bewegt;
+    return n>=5?[[namen[i],Math.round(100*ruhig/n)]]:[];
+  })||[];
+  const block=(titel,seite)=>{
+    const gruppen=[
+      ['Distanz',zeilen(daten?.bewegung_distanz,distanzNamen,seite)],
+      ['Höhenlage',zeilen(daten?.bewegung_hoehe,hoehenNamen,seite)]
+    ].filter(([,werte])=>werte.length);
+    if(!gruppen.length)return '';
+    return `<section class="bewegung-karte"><h5>${titel}</h5>${gruppen.map(([name,werte])=>`
+      <h6>${name}</h6>${werte.map(([label,ruhig])=>`<div class="bewegung-zeile">
+        <div><span>${esc(label)}</span><b class="bewegung-werte" aria-label="${ruhig} Prozent gehalten, ${100-ruhig} Prozent in Bewegung"><span>${ruhig} %</span><span>${100-ruhig} %</span></b></div>
+        <div class="bewegung-balken" aria-hidden="true"><i style="width:${ruhig}%"></i></div>
+      </div>`).join('')}`).join('')}</section>`;
+  };
+  const inhalt=block('Deine Kills',0)+block('Deine Tode · Bewegung des Gegners',1);
+  return inhalt?`<div class="bewegung-kontext"><div class="bewegung-legende"><span>Position gehalten</span><span>In Bewegung</span></div>
+    <div class="bewegung-raster">${inhalt}</div></div>`:'';
 }
 function zeigeMatch(index,liste){
   if(!matchDialog){
