@@ -137,6 +137,17 @@
   .waffen-detail{padding:12px;background:var(--bg2)}
   .waffen-detail .wimg{display:block;width:min(100%,440px);height:clamp(100px,26vw,220px);object-fit:contain;margin:0 auto 12px}
   .waffen-rekorde,.waffen-werte{display:flex;flex-wrap:wrap;gap:6px 16px}
+  .waffen-gruppen{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:12px 0}
+  .waffen-gruppe{padding:12px;border:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
+  .waffen-gruppe h4{margin:0 0 8px}
+  .waffen-liste .wobo-munition summary{display:list-item;padding:6px 0}
+  .waffen-basis{display:grid;gap:6px;margin:0 0 8px}
+  .waffen-basis div{display:flex;justify-content:space-between;flex-wrap:wrap;gap:2px 10px}
+  .waffen-basis dt{color:var(--mut)}
+  .waffen-basis dd{margin:0;font-weight:700}
+  .waffen-gruppe a{color:var(--acc2)}
+  .waffen-spieler summary{grid-template-columns:minmax(0,1fr) auto;border:0}
+  .waffen-rekorde>div{width:100%}
   .waffen-spieler{padding:8px 0;border-top:1px solid var(--line)}
   .dm-wertung{container-type:inline-size}
   .dm-kompakt{display:none}
@@ -576,28 +587,116 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   $$('[data-n]').forEach(b=>b.onclick=()=>profil(b.dataset.n));
   $$('[data-dm]').forEach(b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();dmProfil(b.dataset.dm)});
 }
+const WOBO_WAFFEN={
+  "aur a1": [["556x45 Rounds", 600, 91.35, 91.35, 600, "https://wobo.tools/dayz-weapon-info-tool/AUR_A1/"]],
+  "aur ax": [["556x45 Rounds", 600, 107.47, 107.47, 450, "https://wobo.tools/dayz-weapon-info-tool/AUR_AX/"]],
+  "bizon": [["380 Rounds", 600, 35, 35, 300, "https://wobo.tools/dayz-weapon-info-tool/Bizon/"]],
+  "bk-12": [["12 Gauge Buckshot", 16.58, 140, 140, 50, "https://wobo.tools/dayz-weapon-info-tool/BK_12__Buck/"], ["12 Gauge Rubber Slugs", 16.58, 14.06, 140.63, 30, "https://wobo.tools/dayz-weapon-info-tool/BK_12__Rubber/"], ["12 Gauge Slugs", 16.58, 110, 110, 80, "https://wobo.tools/dayz-weapon-info-tool/BK_12__Slugs/"]],
+  "bk-133": [["12 Gauge Buckshot", 38.7, 140, 140, 50, "https://wobo.tools/dayz-weapon-info-tool/BK_133__Buck/"], ["12 Gauge Rubber Slugs", 38.7, 14.06, 140.63, 30, "https://wobo.tools/dayz-weapon-info-tool/BK_133__Rubber/"], ["12 Gauge Slugs", 38.7, 110, 110, 80, "https://wobo.tools/dayz-weapon-info-tool/BK_133__Slugs/"]],
+  "bk-18": [["762x39 Rounds", 13.73, 105.15, 110, 300, "https://wobo.tools/dayz-weapon-info-tool/BK_18/"]],
+  "bk-43": [["12 Gauge Buckshot", 28.57, 140, 140, 50, "https://wobo.tools/dayz-weapon-info-tool/BK_43__Buck/"], ["12 Gauge Rubber Slugs", 28.57, 14.06, 140.63, 30, "https://wobo.tools/dayz-weapon-info-tool/BK_43__Rubber/"], ["12 Gauge Slugs", 28.57, 110, 110, 80, "https://wobo.tools/dayz-weapon-info-tool/BK_43__Slugs/"]],
+  "blaze": [["308 Rounds", 27.58, 143.35, 143.35, 430, "https://wobo.tools/dayz-weapon-info-tool/Blaze/"]],
+  "cr-527": [["762x39 Rounds", 27.27, 110, 110, 350, "https://wobo.tools/dayz-weapon-info-tool/CR_527/"]],
+  "cr-550 savanna": [["308 Rounds", 27.27, 150, 150, 400, "https://wobo.tools/dayz-weapon-info-tool/CR_550_Savanna/"]],
+  "cr-61 skorpion": [["380 Rounds", 900, 35, 35, 190, "https://wobo.tools/dayz-weapon-info-tool/CR_61_Skorpion/"]],
+  "cr-75": [["9mm Rounds", 451.12, 38.78, 38.78, 190, "https://wobo.tools/dayz-weapon-info-tool/CR_75/"]],
+  "crossbow": [["Feathered Bolts", 11.25, 125, 85, 40, "https://wobo.tools/dayz-weapon-info-tool/Crossbow_Feathered_Bolts/"], ["Hunting Bolts", 11.25, 125, 95, 80, "https://wobo.tools/dayz-weapon-info-tool/Crossbow_Hunting_Bolts/"], ["Improvised Bolts", 11.25, 125, 85, 10, "https://wobo.tools/dayz-weapon-info-tool/Crossbow_Improvised_Bolts/"]],
+  "deagle": [["357 Rounds", 300, 64.71, 89.59, 210, "https://wobo.tools/dayz-weapon-info-tool/Deagle/"]],
+  "derringer": [["357 Rounds", 16.74, 51.76, 71.67, 160, "https://wobo.tools/dayz-weapon-info-tool/Derringer/"]],
+  "dmr": [["308 Rounds", 451.12, 150, 150, 600, "https://wobo.tools/dayz-weapon-info-tool/DMR/"]],
+  "engraved kolt 1911": [["45 Rounds", 451.12, 35.86, 39.85, 190, "https://wobo.tools/dayz-weapon-info-tool/Engraved_1911/"]],
+  "fx-45": [["45 Rounds", 451.12, 35.86, 39.85, 210, "https://wobo.tools/dayz-weapon-info-tool/FX_45/"]],
+  "ij-70": [["380 Rounds", 451.12, 30.43, 30.43, 110, "https://wobo.tools/dayz-weapon-info-tool/IJ_70/"]],
+  "ka-101": [["556x45 Rounds", 600, 96.72, 96.72, 340, "https://wobo.tools/dayz-weapon-info-tool/KA_101/"]],
+  "ka-74": [["545x39 Rounds", 600, 80.5, 89.44, 325, "https://wobo.tools/dayz-weapon-info-tool/KA_74/"]],
+  "ka-m": [["762x39 Rounds", 600, 90.13, 107.03, 400, "https://wobo.tools/dayz-weapon-info-tool/KAM/"]],
+  "kas-74u": [["545x39 Rounds", 600, 65.55, 72.83, 300, "https://wobo.tools/dayz-weapon-info-tool/KAS_74U/"]],
+  "kolt 1911": [["45 Rounds", 451.12, 35.86, 39.85, 190, "https://wobo.tools/dayz-weapon-info-tool/Kolt_1911/"]],
+  "lar": [["308 Rounds", 600, 129.7, 129.7, 500, "https://wobo.tools/dayz-weapon-info-tool/LAR/"]],
+  "le-mas": [["556x45 Rounds", 900, 107.47, 107.47, 300, "https://wobo.tools/dayz-weapon-info-tool/LE_MAS/"]],
+  "lee enfield": [["762x54 Rounds", 31.6, 144.82, 150, 590, "https://wobo.tools/dayz-weapon-info-tool/Lee_Enfield/"]],
+  "longhorn": [["308 Rounds", 12.67, 109.22, 109.22, 150, "https://wobo.tools/dayz-weapon-info-tool/Longhorn/"]],
+  "luger": [["9mm Rounds", 368.92, 36.84, 36.84, 190, "https://wobo.tools/dayz-weapon-info-tool/Luger/"]],
+  "m16-a2": [["556x45 Rounds", 550, 107.47, 107.47, 400, "https://wobo.tools/dayz-weapon-info-tool/M16/"]],
+  "m4-a1": [["556x45 Rounds", 900, 96.72, 96.72, 300, "https://wobo.tools/dayz-weapon-info-tool/M4A1/"]],
+  "m70 tundra": [["308 Rounds", 27.27, 150, 150, 440, "https://wobo.tools/dayz-weapon-info-tool/M_70/"]],
+  "m79": [["40mm Explosive Rounds", 10.58, 110, 110, 50, "https://wobo.tools/dayz-weapon-info-tool/M79_Launcher_Explosive/"], ["40mm Gas Rounds", 10.58, 110, 110, 50, "https://wobo.tools/dayz-weapon-info-tool/M79_Launcher_Gas/"], ["40mm Smoke Rounds", 10.58, 110, 110, 50, "https://wobo.tools/dayz-weapon-info-tool/M79_Launcher_Smoke/"]],
+  "mk ii": [["22 Rounds", 451.12, 20, 20, 160, "https://wobo.tools/dayz-weapon-info-tool/MK_II/"]],
+  "mlock-91": [["9mm Rounds", 451.12, 38.78, 38.78, 210, "https://wobo.tools/dayz-weapon-info-tool/Mlock_91/"]],
+  "mosin 91/30": [["762x54 Rounds", 27.27, 147.71, 150, 615, "https://wobo.tools/dayz-weapon-info-tool/Mosin_9130/"]],
+  "mp-18": [["9mm Rounds", 450, 40, 40, 220, "https://wobo.tools/dayz-weapon-info-tool/MP_18/"]],
+  "p1": [["9mm Rounds", 451.12, 34.9, 34.9, 120, "https://wobo.tools/dayz-weapon-info-tool/P1_Pistol/"]],
+  "pioneer": [["556x45 Rounds", 27.27, 110, 110, 300, "https://wobo.tools/dayz-weapon-info-tool/Pioneer/"]],
+  "r12": [["12 Gauge Buckshot", 212, 140, 140, 55, "https://wobo.tools/dayz-weapon-info-tool/R12_Shotgun__Buck/"], ["12 Gauge Rubber Slugs", 212, 14.06, 140.63, 35, "https://wobo.tools/dayz-weapon-info-tool/R12_Shotgun__Rubber/"], ["12 Gauge Slugs", 212, 110, 110, 90, "https://wobo.tools/dayz-weapon-info-tool/R12_Shotgun__Slugs/"]],
+  "rak-37": [["380 Rounds", 600, 32.72, 32.72, 160, "https://wobo.tools/dayz-weapon-info-tool/RAK_37/"]],
+  "repeater carbine": [["357 Rounds", 37.1, 65, 90, 320, "https://wobo.tools/dayz-weapon-info-tool/Repeater/"]],
+  "revolver": [["357 Rounds", 276.49, 58.24, 80.63, 190, "https://wobo.tools/dayz-weapon-info-tool/Magnum/"]],
+  "sawed-off bk-12": [["12 Gauge Buckshot", 16.58, 113.33, 113.33, 12, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_BK_12__Buck/"], ["12 Gauge Rubber Slugs", 16.58, 10.13, 101.25, 25, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_BK_12__Rubber/"], ["12 Gauge Slugs", 16.58, 89.57, 89.57, 25, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_BK_12__Slugs/"]],
+  "sawed-off bk-18": [["762x39 Rounds", 13.73, 75.11, 89.19, 190, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_BK_18/"]],
+  "sawed-off bk-43": [["12 Gauge Buckshot", 28.57, 113.33, 113.33, 12, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_BK_43__Buck/"], ["12 Gauge Rubber Slugs", 28.57, 10.13, 101.25, 25, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_BK_43__Rubber/"], ["12 Gauge Slugs", 28.57, 89.57, 89.57, 25, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_BK_43__Slugs/"]],
+  "sawed-off blaze": [["308 Rounds", 27.58, 102.39, 102.39, 260, "https://wobo.tools/dayz-weapon-info-tool/Sawed_Off_Blaze/"]],
+  "sawed-off mosin 91/30": [["762x54 Rounds", 27.27, 108.61, 118.72, 150, "https://wobo.tools/dayz-weapon-info-tool/Sawed_off_Mosin_9130/"]],
+  "sawed-off revolver": [["357 Rounds", 276.49, 51.76, 71.67, 135, "https://wobo.tools/dayz-weapon-info-tool/Sawed_Off_Magnum/"]],
+  "scr 16": [["556x45 Rounds", 600, 94.04, 94.04, 300, "https://wobo.tools/dayz-weapon-info-tool/SCR_16/"]],
+  "scr 17": [["308 Rounds", 600, 126.29, 126.29, 290, "https://wobo.tools/dayz-weapon-info-tool/SCR_17_Black/"]],
+  "sg5-k": [["9mm Rounds", 900, 40, 40, 210, "https://wobo.tools/dayz-weapon-info-tool/SG5_K/"]],
+  "signal pistol": [["Flare Cartridges", 12.16, 30, 10, 25, "https://wobo.tools/dayz-weapon-info-tool/Flare_Gun/"]],
+  "sk 59/66": [["762x39 Rounds", 451.12, 110, 110, 400, "https://wobo.tools/dayz-weapon-info-tool/SK_5966/"]],
+  "sporter 22": [["22 Rounds", 451.12, 20, 20, 280, "https://wobo.tools/dayz-weapon-info-tool/Sporter_22/"]],
+  "ssg 82": [["545x39 Rounds", 27.27, 115, 115, 430, "https://wobo.tools/dayz-weapon-info-tool/SSG_82/"]],
+  "sval": [["9x39 Rounds", 900, 75, 75, 220, "https://wobo.tools/dayz-weapon-info-tool/AS_VAL/"], ["9x39 Armour Piercing Rounds", 900, 75, 75, 220, "https://wobo.tools/dayz-weapon-info-tool/AS_VAL_AP/"]],
+  "usg-45": [["45 Rounds", 600, 37.66, 40, 210, "https://wobo.tools/dayz-weapon-info-tool/USG_45/"]],
+  "vaiga": [["12 Gauge Buckshot", 300, 125.93, 125.93, 50, "https://wobo.tools/dayz-weapon-info-tool/Vaiga__Buck/"], ["12 Gauge Rubber Slugs", 300, 11.25, 112.5, 30, "https://wobo.tools/dayz-weapon-info-tool/Vaiga__Rubber/"], ["12 Gauge Slugs", 300, 99.52, 99.52, 80, "https://wobo.tools/dayz-weapon-info-tool/Vaiga__Slugs/"]],
+  "vikhr": [["9x39 Rounds", 900, 75, 75, 260, "https://wobo.tools/dayz-weapon-info-tool/Vikhr/"], ["9x39 Armour Piercing Rounds", 900, 75, 75, 260, "https://wobo.tools/dayz-weapon-info-tool/Vikhr_AP/"]],
+  "vs-89": [["762x54 Rounds", 27.27, 150, 150, 600, "https://wobo.tools/dayz-weapon-info-tool/SV_98/"]],
+  "vsd": [["762x54 Rounds", 451.12, 144.82, 150, 640, "https://wobo.tools/dayz-weapon-info-tool/VSD/"]],
+  "vss": [["9x39 Rounds", 900, 75, 75, 410, "https://wobo.tools/dayz-weapon-info-tool/VSS/"], ["9x39 Armour Piercing Rounds", 900, 75, 75, 410, "https://wobo.tools/dayz-weapon-info-tool/VSS_AP/"]],
+};
+function woboWaffendaten(waffe, nummer){
+  const daten=WOBO_WAFFEN[waffe.toLowerCase()];
+  if(!daten)return '';
+  return `<section class="waffen-gruppe"><h4>DayZ-Waffendaten</h4>${daten.map(([munition,rate,health,schock,reichweite,url])=>`
+    <details class="wobo-munition" ${daten.length===1?'open':''}>
+      <summary><strong>${esc(munition)}</strong></summary>
+      <dl class="waffen-basis">
+        <div><dt>Feuerrate</dt><dd>${rate===null?'–':nummer(rate)+' Schuss/min'}</dd></div>
+        <div><dt>Health-Basisschaden</dt><dd>${health===null?'–':nummer(health)+' pro Schuss'}</dd></div>
+        <div><dt>Schock-Basisschaden</dt><dd>${schock===null?'–':nummer(schock)+' pro Schuss'}</dd></div>
+        <div><dt>Geschätzte Reichweite</dt><dd>${reichweite===null?'–':'ca. '+nummer(reichweite)+' m ohne Aufsätze'}</dd></div>
+      </dl><a href="${esc(url)}">Quelle: WOBO</a>
+    </details>`).join('')}</section>`;
+}
 function waffenKatalog(m){
   const el=$('#dWaffen'), katalog=m.waffenkatalog||[];
   const sig=JSON.stringify([katalog,WB]);
   if(el.dataset.sig===sig)return;
   el.dataset.sig=sig;
-  const offen=new Set([...el.querySelectorAll('details[open]')].map(x=>x.dataset.waffe));
+  const offen=new Set([...el.querySelectorAll('details[data-waffe][open]')].map(x=>x.dataset.waffe));
   const name=n=>`<b class="name" data-dm="${esc(n)}">${GT(n,'dm')}</b>`;
-  const nummer=n=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:1});
+  const nummer=n=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:2});
   el.innerHTML=katalog.map(w=>{
     const spieler=w.spieler||[], beste=spieler.filter(x=>x[1]>0&&x[1]===spieler[0][1]);
     const rekord=(i,t)=>{const max=Math.max(0,...spieler.map(x=>x[i]));return `<div><b>${t}</b> ${max?nummer(max)+' m · '+spieler.filter(x=>x[i]===max).map(x=>name(x[0])).join(', '):'–'}</div>`};
     const sum=i=>nummer(spieler.reduce((n,x)=>n+x[i],0));
+    const technik=woboWaffendaten(w.waffe,nummer);
     const titel=w.waffe.replace(/^./,c=>c.toUpperCase());
     return `<details data-waffe="${esc(w.waffe)}" ${offen.has(w.waffe)?'open':''}><summary>
       <b>${wbild(w.waffe)} ${esc(titel)}</b><strong>${nummer(w.kills)} Kills</strong>
       <small>Meiste Kills: ${beste.length?beste.map(x=>esc(x[0])).join(', ')+' · '+nummer(beste[0][1]):'–'}</small></summary>
       <div class="waffen-detail">${wbild(w.waffe)}<h4>${esc(titel)}</h4>
-      <div class="waffen-rekorde"><span>${nummer(w.kills)} Kills</span><span>${sum(3)} Treffer</span><span>${sum(2)} Kopf-Kills</span><span>${sum(4)} Kopftreffer</span><span>${sum(5)} Schaden</span>
-      ${rekord(6,'Weitester Kill')}${rekord(7,'Weitester Treffer')}</div>
-      <h4>Statistik je Spieler</h4>${spieler.length?spieler.map(([n,k,kk,t,tk,sch,km,tm])=>`<div class="waffen-spieler">${name(n)}
-      <div class="waffen-werte mut"><span>${nummer(k)} Kills</span><span>${nummer(kk)} Kopf-Kills</span><span>${nummer(t)} Treffer</span><span>${nummer(tk)} Kopftreffer</span><span>${nummer(sch)} Schaden</span>
-      <span>Weitester Kill: ${km?nummer(km)+' m':'–'}</span><span>Weitester Treffer: ${tm?nummer(tm)+' m':'–'}</span></div></div>`).join(''):'<div class="mut">Noch keine Werte im Server-Log.</div>'}</div></details>`
+      <div class="waffen-gruppen">
+        <section class="waffen-gruppe"><h4>Deathmatch gesamt</h4><div class="waffen-werte">
+          <span>${nummer(w.kills)} Kills</span><span>${sum(3)} Treffer</span><span>${sum(2)} Kopf-Kills</span><span>${sum(4)} Kopftreffer</span><span>${sum(5)} Schaden</span>
+        </div></section>
+        <section class="waffen-gruppe"><h4>Distanzrekorde</h4><div class="waffen-rekorde">
+          ${rekord(6,'Weitester Kill')}${rekord(7,'Weitester Treffer')}
+        </div></section>
+        ${technik}
+      </div>
+      <h4>Statistik je Spieler</h4>${spieler.length?spieler.map(([n,k,kk,t,tk,sch,km,tm])=>`<details class="waffen-spieler">
+      <summary><b>${GT(n,'dm')}</b><strong>${nummer(k)} Kills</strong></summary>
+      <div class="waffen-werte mut"><span>${nummer(kk)} Kopf-Kills</span><span>${nummer(t)} Treffer</span><span>${nummer(tk)} Kopftreffer</span><span>${nummer(sch)} Schaden</span>
+      <span>Weitester Kill: ${km?nummer(km)+' m':'–'}</span><span>Weitester Treffer: ${tm?nummer(tm)+' m':'–'}</span>${name(n)}</div></details>`).join(''):'<div class="mut">Noch keine Werte im Server-Log.</div>'}</div></details>`
   }).join('')||'<div class="mut">Waffenkatalog noch nicht verfügbar.</div>';
 }
 function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
