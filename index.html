@@ -1000,15 +1000,16 @@ function statusZeichnen(){const s=D&&D.status,el=$('#sStatus');if(!s||!s.t||Date
 let VOTE=null;
 // ---------------- Update 8: Custom-Matches von Zuschauern (Tom t825u/t826u)
 let CMF=null,MF=null,CMS='form',CMZ=null;
-function cmPanel(c){const el=$('#dCustom'),aktion=$('#dMatchAktion');aktion.replaceChildren();if(!c||!c.an){el.hidden=true;return}el.hidden=false;
+function cmPanel(c){const el=$('#dCustom'),aktion=$('#dMatchAktion');aktion.replaceChildren();el.hidden=!c?.an;
   const meine=(CMF&&CMF.meine)||[],dran=ICH&&ICH.benutzer;
   if(DIREKT){   // Fix 150/151: Knopf immer da und klickbar; jeder Klick zeigt Formular oder Grund (vorher: ohne Wirkung bzw. ganz weg)
     const knopf=document.createElement('button');
-    knopf.type='button';knopf.className='status'+(c.moeglich?'':' aus');knopf.textContent='🎮 Match erstellen';
-    knopf.title=c.moeglich?'Match erstellen':'Gerade nicht möglich – klicken für den Grund';
+    knopf.type='button';knopf.className='status'+(c?.moeglich?'':' aus');knopf.textContent='🎮 Match erstellen';
+    knopf.title=c?.moeglich?'Match erstellen':'Gerade nicht möglich – klicken für den Grund';
     knopf.onclick=()=>cmKlick(c);
     aktion.append(knopf);
   }
+  if(el.hidden)return;
   el.innerHTML=`<h3>🎮 Custom-Matches</h3>
     ${c.aktuell?`<div class="hinweis">Gerade läuft ein Custom-Match ${c.aktuell.gt?'von <b>'+esc(c.aktuell.gt)+'</b>':'aus der Abstimmung'}.</div>`:''}
     ${c.liste.length?c.liste.map((x,i)=>`<div class="cmq"><span class="nr">${i+1}</span>${x.bild?`<img src="${esc(x.bild)}" alt="" loading="lazy">`:''}<div style="flex:1;min-width:0"><b>${esc(x.titel)}</b>
