@@ -147,22 +147,18 @@
   .zonen-raster dd{margin:0;font-weight:700}
   .zonen-symbol{display:block;font-size:18px}
   @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  .stat-podest{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
-  .stat-podest-gruppe{grid-column:span 3;display:grid;grid-template-columns:subgrid;grid-template-rows:auto 1fr;min-width:0}
-  .stat-podest-gruppe.stat-karte{grid-column:span 2}
-  .stat-podest-gruppe h5{grid-column:1/-1;margin:0;padding:6px 8px;border-top:2px solid var(--acc2);background:var(--panel2);color:var(--acc2)}
-  .stat-podest-kachel{min-width:0;padding:10px;border:1px solid var(--line2);background:var(--panel2);overflow-wrap:anywhere}
-  .stat-podest-kachel img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;margin:5px 0;border:1px solid var(--line)}
-  .stat-podest-kachel .stat-symbol{display:inline-block;margin-right:4px;font-size:15px}
-  @media(max-width:950px){
-    .stat-podest{grid-template-columns:minmax(0,1fr);gap:14px}
-    .stat-podest-gruppe,.stat-podest-gruppe.stat-karte{grid-column:1;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
-    .stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}
-  }
-  @media(max-width:380px){.stat-podest-gruppe,.stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  .stat-podest-kachel small,.stat-podest-kachel .mut{display:block}
-  .stat-podest-kachel small{margin-bottom:5px;color:var(--acc2)}
-  .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+  .stat-podest{display:grid;grid-template-columns:3fr 2fr 3fr;gap:10px;align-items:stretch}
+  .stat-podest-gruppe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto minmax(94px,1fr);gap:1px;min-width:0;border:1px solid var(--line2);background:var(--line2)}
+  .stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stat-podest-gruppe h5{grid-column:1/-1;margin:0;padding:6px;text-align:center;background:var(--bg2);color:var(--acc2);line-height:1.25}
+  .stat-podest-kachel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;padding:6px;text-align:center;background:var(--panel2);overflow-wrap:anywhere}
+  .stat-podest-kachel img{display:block;width:min(100%,90px);height:30px;object-fit:cover;margin:4px auto 0;border:1px solid var(--line)}
+  .stat-podest-kachel .stat-symbol{width:16px;height:16px;flex:none}
+  .stat-podest-kachel .stat-kachel-titel{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px}
+  .stat-podest-kachel small,.stat-podest-kachel .mut{display:block;font-size:11px;line-height:1.25}
+  .stat-podest-kachel small{color:var(--acc2)}
+  .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
+  @media(max-width:950px){.stat-podest{grid-template-columns:minmax(0,1fr);gap:8px}}
   .stat-uebersicht{display:grid;gap:12px;min-width:0}
   .stat-uebersicht>.panel{margin:0;padding:clamp(12px,2vw,20px)}
   .stat-uebersicht>.panel h4{margin:0 0 10px;color:var(--acc2)}
@@ -1219,25 +1215,33 @@ function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).ma
 const uebersichtPanel=(titel,inhalt)=>`<section class="panel"><h4>${esc(titel)}</h4>${inhalt}</section>`;
 function podestKartenRivalen(m){
   const p=m.profil||{};
-  const kachel=(titel,inhalt,wert='')=>`<div class="stat-podest-kachel"><small>${titel}</small><b>${inhalt}</b>${wert?`<span class="mut">${wert}</span>`:''}</div>`;
+  const kachel=(titel,inhalt,wert='')=>`<div class="stat-podest-kachel"><small class="stat-kachel-titel">${titel}</small><b>${inhalt}</b>${wert?`<span class="mut">${wert}</span>`:''}</div>`;
   const spieler=n=>`<button class="name" type="button" data-stat-rivale="${esc(n)}">${GT(n,'dm')}</button>`;
-  const symbol=(zeichen,titel)=>`<span class="stat-symbol" aria-hidden="true">${zeichen}</span>${titel}`;
+  const icons={
+    pokal:'<path d="M8 21h8m-4-4v4M7 4h10v6a5 5 0 0 1-10 0V4Zm0 2H3v2a4 4 0 0 0 4 4m10-6h4v2a4 4 0 0 1-4 4"/>',
+    karte:'<path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/>',
+    modus:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 8h.01M16 8h.01M12 12h.01M8 16h.01M16 16h.01"/>',
+    nemesis:'<path d="M12 3a8 8 0 0 0-8 8c0 3 2 5 4 6v3h8v-3c2-1 4-3 4-6a8 8 0 0 0-8-8Zm-2 17v-2m4 2v-2"/><circle cx="9" cy="11" r="1"/><circle cx="15" cy="11" r="1"/>',
+    ziel:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    rivale:'<path d="m4 4 4 1 12 12-3 3L5 8 4 4Zm16 0-4 1-3 3m-5 5-4 4 3 3 4-4m4 1 5-5M4 12l5 5"/>'
+  };
+  const symbol=(icon,titel)=>`<svg class="stat-symbol" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${icons[icon]}</svg>${titel}`;
   const karte=p.karte_fav?.[0];
   const bild=karte&&((D?.dm?.karten||[]).find(k=>k.karte===karte&&k.bild)?.bild
     ||(D?.dm?.runden||[]).find(r=>r.karte===karte&&r.bild)?.bild);
   const kacheln=[
-    ...['🥇 Siege','🥈 Zweite Plätze','🥉 Dritte Plätze'].map((titel,i)=>kachel(titel,p.podest?.[i]??0)),
-    kachel('Meistgespielte Karte',karte?esc(karte)+(bild?`<img src="${esc(bild)}" alt="" loading="lazy">`:''):'–',karte?p.karte_fav[1]+' Runden':''),
-    kachel('🎲 Lieblingsmodus',p.modus_fav?esc(p.modus_fav[0]):'–',p.modus_fav?p.modus_fav[1]+' Runden':''),
-    kachel(symbol('☠️','Dein Nemesis'),p.nemesis?spieler(p.nemesis[0]):'–',p.nemesis?p.nemesis[1]+'× von diesem Spieler erwischt':''),
-    kachel(symbol('🎯','Häufigstes Opfer'),p.opfer?spieler(p.opfer[0]):'–',p.opfer?p.opfer[1]+'× erledigt':''),
-    kachel(symbol('⚔️','Dein Rivale'),p.rivale?spieler(p.rivale[0]):'–',p.rivale?p.rivale[1]+' Kills / '+p.rivale[2]+' Tode':'')
+    ...['Siege','Zweite Plätze','Dritte Plätze'].map((titel,i)=>kachel(symbol('pokal',titel),p.podest?.[i]??0)),
+    kachel(symbol('karte','Meistgespielte Karte'),karte?esc(karte)+(bild?`<img src="${esc(bild)}" alt="" loading="lazy">`:''):'–',karte?p.karte_fav[1]+' Runden':''),
+    kachel(symbol('modus','Lieblingsmodus'),p.modus_fav?esc(p.modus_fav[0]):'–',p.modus_fav?p.modus_fav[1]+' Runden':''),
+    kachel(symbol('nemesis','Dein Nemesis'),p.nemesis?spieler(p.nemesis[0]):'–',p.nemesis?p.nemesis[1]+'× von diesem Spieler erwischt':''),
+    kachel(symbol('ziel','Häufigstes Opfer'),p.opfer?spieler(p.opfer[0]):'–',p.opfer?p.opfer[1]+'× erledigt':''),
+    kachel(symbol('rivale','Dein Rivale'),p.rivale?spieler(p.rivale[0]):'–',p.rivale?p.rivale[1]+' Kills / '+p.rivale[2]+' Tode':'')
   ];
   const spezial=(m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)
-    ?`<p class="mut">💰 ${m.kopfgeld_kills||0} Kopfgelder · 🛡️ ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0} Juggernauts erlegt</p>`:'';
+    ?`<p class="mut">${m.kopfgeld_kills||0} Kopfgelder · ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0} Juggernauts erlegt</p>`:'';
   const saison=(m.saisons||[]).map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)} · Platz ${s[1]}</span>`).join(' ');
   return uebersichtPanel('Podest, Karten und Rivalen',`<div class="stat-podest">${[['Podest',0,3,''],['Karte & Modus',3,5,' stat-karte'],['Rivalen',5,8,'']].map(([titel,von,bis,klasse])=>
-    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}${saison?`<p class="mut">👑 Saison-Platzierungen</p>${saison}`:''}`);
+    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}${saison?`<p class="mut">Saison-Platzierungen</p>${saison}`:''}`);
 }
 document.addEventListener('click',e=>{
   const spieler=e.target.closest('[data-stat-rivale]');
