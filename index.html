@@ -131,6 +131,13 @@
   .serverleiste .status{justify-content:center;margin:0;text-align:center}
   .serverleiste #sStatus[hidden],#dMatchAktion:empty{display:none}
   #dMatchAktion button{width:100%;height:100%;color:var(--acc2);cursor:pointer}
+  .waffen-liste summary{cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+  .waffen-liste summary small{grid-column:1/-1;color:var(--mut)}
+  .waffen-liste summary,.waffen-spieler{overflow-wrap:anywhere}
+  .waffen-detail{padding:12px;background:var(--bg2)}
+  .waffen-detail .wimg{display:block;width:min(100%,440px);height:clamp(100px,26vw,220px);object-fit:contain;margin:0 auto 12px}
+  .waffen-rekorde,.waffen-werte{display:flex;flex-wrap:wrap;gap:6px 16px}
+  .waffen-spieler{padding:8px 0;border-top:1px solid var(--line)}
   .dm-wertung{container-type:inline-size}
   .dm-kompakt{display:none}
   .dm-spieler{padding:8px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
@@ -361,7 +368,7 @@ nav button{min-width:0}
     <div class="panel dm-wertung"><h3>⭐ Deathmatch-Level</h3><div id="dLevel"></div></div>
     <div class="panel dm-wertung"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
     </div>
-    <div class="dr" id="dr-waffen" hidden>    <div class="panel scroll"><h3>🔫 Waffen-Rangliste (alle Spieler)</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div></div>
+    <div class="dr" id="dr-waffen" hidden>    <div class="panel"><h3>🔫 Waffenkatalog</h3><div id="dWaffen" class="waffen-liste"></div><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div></div>
     <div class="dr" id="dr-karten" hidden>      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div></div>
   </section>
   <section class="tab" id="t-meine">
@@ -553,7 +560,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     ${r.kopfschuesse?`<div>💀 Kopfschüsse: ${r.kopfschuesse}</div>`:''}${r.kopfgeld?`<div>💰 Kopfgeld kassiert: ${r.kopfgeld}-mal</div>`:''}
     ${DIREKT&&r.id?`<div style="margin-top:6px"><a href="/zuschauer/runde/${+r.id}" style="color:var(--gold,#e0b44c)">🔗 Eigene Seite dieser Runde (zum Teilen)</a></div>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
   $('#dSaison').innerHTML=(m.saisons||[]).slice(0,6).map(s=>`<div class="rh"><span>${MN[+s.monat.slice(5)-1]} ${s.monat.slice(0,4)}</span><b class="name" data-dm="${esc(s.meister||'')}">${s.meister?'👑 '+esc(s.meister):'–'}</b><span class="mut">${s.runden} Runden${s.top&&s.top[0]?' · '+s.top[0][1]+' Siege · '+s.top[0][2]+' Kills':''}</span></div>`).join('')||'<div class="mut">Noch keine Saison.</div>';
-  $('#dWaffen').innerHTML=(m.waffen||[]).length?'<tr><th>Waffe</th><th>Kills</th><th>Kopfschüsse</th><th title="weitester tödlicher Schuss">weitester Kill</th><th class="nm">Treffer</th><th class="nm" title="weitester Treffer, auch ohne Kill">weitester Treffer</th></tr>'+m.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]}</td><td>${w[3]?w[3]+' m':'–'}</td><td class="nm">${w[4]??'–'}</td><td class="nm">${w[5]?w[5]+' m':'–'}</td></tr>`).join(''):'<tr><td class="mut">Noch keine Kills gezählt.</td></tr>';
+  waffenKatalog(m);
   $('#dSchrot').textContent=d.schrot_hinweis||'';
   $$('#dRunden details').forEach(x=>x.ontoggle=()=>{const k=+x.dataset.rd;if(x.open)OFFEN.add(k);else OFFEN.delete(k)});
   $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b><span class="mut">${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt</span>
@@ -568,6 +575,30 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     +(()=>{const u=Object.entries(p.profile||{}).filter(([n,x])=>x.ueberlebt).sort((a,b)=>b[1].ueberlebt-a[1].ueberlebt)[0];return u?`<div class="rh"><span>🛡️ Lebt am längsten (aktuell)</span><b class="name" data-n="${esc(u[0])}">${esc(u[0])}</b><span class="mut">${dauer(u[1].ueberlebt)} Spielzeit ohne Tod</span></div>`:''})()||'<div class="mut">Noch keine Rekorde.</div>';
   $$('[data-n]').forEach(b=>b.onclick=()=>profil(b.dataset.n));
   $$('[data-dm]').forEach(b=>b.onclick=ev=>{ev.preventDefault();ev.stopPropagation();dmProfil(b.dataset.dm)});
+}
+function waffenKatalog(m){
+  const el=$('#dWaffen'), katalog=m.waffenkatalog||[];
+  const sig=JSON.stringify([katalog,WB]);
+  if(el.dataset.sig===sig)return;
+  el.dataset.sig=sig;
+  const offen=new Set([...el.querySelectorAll('details[open]')].map(x=>x.dataset.waffe));
+  const name=n=>`<b class="name" data-dm="${esc(n)}">${GT(n,'dm')}</b>`;
+  const nummer=n=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:1});
+  el.innerHTML=katalog.map(w=>{
+    const spieler=w.spieler||[], beste=spieler.filter(x=>x[1]>0&&x[1]===spieler[0][1]);
+    const rekord=(i,t)=>{const max=Math.max(0,...spieler.map(x=>x[i]));return `<div><b>${t}</b> ${max?nummer(max)+' m · '+spieler.filter(x=>x[i]===max).map(x=>name(x[0])).join(', '):'–'}</div>`};
+    const sum=i=>nummer(spieler.reduce((n,x)=>n+x[i],0));
+    const titel=w.waffe.replace(/^./,c=>c.toUpperCase());
+    return `<details data-waffe="${esc(w.waffe)}" ${offen.has(w.waffe)?'open':''}><summary>
+      <b>${wbild(w.waffe)} ${esc(titel)}</b><strong>${nummer(w.kills)} Kills</strong>
+      <small>Meiste Kills: ${beste.length?beste.map(x=>esc(x[0])).join(', ')+' · '+nummer(beste[0][1]):'–'}</small></summary>
+      <div class="waffen-detail">${wbild(w.waffe)}<h4>${esc(titel)}</h4>
+      <div class="waffen-rekorde"><span>${nummer(w.kills)} Kills</span><span>${sum(3)} Treffer</span><span>${sum(2)} Kopf-Kills</span><span>${sum(4)} Kopftreffer</span><span>${sum(5)} Schaden</span>
+      ${rekord(6,'Weitester Kill')}${rekord(7,'Weitester Treffer')}</div>
+      <h4>Statistik je Spieler</h4>${spieler.length?spieler.map(([n,k,kk,t,tk,sch,km,tm])=>`<div class="waffen-spieler">${name(n)}
+      <div class="waffen-werte mut"><span>${nummer(k)} Kills</span><span>${nummer(kk)} Kopf-Kills</span><span>${nummer(t)} Treffer</span><span>${nummer(tk)} Kopftreffer</span><span>${nummer(sch)} Schaden</span>
+      <span>Weitester Kill: ${km?nummer(km)+' m':'–'}</span><span>Weitester Treffer: ${tm?nummer(tm)+' m':'–'}</span></div></div>`).join(''):'<div class="mut">Noch keine Werte im Server-Log.</div>'}</div></details>`
+  }).join('')||'<div class="mut">Waffenkatalog noch nicht verfügbar.</div>';
 }
 function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
   if(!s.schaetze||!s.schaetze.length){el.hidden=!(s.rang&&s.rang.length);el.innerHTML=s.rang&&s.rang.length?`<h3>🏴‍☠️ Schatz-Rangliste</h3>${s.rang.slice(0,5).map((r,i)=>`<div class="rh"><span>${i+1}.</span><b>${esc(r[0])}</b><span class="mut">${r[1]} Funde${r[2]?' · ⛓ '+r[2]+' Ketten':''}</span></div>`).join('')}`:'';return}
