@@ -18,6 +18,7 @@
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="/icon-192.png">
 <style>
+  .evmehr{display:block;width:100%;margin-top:8px;padding:7px;background:var(--panel2);border:1px solid var(--line2);color:var(--text);font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.06em;cursor:pointer} .evmehr:hover{border-color:var(--acc)}
   /* Update 4: Spielmenü-Look (DayZ/Militär). Keine externen Schriften, nur System-Schriften. */
   :root{--bg:#0b0d0c;--bg2:#121513;--panel:#161a17;--panel2:#1e2420;--line:#2f3830;--line2:#4a5545;--text:#e6e2d3;--mut:#8f9285;--acc:#d4a62a;--acc2:#f0c850;--rot:#c8442f;--gr:#5fae4a;--olive:#6b7a3a;
     --kopf:"Bahnschrift","Agency FB","Arial Narrow","Roboto Condensed","Segoe UI",system-ui,sans-serif;--glow:0 0 0 1px rgba(212,166,42,.35),0 0 14px rgba(212,166,42,.18)}
@@ -496,9 +497,9 @@ nav button{min-width:0}
     <div class="panel" id="pSchatz" hidden></div>
     <div class="zwei">
       <div class="panel"><h3>Gerade online</h3><div id="pOnline"></div></div>
-      <div class="panel"><h3>Ereignisse</h3><div id="pEv" style="max-height:520px;overflow:auto"></div></div>
+      <div class="panel"><h3>Ereignisse</h3><div id="pEv"></div></div>
     </div>
-    <div class="panel scroll"><h3>🏆 Rangliste</h3><div class="seg" id="pZeit"></div><table id="pRang"></table>
+    <div class="panel" id="pRangBox"><h3>🏆 Rangliste</h3><div class="seg" id="pZeit"></div><table id="pRang"></table>
       <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil mit Erfolgen. K/D = Kills geteilt durch Tode durch Spieler.</div></div>
     <div class="panel"><h3>🏛 Ruhmeshalle PvE</h3><div id="pRuhm"></div></div>
     <div class="panel dm-wertung pve-level-panel"><h3>⭐ PvE-Level <span class="mut">(gilt nur für das aktuelle Leben)</span></h3><div id="pLevel"></div></div>
@@ -701,7 +702,7 @@ function medaille(icon,stufe,n){const f=STF[stufe]||'#555';const z=n>1?`<circle 
   return `<svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><defs><radialGradient id="g${stufe||'x'}" cx="40%" cy="35%"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset="1" stop-color="${f}" stop-opacity=".9"/></radialGradient></defs>`+
     `<circle cx="24" cy="24" r="21" fill="${stufe?`url(#g${stufe})`:'#2a2e35'}" stroke="${f}" stroke-width="3"/>${stufe==='diamant'||stufe==='platin'?`<circle cx="24" cy="24" r="16.5" fill="none" stroke="#fff" stroke-opacity=".5" stroke-dasharray="3 2"/>`:''}`+
     `<text x="24" y="31" font-size="19" text-anchor="middle">${icon}</text>${z}</svg>`}
-let D=null,RZ='gesamt',RS='spielzeit',ersterTab=true;const OFFEN=new Set();
+let D=null,RZ='gesamt',RS='spielzeit',ersterTab=true,EV_AUF=false;const OFFEN=new Set();
 function tab(t){$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{sichtSpeicher.setItem('tab',t)}catch(e){}}
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 const TAKT=30,ZWEIGE=20;
@@ -751,7 +752,9 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     [sp.length,'Spieler bisher'],[Math.round(sp.reduce((a,s)=>a+s.spielzeit,0)/3600)+' h','Spielzeit gesamt']].map(([z,t])=>`<div class="kachel"><b>${z}</b><span>${t}</span></div>`).join('');
   $('#pOnline').innerHTML=p.online.length?p.online.map(o=>`<div class="spl"><span class="av ${o.tot?'tot':''}">${esc((o.name[0]||'?').toUpperCase())}</span><div class="mitte"><b class="name" data-n="${esc(o.name)}">${esc(o.name)}</b><span class="mut">${o.tot?'tot · ':''}seit ${dauer(Date.now()/1000-o.seit)}</span></div></div>`).join('')
     :`<div class="mut">Niemand online.${sp.length?' Zuletzt da: '+[...sp].sort((a,b)=>b.zuletzt-a.zuletzt).slice(0,3).map(s=>esc(s.name)+' ('+vor(s.zuletzt)+')').join(', '):''}</div>`;
-  $('#pEv').innerHTML=p.ereignisse.map(e=>`<div class="ev ${e.k}"><span class="uhr">${uhr(e.t)}</span><span>${ICON[e.k]||'•'}</span><span class="tx">${esc(e.txt)}</span></div>`).join('')||'<div class="mut">Noch nichts passiert.</div>';
+  const evAlle=p.ereignisse||[],evZ=EV_AUF?evAlle:evAlle.slice(0,5);   // Update 156: nur die letzten 5, ausklappbar
+  $('#pEv').innerHTML=evZ.map(e=>`<div class="ev ${e.k}"><span class="uhr">${uhr(e.t)}</span><span>${ICON[e.k]||'•'}</span><span class="tx">${esc(e.txt)}</span></div>`).join('')||'<div class="mut">Noch nichts passiert.</div>';
+  if(evAlle.length>5){$('#pEv').insertAdjacentHTML('beforeend',`<button type="button" class="evmehr" id="evMehr">${EV_AUF?'▲ Weniger anzeigen':'▼ Alle '+evAlle.length+' anzeigen'}</button>`);$('#evMehr').onclick=()=>{EV_AUF=!EV_AUF;zeichnen()}}
   const ms=Object.keys(p.monate||{}).sort().reverse();
   $('#pZeit').innerHTML=`<button class="${RZ==='gesamt'?'an':''}" data-z="gesamt">Gesamt</button>`+ms.map(k=>`<button class="${RZ===k?'an':''}" data-z="${k}">${MN[+k.slice(5)-1]} ${k.slice(0,4)}</button>`).join('');
   $$('#pZeit button').forEach(b=>b.onclick=()=>{RZ=b.dataset.z;zeichnen()});
