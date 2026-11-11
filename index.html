@@ -502,6 +502,19 @@ nav button{min-width:0}
   .ri-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px} .ri-chips span{padding:2px 8px;border:1px solid var(--line2);background:var(--bg2);font-size:12px}
   a.rlink{display:inline-block;margin-top:4px;padding:5px 10px;border:1px solid var(--line2);color:var(--acc2);text-decoration:none;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.05em}
   a.rlink:hover{border-color:var(--acc)}
+
+  /* Update 166: Granaten-Frage und -Abstimmung */
+  .gu{border-left:3px solid #e8775f;background:linear-gradient(110deg,rgba(232,119,95,.08),var(--panel) 55%)}
+  .gu-k{padding:10px 0;border-top:1px solid var(--line)} .gu-k:first-of-type{border-top:0}
+  .gu-k p{margin:0 0 8px} .gu-opt{display:flex;flex-wrap:wrap;gap:6px}
+  .gu-opt button{position:relative;padding:7px 12px;background:var(--panel2);border:1px solid var(--line2);color:var(--text);cursor:pointer;font-size:14px}
+  .gu-opt button:hover:not(:disabled){border-color:var(--acc)} .gu-opt button.an{border-color:var(--acc);background:#2a2618;box-shadow:var(--glow)}
+  .gu-opt button.ja{border-color:#5d8f3f;background:rgba(143,209,106,.12)} .gu-opt button:disabled{cursor:default;opacity:.85}
+  .gu-opt .n{margin-left:6px;color:var(--acc2);font-weight:700} .gu-opt .verm{font-size:10px;margin-left:6px;color:var(--mut);text-transform:uppercase;letter-spacing:.05em}
+  .gu-erg{color:var(--mut);font-size:13px}
+  #granModal{border:2px solid #e8775f;max-width:min(520px,calc(100vw - 24px));padding:18px 20px;background:var(--bg);color:var(--text)}
+  #granModal::backdrop{background:rgba(0,0,0,.75)}
+  #granModal h3{margin:0 0 10px;color:#f39886} #granModal .gu-opt{margin-top:10px} #granModal .gu-erg{margin-top:10px}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
 <style>
@@ -559,6 +572,7 @@ nav button{min-width:0}
       <div class="panel"><h3>🎯 Killfeed</h3><div id="dKf" class="kf"></div></div>
       <div class="panel dm-wertung"><h3>Stand dieser Runde</h3><div id="dStand"></div></div>
     </div>
+    <div class="panel gu" id="dGran" hidden></div>
     <div id="dRunde"></div>
     <div class="panel" id="dVote" hidden></div>
     <div class="panel" id="dCustom" hidden></div>
@@ -1230,6 +1244,56 @@ function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
     if(g==='m')M[key]=key==='minuten'?+v:v;else if(g==='b')R[key]=v==='1';else if(g==='d'){const L=R.bedrohungen=(R.bedrohungen||[]).filter(x=>x!==key);if(v==='1')L.push(key)}else R[key]=v;cmZeichnen()});
   $('#cmWeiter').onclick=async()=>{const j=await cmPost({aktion:'pruefen',eintrag:M});if(!j)return;CMZ=j;CMS='sum';cmZeichnen()};
   if(!$('#dlg').open)$('#dlg').showModal()}
+// Update 166: Granaten-Frage. Das Opfer wird sofort gefragt (Popup, nicht wegklickbar). Ohne Antwort binnen 30 min stimmen 30 min alle Teilnehmer ab.
+let GRAN=null,GRAN_OFFEN=null;
+async function granLaden(){if(!DIREKT)return;const g=await holeJson('/zuschauer/granaten');if(g){GRAN=g;granZeichnen()}}
+function granName(w){return w==='__selbst'?'Eigene Granate':esc(w)}
+function granWann(u){return u.minute?`in Minute ${u.minute} (${esc(u.zeit)} Uhr)`:`um ${esc(u.zeit)} Uhr`}
+async function granSenden(id,wahl){
+  try{const r=await fetch('/zuschauer/granaten',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,wahl})});
+    const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Ging nicht');return false}GRAN=j;return true}catch(e){alert('Ging nicht');return false}}
+function granModal(){
+  const f=(GRAN?.umfragen||[]).find(u=>u.frage_an_mich);
+  let dlg=$('#granModal');
+  if(!f){if(dlg&&dlg.open)dlg.close();GRAN_OFFEN=null;return}
+  if(!dlg){dlg=document.createElement('dialog');dlg.id='granModal';document.body.append(dlg);
+    dlg.addEventListener('cancel',e=>e.preventDefault())}            // Esc schliesst nicht
+  if(GRAN_OFFEN===f.id&&dlg.open)return;
+  GRAN_OFFEN=f.id;
+  const andere=f.optionen.filter(w=>w!==f.vermutet&&w!=='__selbst');
+  dlg.innerHTML=`<h3>💣 Granate!</h3>
+    <p>Du wurdest ${granWann(f)} auf ${esc(f.karte)} von einer Granate getötet.</p>
+    <p>${f.vermutet?`<b>Hat ${esc(f.vermutet)} dich gerade per Granate gekillt?</b>`:'<b>Wer hat dich gerade per Granate gekillt?</b>'}</p>
+    <div class="gu-opt">${f.vermutet?`<button type="button" class="ja" data-gm="${esc(f.vermutet)}">Ja, ${esc(f.vermutet)}</button>`:''}
+      ${andere.map(w=>`<button type="button" data-gm="${esc(w)}">${f.vermutet?'Nein, es war ':''}${esc(w)}</button>`).join('')}
+      <button type="button" data-gm="__selbst">Meine eigene Granate</button></div>
+    <div class="gu-erg">Deine Antwort zählt sofort und sicher (voller Kill). Antwortest du nicht, stimmen ab <b class="countdown" data-bis="${Math.floor(Date.now()/1000)+f.rest}">${countdown(Math.floor(Date.now()/1000)+f.rest)}</b> alle Spieler der Runde ab.</div>`;
+  dlg.querySelectorAll('[data-gm]').forEach(b=>b.onclick=async()=>{dlg.querySelectorAll('button').forEach(x=>x.disabled=true);
+    if(await granSenden(f.id,b.dataset.gm)){dlg.close();GRAN_OFFEN=null;granZeichnen()}else dlg.querySelectorAll('button').forEach(x=>x.disabled=false)});
+  if(!dlg.open)dlg.showModal();
+}
+function granZeichnen(){
+  granModal();
+  const el=$('#dGran');if(!el)return;const g=GRAN;
+  const liste=(g?.umfragen||[]).filter(u=>!u.frage_an_mich);
+  const offen=liste.filter(u=>u.status==='offen'),fertig=liste.filter(u=>u.status!=='offen');
+  if(!offen.length&&!fertig.length){el.hidden=true;return}
+  el.hidden=false;
+  const karte=u=>{
+    const kopf=`<b>${esc(u.opfer)}</b> wurde ${granWann(u)} auf ${esc(u.karte)} von einer Granate getötet.${u.vermutet?` Vermutlich war es <b>${esc(u.vermutet)}</b>.`:''}`;
+    if(u.status!=='offen'){
+      const erg=u.status==='ausgewertet'?(u.ergebnis==='__selbst'?'eigene Granate':`<b>${esc(u.ergebnis)}</b> bekommt den Kill`)+(u.quelle==='opfer'?` (bestätigt von ${esc(u.opfer)})`:' (Abstimmung)')
+        :u.status==='unentschieden'?'Unentschieden, es bleibt bei der Vermutung':u.status==='ohne'?'Keine Stimmen, es bleibt bei der Vermutung':'Nicht auswertbar';
+      return `<div class="gu-k"><p>${kopf}</p><div class="gu-erg">✔ ${erg}</div></div>`;
+    }
+    if(u.phase==='opfer')return `<div class="gu-k"><p>${kopf}</p><div class="gu-erg">${esc(u.opfer)} wird gefragt. Antwortet er nicht, stimmen in <b class="countdown" data-bis="${Math.floor(Date.now()/1000)+u.rest}">${countdown(Math.floor(Date.now()/1000)+u.rest)}</b> alle Spieler der Runde ab.</div></div>`;
+    const knoepfe=u.optionen.map(w=>`<button type="button" class="${u.meine===w?'an':''}" data-gu="${esc(u.id)}" data-w="${esc(w)}" ${u.darf?'':'disabled'}>${granName(w)}${w===u.vermutet?'<span class="verm">vermutet</span>':''}${u.zaehlung[w]?`<span class="n">${u.zaehlung[w]}</span>`:''}</button>`).join('');
+    const hinweis=!g.angemeldet?'Zum Abstimmen mit deinem Spieler-Konto einloggen.':!u.darf?'Abstimmen dürfen nur Spieler, die in dieser Runde mitgespielt haben.':u.meine?'Deine Stimme ist gezählt, du kannst sie bis zum Ende noch ändern.':'Eine Stimme pro Spieler. Die Mehrheit bekommt den Kill (zählt dann voll).';
+    return `<div class="gu-k"><p>${kopf} ${esc(u.opfer)} hat nicht geantwortet: Wer war es?</p><div class="gu-opt">${knoepfe}</div><div class="gu-erg" style="margin-top:6px">${hinweis} · noch <b class="countdown" data-bis="${Math.floor(Date.now()/1000)+u.rest}">${countdown(Math.floor(Date.now()/1000)+u.rest)}</b> · ${u.stimmen} ${u.stimmen===1?'Stimme':'Stimmen'}</div></div>`;
+  };
+  el.innerHTML=`<h3>💣 Wer war's? Granaten</h3>${offen.map(karte).join('')}${fertig.slice(0,3).map(karte).join('')}`;
+  $$('[data-gu]').forEach(b=>b.onclick=async()=>{b.disabled=true;await granSenden(b.dataset.gu,b.dataset.w);granZeichnen()});
+}
 async function voteLaden(){if(!DIREKT)return;const v=await holeJson('/zuschauer/abstimmung');VOTE=v;if(v)v._t=Date.now()/1000;voteZeichnen()}
 function voteZeichnen(){const v=VOTE,el=$('#dVote');if(!v||!v.offen){el.hidden=true;return}el.hidden=false;
   const st=v.stand,me=st.meine||{},mxk=Math.max(1,...Object.values(st.karten)),mxm=Math.max(1,...Object.values(st.modi));
@@ -2028,6 +2092,8 @@ const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close
 $('#takt').textContent='Aktualisiert sich alle '+(DIREKT?10:TAKT)+' Sekunden von selbst.';
 setInterval(()=>{$$('.countdown').forEach(x=>x.textContent=countdown(+x.dataset.bis));if(D)statusZeichnen()},1000);
 laden();ichLaden().then(()=>{try{if(((location.hash||'').startsWith('#meine')||sichtSpeicher.getItem('tab')==='meine')&&ICH&&ICH.benutzer){tab('meine')}}catch(e){}});voteLaden();
+if(DIREKT)granLaden();
+if(DIREKT)setInterval(()=>{if(document.hidden)return;granLaden()},8000);
 if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an'))meineLaden()},15000);
 setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
 function naechster(){const s=DIREKT?10:TAKT-(Date.now()/1000)%TAKT+9;setTimeout(()=>{if(!document.hidden)laden();naechster()},s*1000)}naechster();
