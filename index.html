@@ -1442,6 +1442,8 @@ document.addEventListener('click',e=>{
 });
 let matchDialog, matchListe=[];
 const distanzNamen=['Unter 25 m','25 bis unter 100 m','Ab 100 m'];
+const distanzNamen4=['Unter 10 m','10 bis unter 25 m','25 bis unter 100 m','Ab 100 m'];   // Update 158
+const distanz4=(dist,fein)=>Array.isArray(fein)&&fein.length===2&&dist?.length===3?[fein[0],fein[1],dist[1],dist[2]]:null;
 const hoehenNamen=['Tiefer als der Gegner','Ähnliche Höhe','Höher als der Gegner'];
 function duelBilanz(titel,werte,namen,leer){
   return `<section class="waffen-gruppe"><h4>${titel}</h4>${werte?.some(([k,t])=>k||t)
@@ -1496,7 +1498,7 @@ function zeigeMatch(index,liste){
     <p class="mut">${uhr(r[3])}</p>${bild?`<img class="match-stat-bild" src="${esc(bild)}" alt="">`:''}</div>
     <h4>Match-Performance</h4><p>${k>t?'Positive':k<t?'Negative':'Ausgeglichene'} Killbilanz</p>
     ${waffenKennzahlen([['Kills',k],['Tode',t],['Kopf-Kills',a.distanz?a.kopf:'–'],['Weitester Kill',a.weitester?a.weitester+' m':'–']])}
-    <div class="waffen-gruppen">${duelBilanz('Bilanz nach Distanz',a.distanz,distanzNamen,'Keine Distanzen für dieses Match erfasst.')}
+    <div class="waffen-gruppen">${distanz4(a.distanz,a.nah_fein)?duelBilanz('Bilanz nach Distanz',distanz4(a.distanz,a.nah_fein),distanzNamen4,'Keine Distanzen für dieses Match erfasst.'):duelBilanz('Bilanz nach Distanz',a.distanz,distanzNamen,'Keine Distanzen für dieses Match erfasst.')}
     ${duelBilanz('Bilanz nach Höhenlage',a.hoehe,hoehenNamen,'Für dieses Match sind keine Höhenwerte gespeichert.')}</div>${gehaltenePosition(a.gehalten)}${bewegungsKontext(a)}
     <a href="/zuschauer/runde/${esc(r[0])}">Öffentliche Rundendetails</a></div>`;
   matchDialog.querySelector('[data-match-zu]').onclick=()=>matchDialog.close();
@@ -1518,41 +1520,84 @@ function letzteRunden(runden){
 }
 const statistikBlock=(titel,inhalt)=>`<details class="statistik-block" data-statistik="${esc(titel)}"><summary>${esc(titel)}</summary><div>${inhalt||'<p class="mut">Noch keine Daten.</p>'}</div></details>`;
 function dmPerformance(m){
+  // Update 158: fairere Bewertung (K/D-Trend, ab 3 Runden, klarer Abstand 60/40, Fallzahlen), Nahdistanz fein, Karten/Modi, Gegner, Todesursachen
   const spiele=(m.runden_liste||[]).filter(r=>r[4]).slice(0,10);
   const bilanz=liste=>liste.reduce(([k,t],r)=>[k+(Number(r[4][0])||0),t+(Number(r[4][1])||0)],[0,0]);
   const [kills,tode]=bilanz(spiele);
-  const format=n=>n.toLocaleString('de-DE',{maximumFractionDigits:1});
-  const st=spiele.length<3?'Zu wenige Runden für eine Bewertung':kills>tode?'Positive Killbilanz':kills<tode?'Negative Killbilanz':'Ausgeglichene Killbilanz';
-  const top=(m.waffen||[]).find(x=>x[1]>0);
-  const verlust=(m.tode_waffen||[]).find(x=>x[1]>0);
+  const format=n=>n.toLocaleString('de-DE',{maximumFractionDigits:2});
+  const genug=spiele.length>=3;
+  const st=!genug?'Zu wenige Runden für eine Bewertung':kills>tode?'Positive Killbilanz':kills<tode?'Negative Killbilanz':'Ausgeglichene Killbilanz';
+  const kdW=(k,t)=>t?k/t:k;
   let trend='';
   if(spiele.length>=6){
     const n=Math.floor(spiele.length/2),[ak,at]=bilanz(spiele.slice(0,n)),[bk,bt]=bilanz(spiele.slice(n,2*n));
-    const delta=(ak-at-bk+bt)/n;
-    trend=`<div class="performance-trend"><b class="${delta>0?'performance-positiv':delta<0?'performance-negativ':''}">${delta>0?'↑ Zuletzt verbessert':delta<0?'↓ Zuletzt gesunken':'→ Unverändert'}</b>
-      <span class="mut">Killbilanz pro Runde: <strong>${format((ak-at)/n)}</strong> in den letzten ${n} Runden, davor <strong>${format((bk-bt)/n)}</strong>.</span></div>`;
+    const neu=kdW(ak,at),alt=kdW(bk,bt),delta=neu-alt;
+    const klar=Math.abs(delta)>=0.1;
+    trend=`<div class="performance-trend"><b class="${klar&&delta>0?'performance-positiv':klar&&delta<0?'performance-negativ':''}">${!klar?'→ Etwa gleich':delta>0?'↑ Zuletzt verbessert':'↓ Zuletzt gesunken'}</b>
+      <span class="mut">K/D <strong>${format(neu)}</strong> in den letzten ${n} Runden (${ak} / ${at}), davor <strong>${format(alt)}</strong> (${bk} / ${bt}).</span></div>`;
   }
-  const namen=['Nahdistanz (<25 m)','Mitteldistanz (25 bis <100 m)','Ferndistanz (ab 100 m)'];
-  const dist=(m.distanzbilanz||[]).map(([k,t],i)=>({name:namen[i],k,t}));
-  const staerke=dist.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
-  const schwaeche=dist.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
+  const quote=x=>x.k/(x.k+x.t);
+  const fall=x=>` <span class="mut">(${x.k} Kills / ${x.t} Tode)</span>`;
+  const istStark=(x,min=5)=>genug&&x.k+x.t>=min&&quote(x)>=0.6;
+  const istSchwach=(x,min=5)=>genug&&x.k+x.t>=min&&quote(x)<=0.4;
+  const besteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>(quote(b)-quote(a))||((b.k-b.t)-(a.k-a.t)))[0];
+  const schlechtesteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>(quote(a)-quote(b))||((a.k-a.t)-(b.k-b.t)))[0];
+  const top=(m.waffen||[]).find(x=>x[1]>0);
+  const verlust=(m.tode_waffen||[]).find(x=>x[1]>0);
+  const fein=distanz4(m.distanzbilanz,m.nah_fein);
+  const namen=fein?['Sehr nah (<10 m)','Nahdistanz (10 bis <25 m)','Mitteldistanz (25 bis <100 m)','Ferndistanz (ab 100 m)']:['Nahdistanz (<25 m)','Mitteldistanz (25 bis <100 m)','Ferndistanz (ab 100 m)'];
+  const dist=(fein||m.distanzbilanz||[]).map(([k,t],i)=>({name:namen[i],k,t,fach:fein?Math.max(0,i-1):i}));
+  const staerke=besteVon(dist,x=>istStark(x));
+  const schwaeche=schlechtesteVon(dist,x=>istSchwach(x));
   const hoehe=(m.hoehenbilanz||[]).map(([k,t],i)=>({name:hoehenNamen[i],lage:['tiefer als der Gegner','auf ähnlicher Höhe wie der Gegner','höher als der Gegner'][i],k,t}));
-  const besteHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
-  const schwacheHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
+  const besteHoehe=besteVon(hoehe,x=>istStark(x));
+  const schwacheHoehe=schlechtesteVon(hoehe,x=>istSchwach(x));
+  // Karten und Modi aus den gewerteten Runden (ab 2 Runden oder 10 Duellen)
+  const gruppe=idx=>{const g={};(m.runden_liste||[]).filter(r=>r[4]).forEach(r=>{const x=g[r[idx]]??={name:r[idx],k:0,t:0,n:0};x.k+=Number(r[4][0])||0;x.t+=Number(r[4][1])||0;x.n++});return Object.values(g)};
+  const mapOk=x=>(x.n>=2||x.k+x.t>=10);
+  const karten=gruppe(1),modi=gruppe(2);
+  const besteKarte=karten.length>1?besteVon(karten,x=>mapOk(x)&&istStark(x)):null;
+  const schwacheKarte=karten.length>1?schlechtesteVon(karten,x=>mapOk(x)&&istSchwach(x)):null;
+  const besterModus=modi.length>1?besteVon(modi,x=>mapOk(x)&&istStark(x)):null;
+  const schwacherModus=modi.length>1?schlechtesteVon(modi,x=>mapOk(x)&&istSchwach(x)):null;
+  const rundenTxt=x=>` <span class="mut">(${x.n} ${x.n===1?'Runde':'Runden'}, ${x.k} Kills / ${x.t} Tode)</span>`;
+  // Gegner (ab 5 Duellen)
+  const gegner=(m.gegner_bilanz||[]).map(([name,k,t])=>({name,k,t}));
+  const besterGegner=besteVon(gegner,x=>istStark(x));
+  const schwersterGegner=schlechtesteVon(gegner,x=>istSchwach(x));
+  // Todesursachen
+  const todeSumme=Math.max(Number(m.tode)||0,(m.tode_waffen||[]).reduce((a,x)=>a+x[1],0));
+  // Update 159: Vergleich mit allen Spielern (ab 3 Spielern mit je 3 Runden)
+  const vg=m.vergleich||{},vs=vg.schnitt||{},vi=vg.ich||{};
+  const vgOk=genug&&vg.spieler>=3&&vi.runden>=3;
+  const zahl=x=>x==null?'–':format(x);
+  const ueber=(key,f=1.25)=>vgOk&&vs[key]>0&&vi[key]!=null&&vi[key]>=vs[key]*f;
+  const unter=(key,f=0.75)=>vgOk&&vs[key]>0&&vi[key]!=null&&vi[key]<=vs[key]*f;
+  const kopfOk=(vi.kills||0)>=10;
+  const vgPlus=[ueber('kpr')?`Du machst deutlich mehr Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
+    kopfOk&&ueber('kopfquote')?`Starke Kopfschuss-Quote: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %).`:''];
+  const vgMinus=[unter('kpr')?`Du machst deutlich weniger Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
+    kopfOk&&unter('kopfquote')?`Wenig Kopfschüsse: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %). Kopf zielen spart Treffer.`:''];
+  const vgTabelle=vg.ich&&vg.spieler>=2?`<h5>Vergleich mit allen Spielern ${statistikInfo('Schnitt über alle Spieler mit mindestens 3 gewerteten Runden (Kopfschuss-Quote ab 10 Kills). In die Stärken und Schwächen fließt ein Wert ab 25 % Abstand zum Schnitt ein.')}</h5>
+    <div class="scroll"><table><tr><th>Wert</th><th>Du</th><th>Schnitt (${vg.spieler} Spieler)</th></tr>
+    ${[['K/D','kd',''],['Kills pro Runde','kpr',''],['Punkte pro Runde','ppr',''],['Siegquote','siegquote',' %'],['Kopfschuss-Kills','kopfquote',' %']]
+      .map(([t,k,e])=>`<tr><td>${t}</td><td><b>${vi[k]==null?'–':zahl(vi[k])+e}</b></td><td>${vs[k]==null?'–':zahl(vs[k])+e}</td></tr>`).join('')}</table></div>`:'';
+  const ursacheTxt=genug&&verlust&&verlust[1]>=3&&verlust[1]*10>=todeSumme
+    ?`Am häufigsten erwischt dich <b>${esc(verlust[0])}</b> (${verlust[1]}× von ${todeSumme} erfassten Toden).`:'';
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
   const kontext=m.kill_kontext||{};
   const [mitSerie,mitPosition]=kontext.gegner_serie||[0,0];
-  const positionsTipp=messbareTode>=5&&gehaltenTode*2>=messbareTode
+  const positionsTipp=genug&&messbareTode>=5&&gehaltenTode*2>=messbareTode
     ?`Bei ${positionsAnteil(gehaltenTode,messbareTode)} deiner auswertbaren Tode hielt der Gegner seine Position.${
       mitPosition>=5&&mitSerie>0?` Bei ${positionsAnteil(mitSerie,mitPosition)} dieser Fälle hatte der Schütze in seinem laufenden Leben schon einen Kill.`:''
     } Prüfe beim Vorrücken zuerst aus der Deckung die Winkel.`:'';
-  const positionsStaerke=messbareKills>=5&&gehaltenKills*2>=messbareKills
+  const positionsStaerke=genug&&messbareKills>=5&&gehaltenKills*2>=messbareKills
     ?`Du hast ${positionsAnteil(gehaltenKills,messbareKills)} deiner auswertbaren Kills aus gehaltener Position erzielt.`:'';
   const distanzStaerke=staerke?(()=>{
-    const [ruhig,bewegt]=kontext.bewegung_distanz?.[0]?.[dist.indexOf(staerke)]||[0,0];
+    const [ruhig,bewegt]=fein&&staerke.fach===0?[0,0]:(kontext.bewegung_distanz?.[0]?.[staerke.fach]||[0,0]);
     const bewegung=ruhig+bewegt>=5&&bewegt>ruhig
       ?` Bei ${positionsAnteil(bewegt,ruhig+bewegt)} deiner dort auswertbaren Kills warst du vorher in Bewegung.`:'';
-    return `${esc(staerke.name)} ist deine stärkste Distanz.${bewegung}`;
+    return `${esc(staerke.name)} ist deine stärkste Distanz.${fall(staerke)}${bewegung}`;
   })():'';
   const bilanzZeile=(titel,werte,leer='')=>werte.some(x=>x.k||x.t)
     ?`<h5>${titel}</h5>${waffenKennzahlen(werte.map(x=>[x.name,x.k+' Kills / '+x.t+' Tode']))}`
@@ -1568,10 +1613,15 @@ function dmPerformance(m){
       ${spiele.length?waffenKennzahlen([['Runden',spiele.length],['Kills',kills],['Tode',tode],['Bilanz',netto>0?'+'+netto:netto]]):'<span class="mut">Noch keine Runden mit Kill-/Todesdaten.</span>'}
       ${trend}</div>
     <div class="waffen-gruppen">
-    ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst mehr Kills als Tode, wenn du ${esc(besteHoehe.lage)} stehst.`:'',positionsStaerke])}
-    ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name)} hast du mehr Tode als Kills.`:'',schwacheHoehe?`Du stirbst häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.lage)} stehst.`:'',positionsTipp])}
-    </div>${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>':''}${hoehenZeile}
-    <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
+    ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst klar mehr Kills als Tode, wenn du ${esc(besteHoehe.lage)} stehst.${fall(besteHoehe)}`:'',positionsStaerke,
+      besteKarte?`${esc(besteKarte.name)} liegt dir.${rundenTxt(besteKarte)}`:'',besterModus?`Im Modus ${esc(besterModus.name)} bist du stark.${rundenTxt(besterModus)}`:'',
+      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du die beste Bilanz.${fall(besterGegner)}`:'',...vgPlus])}
+    ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name)} hast du klar mehr Tode als Kills.${fall(schwaeche)}`:'',schwacheHoehe?`Du stirbst deutlich häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.lage)} stehst.${fall(schwacheHoehe)}`:'',positionsTipp,
+      schwacheKarte?`Auf ${esc(schwacheKarte.name)} läuft es schlecht.${rundenTxt(schwacheKarte)}`:'',schwacherModus?`Im Modus ${esc(schwacherModus.name)} tust du dich schwer.${rundenTxt(schwacherModus)}`:'',
+      schwersterGegner?`${GT(schwersterGegner.name,'dm')} ist dein schwerster Gegner.${fall(schwersterGegner)}`:'',ursacheTxt,...vgMinus])}
+    </div>${vgTabelle}${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz.</small>':''}${hoehenZeile}
+    <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer.</small><br>
+    <small class="mut">Stärken und Schwächen gibt es ab 3 gewerteten Runden und nur bei klarem Abstand: mindestens 60 % Kills (bzw. Tode) bei mindestens 5 Duellen, bei Karten und Modi ab 2 Runden oder 10 Duellen. Der Trend vergleicht die K/D der letzten Runden mit den Runden davor (ab 0,1 Unterschied).</small><br>
     ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}<br><small class="mut">Distanz, Höhe und Bewegung beziehen sich auf die erfassten Duelle aus gewerteten Runden.</small></section>`;
 }
 let infoNummer=0;
