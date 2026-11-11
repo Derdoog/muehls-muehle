@@ -1347,9 +1347,9 @@ function dmPerformance(m){
   const schwacheHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
   const positionsStaerke=messbareKills>=5&&gehaltenKills>=Math.ceil(messbareKills/2)
-    ?`Aus gehaltener Position: ${positionsAnteil(gehaltenKills,messbareKills)} der auswertbaren Kills. `:'';
+    ?`Du hast ${positionsAnteil(gehaltenKills,messbareKills)} deiner auswertbaren Kills aus gehaltener Position erzielt. Das heißt: In den letzten 30 Sekunden vor diesen Kills hast du dich laut Log kaum bewegt. `:'';
   const positionsTipp=messbareTode>=5&&gehaltenTode>=Math.ceil(messbareTode/2)
-    ?`Bei ${positionsAnteil(gehaltenTode,messbareTode)} der auswertbaren Tode hielt der Gegner seine Position. Beim Vorrücken erst aus Deckung die naheliegenden Winkel prüfen. `:'';
+    ?`Du wurdest bei ${positionsAnteil(gehaltenTode,messbareTode)} deiner auswertbaren Tode von Gegnern aus gehaltener Position erledigt. Das heißt: Sie haben sich in den letzten 30 Sekunden vor dem Kill laut Log kaum bewegt. Prüfe beim Vorrücken zuerst aus der Deckung die Winkel, aus denen dich jemand sehen könnte. `:'';
   const hoehenText=x=>`${esc(x.name)}: ${x.k} Kills, ${x.t} Tode.`;
   const bilanzZeile=(titel,werte,leer='')=>werte.some(x=>x.k||x.t)
     ?`<h5>${titel}</h5>${waffenKennzahlen(werte.map(x=>[x.name,x.k+' Kills / '+x.t+' Tode']))}`
@@ -1359,7 +1359,7 @@ function dmPerformance(m){
   return `<section class="waffen-gruppe"><h4>Performance</h4><strong>${st}</strong>
     <p class="mut">${spiele.length?`Letzte ${spiele.length} Runden mit Kill-/Todesdaten · ${kills} Kills · ${tode} Tode`:'Noch keine Runden mit Kill-/Todesdaten.'}</p>${trend}
     <div class="waffen-gruppen">
-    <div><b>Stärken</b><p>${positionsStaerke}${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?esc(staerke.name)+': positive Bilanz. ':''}${top?`Meiste Kills mit ${esc(top[0])} (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Weitester Kill: ${m.weitester} m.`:''}</p></div>
+    <div><b>Stärken</b><p>${positionsStaerke}${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?'Du hast auf '+esc(staerke.name)+' mehr Kills als Tode. ':''}${top?`Deine meisten Kills hast du mit ${esc(top[0])} erzielt (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Dein weitester Kill gelang aus ${m.weitester} m.`:''}</p></div>
     <div><b>Verbesserungspotenzial</b><p>${positionsTipp}${schwacheHoehe?hoehenText(schwacheHoehe)+' ':''}${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
     </div>${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
