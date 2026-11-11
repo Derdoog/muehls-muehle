@@ -148,14 +148,15 @@
   .zonen-symbol{display:block;font-size:18px}
   @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-  .stat-podest{display:grid;grid-template-columns:3fr 2fr 3fr;gap:10px;align-items:stretch}
+  .stat-podest{display:grid;grid-template-columns:4fr 2fr 3fr;gap:10px;align-items:stretch}
   .stat-podest-gruppe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto minmax(94px,1fr);gap:1px;min-width:0;border:1px solid var(--line2);background:var(--line2)}
+  .stat-podest-gruppe.stat-platz{grid-template-columns:repeat(4,minmax(0,1fr))}
   .stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stat-podest-gruppe h5{grid-column:1/-1;margin:0;padding:6px;text-align:center;background:var(--bg2);color:var(--acc2);line-height:1.25}
   .stat-podest-kachel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;padding:6px;text-align:center;background:var(--panel2);overflow-wrap:anywhere}
   .stat-podest-kachel img{display:block;width:min(100%,90px);height:30px;object-fit:cover;margin:4px auto 0;border:1px solid var(--line)}
-  .stat-podest-kachel .stat-symbol{width:16px;height:16px;flex:none}
-  .stat-podest-kachel .stat-kachel-titel{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px}
+  .stat-podest-kachel .stat-symbol{width:24px;height:24px;flex:none}
+  .stat-podest-kachel .stat-kachel-titel{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:6px;width:100%;min-height:30px;text-align:left}
   .stat-podest-kachel small,.stat-podest-kachel .mut{display:block;font-size:11px;line-height:1.25}
   .stat-podest-kachel small{color:var(--acc2)}
   .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
@@ -197,6 +198,10 @@
   .waffen-zonen meter{width:100%;accent-color:#c84d3e}
   .waffen-zonen meter::-webkit-meter-optimum-value{background:linear-gradient(90deg,#76251e,#e05d47)}
   .waffen-zonen meter::-webkit-meter-bar{background:#262720;border:0}
+  #matchStatDialog{width:min(800px,calc(100% - 24px));padding:0;max-height:90vh}
+  .match-stat-leiste{position:sticky;top:0;z-index:1;display:flex;gap:8px;align-items:center;justify-content:flex-end;padding:8px;background:var(--panel2)}
+  .match-stat-bild{display:block;width:min(100%,340px);height:100px;object-fit:cover;border:1px solid var(--line2)}
+  @media(max-width:480px){.stat-podest-gruppe.stat-platz{grid-template-columns:repeat(2,minmax(0,1fr))}}
   #waffenDialog[open]{display:block}
   #waffenDialog:not([open]){display:none}
   #waffenDialog{width:min(980px,calc(100% - 24px));padding:0;max-height:90vh}
@@ -407,7 +412,7 @@ nav button{min-width:0}
 .cmbtn{font-size:14px;padding:9px 16px}
 @media (max-width:700px){.cmr>span:first-child{min-width:100%}.cmk{grid-template-columns:repeat(2,1fr)}.cmq{flex-wrap:wrap}.cmq img{width:48px;height:32px}.cmq>div{flex-basis:calc(100% - 90px)}.cmq>button{flex-basis:100%}}
 </style>
-<style>.game-ui-icon{display:inline-block;width:1em;height:1em;vertical-align:-.13em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
+<style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
 </head>
 <body>
 <header>
@@ -1227,7 +1232,7 @@ function podestKartenRivalen(m){
   "ziel": "M311.133 257.95a15.074 15.074 0 0 1-12.845 17.026l-147.248 20.61-21.33 32.522-82.637 11.57 21.33-32.568-24.547 3.44c-.278 0-.555.12-.843.165a15.218 15.218 0 0 1-2.108.144 15.074 15.074 0 0 1-2.074-30.016c.29 0 .567 0 .855-.078l24.547-3.438-29.45-25.512 82.582-11.547 29.45 25.51 147.26-20.608a15.196 15.196 0 0 1 2.107-.145 15.085 15.085 0 0 1 14.953 12.923zm-36.704-38.546a32.4 32.4 0 0 1 10.847-10.326 23.427 23.427 0 0 1 13.422-3.04 27.875 27.875 0 0 1 13.542 5.047 44.557 44.557 0 0 1 11.924 12.59 66.342 66.342 0 0 1 8.386 19.134 77.48 77.48 0 0 1 2.562 21.995 67.895 67.895 0 0 1-3.494 19.966 46.132 46.132 0 0 1-8.54 15.352 28.163 28.163 0 0 1-12.402 8.552 23.382 23.382 0 0 1-13.765.255 32.012 32.012 0 0 1-12.512-7.122 45.478 45.478 0 0 1-5.734-6.2l-32.278 4.514a131.154 131.154 0 0 0 7.1 15.973 104.566 104.566 0 0 0 18.656 25.512 69.016 69.016 0 0 0 23.893 15.806 48.373 48.373 0 0 0 27.597 2.22 53.43 53.43 0 0 0 26.31-14.876c7.898-7.853 14.42-18.258 19.112-30.514a131.997 131.997 0 0 0 8.32-41.995 153.26 153.26 0 0 0-5.48-46.92 128.758 128.758 0 0 0-18.49-39.932c-7.6-10.726-16.417-18.946-25.78-24.403a52.998 52.998 0 0 0-27.962-7.62 48.573 48.573 0 0 0-26.278 8.718 69.88 69.88 0 0 0-20.165 21.897 107.505 107.505 0 0 0-11.99 29.516A137.144 137.144 0 0 0 237.68 235l31.192-4.37a49.172 49.172 0 0 1 5.557-11.226zm198.305-34.984c-10.926-35.274-27.287-64.757-46.842-87.374-18.557-21.518-39.544-36.26-61.118-44.213-20.155-7.41-40.564-8.74-59.953-4.248-18.058 4.204-35.196 13.466-50.603 27.62-14.42 13.21-26.09 29.626-35.185 47.807a233.224 233.224 0 0 0-19.29 56.57 286.023 286.023 0 0 0-5.856 60.674l22.582-3.16a209.143 209.143 0 0 1 5.047-40.344 166.26 166.26 0 0 1 15.972-42.926c7.365-13.4 16.716-25.124 27.997-34.087 11.89-9.44 24.88-14.986 38.3-16.64 14.165-1.774 28.773.744 42.938 7.51 14.863 7.1 29.084 18.78 41.485 34.774 12.856 16.572 23.515 37.46 30.66 61.917a225.515 225.515 0 0 1 8.74 74.65c-1.254 24.05-6.4 46.422-14.72 65.656-8.042 18.58-18.857 33.887-31.824 44.88-12.313 10.47-26.345 16.915-41.463 18.656a76.226 76.226 0 0 1-41.163-7.1c-12.313-5.722-23.826-14.485-34.03-25.51a162.212 162.212 0 0 1-25.724-37.637 204.584 204.584 0 0 1-14.542-38.578l-22.484 3.106a280.965 280.965 0 0 0 19.966 57.823 228.2 228.2 0 0 0 32.168 50.092c12.99 15.186 27.82 27.83 43.914 36.793 17.18 9.574 36.027 15.064 55.705 14.865 21.263-.21 41.44-7.022 59.52-19.778 19.356-13.654 36.005-33.897 48.617-59.432 13.244-26.82 21.697-58.788 24.048-93.64a300.742 300.742 0 0 0-12.856-108.76z",
   "rivale": "M19.75 14.438c59.538 112.29 142.51 202.35 232.28 292.718l3.626 3.75.063-.062c21.827 21.93 44.04 43.923 66.405 66.25-18.856 14.813-38.974 28.2-59.938 40.312l28.532 28.53 68.717-68.717c42.337 27.636 76.286 63.646 104.094 105.81l28.064-28.06c-42.47-27.493-79.74-60.206-106.03-103.876l68.936-68.938-28.53-28.53c-11.115 21.853-24.413 42.015-39.47 60.593-43.852-43.8-86.462-85.842-130.125-125.47-.224-.203-.432-.422-.656-.625C183.624 122.75 108.515 63.91 19.75 14.437zm471.875 0c-83.038 46.28-154.122 100.78-221.97 161.156l22.814 21.562 56.81-56.812 13.22 13.187-56.438 56.44 24.594 23.186c61.802-66.92 117.6-136.92 160.97-218.72zm-329.53 125.906l200.56 200.53c-4.36 4.443-8.84 8.793-13.405 13.032L148.875 153.53l13.22-13.186zm-76.69 113.28l-28.5 28.532 68.907 68.906c-26.29 43.673-63.53 76.414-106 103.907l28.063 28.06c27.807-42.164 61.758-78.174 104.094-105.81l68.718 68.717 28.53-28.53c-20.962-12.113-41.08-25.5-59.937-40.313 17.865-17.83 35.61-35.433 53.157-52.97l-24.843-25.655-55.47 55.467c-4.565-4.238-9.014-8.62-13.374-13.062l55.844-55.844-24.53-25.374c-18.28 17.856-36.602 36.06-55.158 54.594-15.068-18.587-28.38-38.758-39.5-60.625z"
 };
-  const symbol=(icon,titel)=>`<svg class="stat-symbol" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path d="${icons[icon]}"/></svg>${titel}`;
+  const symbol=(icon,titel)=>`<svg class="stat-symbol" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path d="${icons[icon]}"/></svg><span>${titel}</span>`;
   const karte=p.karte_fav?.[0];
   const bild=karte&&((D?.dm?.karten||[]).find(k=>k.karte===karte&&k.bild)?.bild
     ||(D?.dm?.runden||[]).find(r=>r.karte===karte&&r.bild)?.bild);
@@ -1242,17 +1247,59 @@ function podestKartenRivalen(m){
   const spezial=(m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)
     ?`<p class="mut">${m.kopfgeld_kills||0} Kopfgelder · ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0} Juggernauts erlegt</p>`:'';
   const saison=(m.saisons||[]).map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)} · Platz ${s[1]}</span>`).join(' ');
-  return `<section class="panel"><div class="stat-podest">${[['Podest',0,3,''],['Karte & Modus',3,5,' stat-karte'],['Rivalen',5,8,'']].map(([titel,von,bis,klasse])=>
-    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}${saison?`<p class="mut">Saison-Platzierungen</p>${saison}`:''}</section>`;
+  kacheln.splice(3,0,kachel(symbol('pokal','Saisonplatzierungen'),saison||'–'));
+  return `<section class="panel"><div class="stat-podest">${[['Podest',0,4,' stat-platz'],['Karte & Modus',4,6,' stat-karte'],['Rivalen',6,9,'']].map(([titel,von,bis,klasse])=>
+    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}</section>`;
 }
 document.addEventListener('click',e=>{
   const spieler=e.target.closest('[data-stat-rivale]');
   if(spieler&&D)dmProfil(spieler.dataset.statRivale);
 });
+let matchDialog, matchListe=[];
+const distanzNamen=['Unter 25 m','25 bis unter 100 m','Ab 100 m'];
+const hoehenNamen=['Tiefer als der Gegner','Ähnliche Höhe','Höher als der Gegner'];
+function duelBilanz(titel,werte,namen,leer){
+  return `<section class="waffen-gruppe"><h4>${titel}</h4>${werte?.some(([k,t])=>k||t)
+    ?waffenKennzahlen(werte.map(([k,t],i)=>[namen[i],k+' K / '+t+' T']))
+    :`<p class="mut">${leer}</p>`}</section>`;
+}
+function zeigeMatch(index,liste){
+  if(!matchDialog){
+    matchDialog=document.createElement('dialog');
+    matchDialog.id='matchStatDialog';
+    matchDialog.setAttribute('aria-label','Match-Performance');
+    document.body.append(matchDialog);
+    matchDialog.addEventListener('click',e=>{if(e.target===matchDialog)matchDialog.close()});
+  }
+  const r=liste[index], a=r[5]||{}, [k,t]=r[4]||[0,0];
+  const bild=(D?.dm?.karten||[]).find(x=>x.karte===r[1]&&x.bild)?.bild;
+  matchDialog.innerHTML=`<div class="match-stat-leiste">
+    <button class="login" data-match-nav="-1" aria-label="Vorherige Runde" ${index===0?'disabled':''}>←</button>
+    <span class="mut">${index+1} / ${liste.length}</span>
+    <button class="login" data-match-nav="1" aria-label="Nächste Runde" ${index+1===liste.length?'disabled':''}>→</button>
+    <button class="login" data-match-zu aria-label="Schließen">✕</button>
+  </div><div class="waffen-detail"><div class="waffen-detail-kopf"><h4>${esc(r[1])} · ${esc(r[2])}</h4>
+    <p class="mut">${uhr(r[3])}</p>${bild?`<img class="match-stat-bild" src="${esc(bild)}" alt="">`:''}</div>
+    <h4>Match-Performance</h4><p>${k>t?'Positive':k<t?'Negative':'Ausgeglichene'} Killbilanz</p>
+    ${waffenKennzahlen([['Kills',k],['Tode',t],['Kopf-Kills',a.distanz?a.kopf:'–'],['Weitester Kill',a.weitester?a.weitester+' m':'–']])}
+    <div class="waffen-gruppen">${duelBilanz('Bilanz nach Distanz',a.distanz,distanzNamen,'Keine Distanzen für dieses Match erfasst.')}
+    ${duelBilanz('Bilanz nach Höhenlage',a.hoehe,hoehenNamen,'Für dieses Match sind keine Höhenwerte gespeichert.')}</div>
+    <a href="/zuschauer/runde/${esc(r[0])}">Öffentliche Rundendetails</a></div>`;
+  matchDialog.querySelector('[data-match-zu]').onclick=()=>matchDialog.close();
+  matchDialog.querySelectorAll('[data-match-nav]').forEach(b=>b.onclick=()=>zeigeMatch(index+Number(b.dataset.matchNav),liste));
+  if(!matchDialog.open)matchDialog.showModal();
+  matchDialog.scrollTop=0;
+  matchDialog.querySelector('[data-match-zu]').focus();
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-match-stat]');
+  if(b&&matchListe[Number(b.dataset.matchStat)])zeigeMatch(Number(b.dataset.matchStat),matchListe);
+});
 function letzteRunden(runden){
-  const zeilen=(runden||[]).slice(0,15).map(r=>`<div class="stat-runde">
+  matchListe=(runden||[]).slice(0,15);
+  const zeilen=matchListe.map((r,i)=>`<div class="stat-runde">
     <div><b>${esc(r[1])} · ${esc(r[2])}</b><small>${uhr(r[3])}</small></div>
-    <div>${r[4]?`<b>${r[4][0]} Kills / ${r[4][1]} Tode</b><br>`:''}<a href="/zuschauer/runde/${esc(r[0])}">Runde ansehen</a></div></div>`).join('');
+    <div>${r[4]?`<b>${r[4][0]} Kills / ${r[4][1]} Tode</b><br>`:''}<button type="button" class="login" data-match-stat="${i}">Match analysieren</button></div></div>`).join('');
   return statistikBlock('Meine letzten Runden',zeilen?`<div class="stat-runden">${zeilen}</div>`:'<div class="mut">Noch keine Runden erfasst.</div>');
 }
 const statistikBlock=(titel,inhalt)=>`<details class="statistik-block" data-statistik="${esc(titel)}"><summary>${esc(titel)}</summary><div>${inhalt||'<p class="mut">Noch keine Daten.</p>'}</div></details>`;
@@ -1282,7 +1329,9 @@ function dmPerformance(m){
     <div class="waffen-gruppen">
     <div><b>Stärken</b><p>${staerke?esc(staerke.name)+': positive Bilanz. ':''}${top?`Meiste Kills mit ${esc(top[0])} (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Weitester Kill: ${m.weitester} m.`:''}</p></div>
     <div><b>Verbesserungspotenzial</b><p>${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
-    </div>${distanz}<small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
+    </div>${distanz}${duelBilanz('Killbilanz nach Höhenlage',m.hoehenbilanz,hoehenNamen,'Höhenwerte werden für neue Runden mit vollständigen Kill-Koordinaten erfasst.')}
+    <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer.</small><br>
+    <small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
 }
 function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze → 🥈 Silber → 🥇 Gold → 💎 Platin, jede Stufe schwerer; Platin immer wieder holbar: 2×, 3× Platin …)</span>';
   const keinDm=`<div class="mut">Dir ist noch kein Deathmatch-Gamertag zugeordnet${d.dm_gamertag?' bzw. er hat noch keine gewertete Runde':''}.</div>`;
