@@ -126,7 +126,19 @@
   .reiter button:hover{color:var(--text);border-color:var(--line2)}
   .reiter button.an{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border-color:var(--acc)}
   .reiter.klein{margin:10px 0 8px}.reiter.klein button{padding:5px 10px;font-size:11px}
-  #dMatchAktion:not(:empty){margin:0 0 10px}
+  .serverleiste{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;max-width:100%;margin-bottom:12px}
+  .serverleiste:has(#sStatus[hidden]):has(#dMatchAktion:empty){display:none}
+  .serverleiste .status{justify-content:center;margin:0;text-align:center}
+  .serverleiste #sStatus[hidden],#dMatchAktion:empty{display:none}
+  #dMatchAktion button{width:100%;height:100%;color:var(--acc2);cursor:pointer}
+  #dr-wertung table{table-layout:fixed}
+  #dr-wertung :is(th,td){white-space:normal;overflow-wrap:anywhere}
+  #dElo :is(th,td):first-child{width:34%}
+  #dLevel :is(th,td):first-child{width:8%}
+  #dLevel :is(th,td):nth-child(2){width:31%}
+  #dLevel .lvbar{max-width:100%}
+  #dr-wertung .rh > *{min-width:0;overflow-wrap:anywhere}
+  @media(max-width:760px){#dr-wertung :is(th,td){padding:5px 4px;font-size:12px}}
   #dLevel th:nth-child(2),#dLevel td:nth-child(2){text-align:left}
   .mr{display:none}.mr.an{display:block;animation:rein .2s ease-out}
   .mwahl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:8px}
@@ -292,8 +304,10 @@ nav button{min-width:0}
   <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="meine" id="meineTab" hidden>👤 Meine<span class="lang"> Statistik</span></button></nav>
 </header>
 <main>
-  <div class="status" id="sStatus" hidden></div>
-  <div id="dMatchAktion"></div>
+  <div class="serverleiste">
+    <div class="status" id="sStatus" hidden></div>
+    <div id="dMatchAktion"></div>
+  </div>
   <div id="banner"></div>
   <section class="tab an" id="t-pve">
     <div id="pBanner"></div>
@@ -319,21 +333,19 @@ nav button{min-width:0}
       <button type="button" data-dr="karten" aria-pressed="false">🗺 Karten</button>
     </div>
     <div class="dr" id="dr-live">
-    <div id="dRunde"></div>
-    <div class="panel" id="dVote" hidden></div>
-    <div class="panel" id="dCustom" hidden></div>
     <div class="zwei">
       <div class="panel"><h3>🎯 Killfeed</h3><div id="dKf" class="kf"></div></div>
       <div class="panel scroll"><h3>Stand dieser Runde</h3><table id="dStand"></table></div>
     </div>
+    <div id="dRunde"></div>
+    <div class="panel" id="dVote" hidden></div>
+    <div class="panel" id="dCustom" hidden></div>
     </div>
     <div class="dr" id="dr-matches" hidden>      <div class="panel"><h3>📜 Letzte Runden</h3><div id="dRunden"></div><div class="mut" style="margin-top:6px">Auf eine Runde tippen für Top 10, weitesten Kill und längste Leben.</div></div></div>
     <div class="dr" id="dr-wertung" hidden>
-      <div class="zwei">
       <div class="panel scroll"><h3>🏆 Elo-Wertung über alle Runden</h3><table id="dElo"></table>
         <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil. Gewertet werden nur Runden mit mindestens 2 Spielern.</div></div>
       <div class="panel"><h3>🏛 Ruhmeshalle Deathmatch</h3><div id="dRuhm"></div></div>
-      </div>
     <div class="panel scroll"><h3>⭐ Deathmatch-Level</h3><div id="dLevel"></div></div>
     <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
     </div>
@@ -560,7 +572,7 @@ function cmPanel(c){const el=$('#dCustom'),aktion=$('#dMatchAktion');aktion.repl
   const meine=(CMF&&CMF.meine)||[],dran=ICH&&ICH.benutzer;
   if(DIREKT&&c.moeglich){
     const knopf=document.createElement('button');
-    knopf.type='button';knopf.className='login cmbtn';knopf.textContent='🎮 Match erstellen';
+    knopf.type='button';knopf.className='status';knopf.textContent='🎮 Match erstellen';
     knopf.onclick=()=>{if(!dran){loginForm(false);return}matchForm()};
     aktion.append(knopf);
   }
