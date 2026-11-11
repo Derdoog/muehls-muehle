@@ -270,6 +270,18 @@ nav button{min-width:0}
 .rbreihe{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0}
 .rbreihe>span{display:inline-flex;align-items:center;white-space:nowrap}
 .rbreihe .rb{width:1.7em;height:1.8em}
+/* Update 8: Custom-Matches */
+.cmk{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:6px 0 12px}
+.cmk button{position:relative;text-align:left;background:var(--panel2);border:2px solid var(--line);padding:0;overflow:hidden}
+.cmk button.an{border-color:var(--acc);box-shadow:var(--glow)} .cmk img{width:100%;height:70px;object-fit:cover;display:block;opacity:.85}
+.cmk b{display:block;padding:6px 8px;font-size:13px}
+.cmf h4{margin:14px 0 6px} .cmf .seg{margin-bottom:4px} .cmr{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;margin:4px 0}
+.cmr>span:first-child{min-width:130px;font-weight:600;font-size:14px}
+.cmq{display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);padding:8px 10px;margin:6px 0}
+.cmq img{width:64px;height:40px;object-fit:cover;flex:none} .cmq .nr{font:700 18px var(--kopf);color:var(--acc);min-width:22px}
+.cmsum{background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--acc);padding:10px 12px;margin:8px 0}
+.cmbtn{font-size:14px;padding:9px 16px}
+@media (max-width:700px){.cmr>span:first-child{min-width:100%}.cmk{grid-template-columns:repeat(2,1fr)}.cmq{flex-wrap:wrap}.cmq img{width:48px;height:32px}.cmq>div{flex-basis:calc(100% - 90px)}.cmq>button{flex-basis:100%}}
 </style>
 </head>
 <body>
@@ -298,6 +310,7 @@ nav button{min-width:0}
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="regelbtn" id="regelnBtn">❓ Regeln &amp; Punkte</button></div>
     <div id="dRunde"></div>
     <div class="panel" id="dVote" hidden></div>
+    <div class="panel" id="dCustom" hidden></div>
     <div class="zwei">
       <div class="panel"><h3>🎯 Killfeed</h3><div id="dKf" class="kf"></div></div>
       <div class="panel scroll"><h3>Stand dieser Runde</h3><table id="dStand"></table></div>
@@ -469,6 +482,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
       <div>${[m.zeit,...(m.regeln||[])].filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>
       ${wz.length?`<div style="margin-top:6px;font-size:14px">${wz.join('<br>')}</div>`:''}${m.online&&m.online.length?`<div class="mut" style="margin-top:6px">Im Spiel (${m.online.length}): ${m.online.map(esc).join(', ')}</div>`:''}${plan}</div>`
     :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>'+(plan?`<div class="panel runde">${plan}</div>`:'');
+  try{cmPanel(m.custom)}catch(e){console.error(e)}
   $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
     (m.kills.map(kfZeile).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
   $('#dStand').innerHTML=m.stand.length?STAND_KOPF+m.stand.map((s,i)=>standZeile(s,i,m)).join(''):'<tr><td class="mut">–</td></tr>';
@@ -519,14 +533,76 @@ function statusZeichnen(){const s=D&&D.status,el=$('#sStatus');if(!s||!s.t||Date
 // öffentliche Profile: siehe unten (Reiter)
 // ---------------- Abstimmung (nur direkt vom Server)
 let VOTE=null;
+// ---------------- Update 8: Custom-Matches von Zuschauern (Tom t825u/t826u)
+let CMF=null,MF=null,CMS='form',CMZ=null;
+function cmPanel(c){const el=$('#dCustom');if(!el)return;if(!c||!c.an){el.hidden=true;return}el.hidden=false;
+  const meine=(CMF&&CMF.meine)||[],dran=ICH&&ICH.benutzer;
+  const knopf=DIREKT?(c.moeglich?`<button class="login cmbtn" id="cmNeu">🎮 Match erstellen</button>`:`<button class="login cmbtn" disabled>🎮 Match erstellen</button> <span class="mut">${esc(c.grund||'')}</span>`):'<span class="mut">Match erstellen geht nur direkt auf der Seite des Servers.</span>';
+  el.innerHTML=`<h3>🎮 Custom-Matches</h3>
+    ${c.aktuell?`<div class="hinweis">Gerade läuft ein Custom-Match ${c.aktuell.gt?'von <b>'+esc(c.aktuell.gt)+'</b>':'aus der Abstimmung'}.</div>`:''}
+    ${c.liste.length?c.liste.map((x,i)=>`<div class="cmq"><span class="nr">${i+1}</span>${x.bild?`<img src="${esc(x.bild)}" alt="" loading="lazy">`:''}<div style="flex:1;min-width:0"><b>${esc(x.titel)}</b>
+      <div class="mut">${x.zufall?'🎲 aus der Abstimmung':'von '+GT(x.gt||'?','dm')} · ${x.minuten} min</div><div>${(x.regeln||[]).map(r=>`<span class="chip">${esc(r)}</span>`).join('')}</div></div>
+      ${dran&&meine.includes(x.id)?`<button class="login" data-cmzu="${esc(x.id)}">Zurückziehen</button>`:''}</div>`).join('')
+      :'<div class="mut">Noch keine Custom-Matches in der Warteschlange.</div>'}
+    <div style="margin-top:10px">${knopf}</div>
+    <div class="mut" style="margin-top:6px">Bis zu ${c.max} Matches laufen nacheinander, jeweils nach der laufenden Runde. Je Konto ${c.je_konto} offen. Die Abstimmung kann die Reihenfolge ändern (gewählt = rückt nach vorne).</div>`;
+  const nb=$('#cmNeu');if(nb)nb.onclick=()=>{if(!dran){loginForm(false);return}matchForm()};
+  $$('[data-cmzu]').forEach(b=>b.onclick=async()=>{if(!confirm('Dein Match aus der Warteschlange nehmen?'))return;await cmPost({aktion:'zurueckziehen',id:b.dataset.cmzu});await cmLaden();laden()})}
+async function cmLaden(){if(!DIREKT)return null;CMF=await holeJson('/zuschauer/match');return CMF}
+async function cmPost(d){try{const r=await fetch('/zuschauer/match',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+  const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Das ging nicht');return null}return j}catch(e){alert('Keine Verbindung');return null}}
+async function matchForm(){await cmLaden();const f=CMF;if(!f)return;
+  if(!MF){const k=f.karten[0]||{modi:[]},st=(k.standard||{});MF={karte:k.id,modus:(k.modi[0]||{}).id,zeit:'tag',minuten:30,regeln:Object.assign({},f.std,{ziel_kills:'30'})}}
+  CMS='form';cmZeichnen()}
+function cmSeg(key,werte,wert,gruppe){return `<div class="seg">${werte.map(([v,n])=>`<button class="${String(wert)===String(v)?'an':''}" data-cg="${gruppe||'r'}" data-ck="${key}" data-cv="${esc(String(v))}">${esc(n)}</button>`).join('')}</div>`}
+function cmAnAus(key){return cmSeg(key,[['1','An'],['0','Aus']],MF.regeln[key]?'1':'0','b')}
+function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
+  const k=f.karten.find(x=>x.id===M.karte)||f.karten[0];if(k&&!k.modi.some(m=>m.id===M.modus))M.modus=(k.modi[0]||{}).id;
+  const kopf=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 4px">🎮 Match erstellen</h2>`;
+  if(!f.moeglich){$('#dlgIn').innerHTML=kopf+`<div class="hinweis">${esc(f.grund)}</div>`;if(!$('#dlg').open)$('#dlg').showModal();return}
+  if(!f.gt){$('#dlgIn').innerHTML=kopf+'<div class="hinweis">Dir ist noch kein Deathmatch-Gamertag zugeordnet. Das macht der Admin.</div>';if(!$('#dlg').open)$('#dlg').showModal();return}
+  if(CMS==='sum'&&CMZ){const z=CMZ.z,pl=(f.liste.liste||[]).length+1;
+    $('#dlgIn').innerHTML=kopf+`<div class="mut">Bitte prüfen, so startet das Match:</div><div class="cmsum">${z.bild?`<img src="${esc(z.bild)}" alt="" style="width:100%;max-height:150px;object-fit:cover;margin-bottom:8px">`:''}
+      <div style="font:700 18px var(--kopf);text-transform:uppercase">${esc(z.titel)}</div>
+      <div style="margin:6px 0">${(z.regeln||[]).map(r=>`<span class="chip">${esc(r)}</span>`).join('')||'<span class="mut">Standard-Regeln</span>'}</div>
+      <div>🏁 ${z.ziel?'Sieg bei <b>'+z.ziel+'</b> Punkten':'ohne Ziel-Punkte'} · ⏱ Laufzeit <b>${z.minuten} min</b></div>
+      ${(z.hinweise||[]).length?`<div class="mut" style="margin-top:6px">ℹ ${z.hinweise.map(esc).join('<br>ℹ ')}</div>`:''}
+      <div class="mut" style="margin-top:8px">Erstellt von ${GT(f.gt,'dm')} · kommt an Platz ${pl} der Warteschlange und startet nach der laufenden Runde (bzw. nach den Matches davor). Eine laufende Runde wird nie unterbrochen. Der Server startet beim Wechsel neu (ca. 3 Minuten).</div>
+      ${f.test?'<div class="hinweis">🧪 Testkonto: Das ist nur eine Probe. Es kommt nichts in die Warteschlange, nichts startet.</div>':''}</div>
+      <div class="zeile" style="display:flex;gap:8px;flex-wrap:wrap"><button class="login cmbtn" id="cmZur">← Ändern</button><button class="login cmbtn" id="cmOk" style="border-color:var(--acc)">✅ ${f.test?'Probe abschicken':'Match erstellen'}</button></div>`;
+    $('#cmZur').onclick=()=>{CMS='form';cmZeichnen()};
+    $('#cmOk').onclick=async()=>{$('#cmOk').disabled=true;const j=await cmPost({aktion:'erstellen',eintrag:CMZ.eintrag});if(!j){$('#cmOk').disabled=false;return}CMZ.erg=j;CMS='ok';await cmLaden();cmZeichnen();laden()};
+    if(!$('#dlg').open)$('#dlg').showModal();return}
+  if(CMS==='ok'&&CMZ&&CMZ.erg){const j=CMZ.erg;
+    $('#dlgIn').innerHTML=kopf+(j.probe?'<div class="hinweis">🧪 Probe ok (Testkonto). So würde es in die Warteschlange gehen, gestartet wird nichts.</div>':`<div class="hinweis">✅ Dein Match steht in der Warteschlange auf <b>Platz ${j.platz}</b>. Es startet automatisch nach der laufenden Runde${j.platz>1?' und den Matches davor':''}. Discord sagt es an.</div>`)
+      +`<div class="cmsum"><b>${esc(j.z.titel)}</b><div class="mut">${esc((j.z.regeln||[]).join(', '))} · ${j.z.minuten} min</div></div><button class="login cmbtn" onclick="dlg.close()">Fertig</button>`;
+    MF=null;CMZ=null;return}
+  const zeile=(t,c)=>`<div class="cmr"><span>${t}</span>${c}</div>`,hc=R.hardcore;
+  $('#dlgIn').innerHTML=kopf+`<div class="mut">Stell dein Match zusammen. Es startet nach der laufenden Runde. Bis zu ${f.max} Matches in der Warteschlange, je Konto ${f.je_konto}.</div><div class="cmf">
+    <h4>1 · Karte</h4><div class="cmk">${f.karten.map(x=>`<button data-cmk="${esc(x.id)}" class="${x.id===M.karte?'an':''}">${x.bild?`<img src="${esc(x.bild)}" alt="" loading="lazy">`:''}<b>${esc(x.titel)}</b></button>`).join('')}</div>
+    <h4>2 · Modus / Ausrüstung</h4>${cmSeg('modus',(k?k.modi:[]).map(m=>[m.id,m.name]),M.modus,'m')}
+    <h4>3 · Tageszeit</h4>${cmSeg('zeit',f.zeiten.map(z=>[z.id,z.name]),M.zeit,'m')}
+    <h4>4 · Ziel und Laufzeit</h4>${zeile('🏁 Ziel-Punkte',cmSeg('ziel_kills',O.ziel_kills,R.ziel_kills))}${zeile('⏱ Laufzeit',cmSeg('minuten',f.minuten.map(m=>[m,m+' min']),M.minuten,'m'))}
+    <h4>5 · Nebenregeln</h4>
+    ${zeile('🌫️ Nebel',cmSeg('nebel',O.nebel,R.nebel))}${zeile('☣️ Giftgas',cmSeg('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',cmSeg('rucksaecke',O.rucksaecke,R.rucksaecke))}
+    ${zeile('📦 Versorgungskisten',cmSeg('kisten',O.kisten,R.kisten))}${zeile('💰 Kopfgeld',cmAnAus('kopfgeld'))}${zeile('📏 Distanzwertung',cmSeg('distanz',O.distanz,R.distanz))}
+    ${zeile('🟥🟨 Teams',cmAnAus('teams'))}${O.bedrohungen.map(([b,n])=>zeile('Gegner: '+esc(n),cmSeg(b,[['1','An'],['0','Aus']],(R.bedrohungen||[]).includes(b)?'1':'0','d'))).join('')}
+    ${zeile('💀 Hardcore',cmAnAus('hardcore'))}${hc?'':zeile('Fadenkreuz',cmAnAus('fadenkreuz'))+zeile('3rd Person',cmAnAus('third'))+zeile('Aufgeben bei Bewusstlosigkeit',cmAnAus('bewusstlos_respawn'))}
+    ${zeile('Bewusstlosigkeit',cmSeg('bewusstlos',O.bewusstlos,R.bewusstlos))}${zeile('Ausdauer',cmSeg('ausdauer',O.ausdauer,R.ausdauer))}
+    </div><div style="margin-top:12px"><button class="login cmbtn" id="cmWeiter" style="border-color:var(--acc)">Weiter zur Zusammenfassung →</button></div>`;
+  $$('[data-cmk]').forEach(b=>b.onclick=()=>{M.karte=b.dataset.cmk;const kk=f.karten.find(x=>x.id===M.karte),st=kk&&kk.standard;if(st&&st.modus&&kk.modi.some(m=>m.id===st.modus))M.modus=st.modus;cmZeichnen()});
+  $$('[data-cg]').forEach(b=>b.onclick=()=>{const g=b.dataset.cg,key=b.dataset.ck,v=b.dataset.cv;
+    if(g==='m')M[key]=key==='minuten'?+v:v;else if(g==='b')R[key]=v==='1';else if(g==='d'){const L=R.bedrohungen=(R.bedrohungen||[]).filter(x=>x!==key);if(v==='1')L.push(key)}else R[key]=v;cmZeichnen()});
+  $('#cmWeiter').onclick=async()=>{const j=await cmPost({aktion:'pruefen',eintrag:M});if(!j)return;CMZ=j;CMS='sum';cmZeichnen()};
+  if(!$('#dlg').open)$('#dlg').showModal()}
 async function voteLaden(){if(!DIREKT)return;const v=await holeJson('/zuschauer/abstimmung');VOTE=v;if(v)v._t=Date.now()/1000;voteZeichnen()}
 function voteZeichnen(){const v=VOTE,el=$('#dVote');if(!v||!v.offen){el.hidden=true;return}el.hidden=false;
   const st=v.stand,me=st.meine||{},mxk=Math.max(1,...Object.values(st.karten)),mxm=Math.max(1,...Object.values(st.modi));
   const rest=Math.max(0,v.rest-(Date.now()/1000-VOTE._t)),mitModus=v.karten.some(k=>!k.plan||k.plan.quelle!=='eintrag');
-  el.innerHTML=`<h3>🗳️ Was kommt als Nächstes?</h3><div class="mut" style="margin-bottom:10px">Abstimmen bis zum Wechsel in ca. <b>${dauer(rest)}</b> · ${st.anzahl} ${st.anzahl===1?'Stimme':'Stimmen'} bisher · du kannst deine Wahl jederzeit ändern</div>
+  el.innerHTML=`<h3>${v.custom?'🗳️ Welches Custom-Match kommt als Nächstes?':'🗳️ Was kommt als Nächstes?'}</h3><div class="mut" style="margin-bottom:10px">Abstimmen bis zum Wechsel in ca. <b>${dauer(rest)}</b> · ${st.anzahl} ${st.anzahl===1?'Stimme':'Stimmen'} bisher · du kannst deine Wahl jederzeit ändern</div>
     <div class="mut" style="margin-bottom:4px">Karte</div><div class="vote">${v.karten.map(k=>{const n=st.karten[k.id]||0;return `<button data-vk="${esc(k.id)}" class="${me.karte===k.id?'an':''}"><i style="width:${Math.round(n/mxk*100)}%"></i>${k.bild?`<img src="${esc(k.bild)}" alt="" loading="lazy">`:''}<b>${esc(k.titel)}</b>${k.plan&&k.plan.text?`<span class="mut" style="display:block;font-size:.85em">${k.plan.quelle==='eintrag'?'startet mit: ':'Standard: '}${esc(k.plan.text)}</span>`:''}<span>${n} ${n===1?'Stimme':'Stimmen'}</span></button>`}).join('')}</div>
     ${mitModus?`<div class="mut" style="margin-bottom:4px">Modus <span style="font-size:.85em">(nur f\u00fcr Karten ohne festen Plan)</span></div><div class="vote">${v.modi.map(m=>{const n=st.modi[m.id]||0;return `<button data-vm="${esc(m.id)}" class="${me.modus===m.id?'an':''}"><i style="width:${Math.round(n/mxm*100)}%"></i><b>${esc(m.name)}</b><span>${n} ${n===1?'Stimme':'Stimmen'}</span></button>`}).join('')}</div>`:''}
-    <div class="mut">Gewinnt die Karte mit den meisten Stimmen. Karten aus der Reihenfolge starten genau so, wie es auf der Karte steht (Modus, Zeit, Nebenregeln)${mitModus?'; f\u00fcr Karten ohne festen Plan z\u00e4hlt der beliebteste Modus':''}. Ohne Stimmen läuft die Automatik wie geplant.</div>`;
+    <div class="mut">${v.custom?'Das Match mit den meisten Stimmen rückt nach vorne und startet als Nächstes, die anderen bleiben in ihrer Reihenfolge. 🎲 = Zufalls-Vorschlag, gewinnt er, wird er eingeschoben. Ohne Stimmen laufen die Custom-Matches der Reihe nach.':`Gewinnt die Karte mit den meisten Stimmen. Karten aus der Reihenfolge starten genau so, wie es auf der Karte steht (Modus, Zeit, Nebenregeln)${mitModus?'; f\u00fcr Karten ohne festen Plan z\u00e4hlt der beliebteste Modus':''}. Ohne Stimmen läuft die Automatik wie geplant.`}</div>`;
   $$('[data-vk]').forEach(b=>b.onclick=()=>stimme({karte:b.dataset.vk,modus:me.modus||null}));
   $$('[data-vm]').forEach(b=>b.onclick=()=>stimme({karte:me.karte||null,modus:b.dataset.vm}))}
 async function stimme(d){try{const r=await fetch('/zuschauer/abstimmung',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
@@ -534,7 +610,7 @@ async function stimme(d){try{const r=await fetch('/zuschauer/abstimmung',{method
 // ---------------- Spieler-Login, Registrierung und Meine Statistik (Reiter, Charakter-Auswahl)
 let ICH=null,MK=null,MG=null;
 async function ichLaden(){if(!DIREKT)return;$('#loginBtn').hidden=false;ICH=await holeJson('/zuschauer/ich');
-  const da=ICH&&ICH.benutzer;$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;
+  const da=ICH&&ICH.benutzer;if(da)cmLaden().then(()=>{try{if(D)cmPanel(D.dm.custom)}catch(e){}});$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;
   if(!da&&$('#t-meine').classList.contains('an'))tab('pve')}
 function loginForm(reg){const offen=!ICH||ICH.registrierung_an!==false;
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">${reg?'Konto anlegen':'Spieler-Login'}</h2>
