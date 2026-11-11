@@ -464,10 +464,18 @@ nav button{min-width:0}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
 <style>
-.recht-links{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:12px}
-.recht-dialog{width:min(620px,calc(100% - 24px));max-height:85vh;overflow:auto}
+.zuschauer-footer{margin-top:18px}
+.footer-haupt,.footer-unten{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px 20px;padding:10px 14px;border:1px solid var(--line2);background:var(--panel2)}
+.footer-haupt{border-top:2px solid var(--acc2)}
+.footer-haupt strong{font-size:15px;color:var(--acc2)}
+.footer-haupt #takt{margin-top:3px}
+.footer-unten{border-top:0;font-size:11px;background:var(--bg2)}
+.footer-unten .game-icon-credit{margin:0;text-align:left}
+.recht-links{display:flex;flex-wrap:wrap;gap:6px}
+@media(max-width:540px){.footer-haupt,.footer-unten{align-items:flex-start;flex-direction:column}}
+.recht-dialog{width:min(620px,calc(100% - 24px));max-height:85vh;overflow:auto;padding:clamp(16px,4vw,30px)}
 .recht-dialog h2{margin-top:0}.recht-dialog p,.recht-dialog li{line-height:1.55}
-.recht-dialog form{display:flex;justify-content:flex-end}
+.recht-dialog form{display:flex;justify-content:flex-end}.speicher-aktionen{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 </style>
 </head>
 <body>
@@ -537,10 +545,21 @@ nav button{min-width:0}
     </div>
   </section>
 </main>
-<footer><span id="takt">Aktualisiert sich alle 10 Sekunden von selbst.</span> Positionen und Basen werden hier nur dem jeweiligen Spieler nach dem Login gezeigt.<small class="game-icon-credit">Icons: Badges, Carl Olsen, Delapouite, Lorc, Skoll · <a href="https://game-icons.net/">Game-icons.net</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></small><div class="recht-links" aria-label="Rechtliche Informationen">
-  <button type="button" class="login" data-recht="impressum">Impressum</button>
-  <button type="button" class="login" data-recht="datenschutz">Datenschutz</button>
-</div></footer>
+<footer class="zuschauer-footer">
+  <div class="footer-haupt">
+    <div><strong>Mühls Mühle</strong><span class="footer-trenner"> · </span><span>DayZ-Community</span>
+      <div id="takt">Live-Statistiken · Aktualisierung alle 10 Sekunden</div></div>
+    <div class="recht-links" aria-label="Rechtliche Informationen">
+      <button type="button" class="login" data-recht="impressum">Impressum</button>
+      <button type="button" class="login" data-recht="datenschutz">Datenschutz</button>
+      <button type="button" class="login" data-recht="speicher">Cookie-Einstellungen</button>
+    </div>
+  </div>
+  <div class="footer-unten">
+    <span>Positionen und Basen siehst du nach dem Login in deiner eigenen Karte.</span>
+    <small class="game-icon-credit">Icons: Badges, Carl Olsen, Delapouite, Lorc, Skoll · <a href="https://game-icons.net/">Game-icons.net</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></small>
+  </div>
+</footer>
 <dialog class="recht-dialog" id="recht-impressum" aria-labelledby="recht-impressum-titel">
   <form method="dialog"><button class="login" aria-label="Impressum schließen">✕</button></form>
   <h2 id="recht-impressum-titel">Impressum</h2>
@@ -554,7 +573,7 @@ nav button{min-width:0}
   <h2 id="recht-datenschutz-titel">Datenschutzhinweise</h2>
   <h3>Verantwortlich</h3><p>Tom van Thiel<br>Langenkamp 2<br>49082 Osnabrück<br>Deutschland<br><a href="mailto:tomvanthiel@hotmail.de">tomvanthiel@hotmail.de</a></p>
   <h3>Besuch der Website und Anmeldung</h3>
-  <p>Die Seite ruft den Serverstatus und die öffentlichen Statistiken regelmäßig ab. Der Webserver verarbeitet dabei technische Zugriffsdaten wie die IP-Adresse. Ein Spieler- oder Admin-Login verwendet ein Sitzungscookie. Die Seite merkt sich die zuletzt verwendeten Reiter sowie deine Charakter- und Kartenauswahl im lokalen Speicher deines Browsers.</p>
+  <p>Die Seite ruft den Serverstatus und die öffentlichen Statistiken regelmäßig ab. Der Webserver verarbeitet dabei technische Zugriffsdaten wie die IP-Adresse. Ein Spieler- oder Admin-Login verwendet ein Sitzungscookie. Mit deiner Einwilligung speichert die Seite Reiter, Charakter- und Kartenansicht im lokalen Browserspeicher. Die Auswahl selbst wird gespeichert, damit sie berücksichtigt wird. Du kannst deine Einwilligung jederzeit unter „Cookie-Einstellungen“ im Footer widerrufen. Rechtsgrundlage für die freiwillige Speicherung ist § 25 Abs. 1 TDDDG, für eine etwaige Verarbeitung personenbezogener Daten Art. 6 Abs. 1 Buchst. a DSGVO.</p>
   <h3>Spielerdaten und Ranglisten</h3>
   <p>Die Anwendung wertet die ADM-Protokolle des DayZ-Servers aus. Öffentliche Übersichten zeigen Gamertags, Spielaktivität, Ranglisten, Kills, Tode und Erfolge. Mit deinem Spieler-Konto kannst du auf die zugeordneten persönlichen Statistiken und Karteninformationen zugreifen. Die App verarbeitet Positionen auch intern, etwa zur Berechnung von Distanz und Bewegung.</p>
   <h3>Empfänger und Speicherdauer</h3>
@@ -563,9 +582,40 @@ nav button{min-width:0}
   <h3>Rechtsgrundlagen und deine Rechte</h3>
   <p>Für den technischen Betrieb, die Absicherung der Seite und den Betrieb der Community-Statistiken stützen wir die Verarbeitung auf Art. 6 Abs. 1 Buchst. f DSGVO. Unsere berechtigten Interessen sind ein sicherer Betrieb, die Fehleranalyse und nachvollziehbare Spielstatistiken. Soweit du ein Spielerkonto und die damit verbundenen Funktionen nutzt, verarbeiten wir die dafür erforderlichen Daten zur Bereitstellung dieser Funktionen nach Art. 6 Abs. 1 Buchst. b DSGVO. Du kannst dich wegen Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit oder Widerspruch an den Verantwortlichen wenden, soweit die gesetzlichen Voraussetzungen vorliegen. Du hast außerdem das Recht, dich bei einer Datenschutzaufsichtsbehörde zu beschweren.</p>
 </dialog>
+<dialog class="recht-dialog" id="recht-speicher" aria-labelledby="recht-speicher-titel">
+  <form method="dialog"><button class="login" aria-label="Cookie-Einstellungen schließen">✕</button></form>
+  <h2 id="recht-speicher-titel">Cookie-Einstellungen</h2>
+  <p>Beim Login hält ein notwendiges Sitzungscookie deine Anmeldung aufrecht. Du kannst die öffentliche Seite ohne Login nutzen.</p>
+  <p>Mit deiner Einwilligung speichert die Seite Reiter, Charakterauswahl und Kartenansicht auf diesem Gerät. Du kannst das jederzeit hier ändern und die gespeicherten Einstellungen löschen.</p>
+  <p id="speicher-status" role="status"></p>
+  <div class="speicher-aktionen">
+    <button type="button" class="login" data-speicher="nein">Nur notwendige Speicherung</button>
+    <button type="button" class="login" data-speicher="ja">Ansichtseinstellungen speichern</button>
+  </div>
+</dialog>
 <script>
+const sichtSpeicher=(()=>{
+  const schluessel=['tab','meine_ebenen','meine_reiter','meine_char'];
+  const entscheidung='dayz-ansicht-einwilligung-v1';
+  function erlaubt(){try{return localStorage.getItem(entscheidung)==='ja'}catch(e){return false}}
+  function loeschen(){try{schluessel.forEach(k=>localStorage.removeItem(k))}catch(e){}}
+  if(!erlaubt())loeschen();
+  return {
+    getItem(k){try{return erlaubt()?localStorage.getItem(k):null}catch(e){return null}},
+    setItem(k,v){try{if(erlaubt())localStorage.setItem(k,v)}catch(e){}},
+    erlaubt,
+    setzen(wert){try{localStorage.setItem(entscheidung,wert)}catch(e){} if(wert!=='ja')loeschen()}
+  };
+})();
+function speicherStatus(){
+  document.getElementById('speicher-status').textContent=sichtSpeicher.erlaubt()
+    ?'Ansichtseinstellungen werden gespeichert.':'Nur notwendige Speicherung ist aktiv.';
+}
 document.querySelectorAll('[data-recht]').forEach(button=>{
-  button.onclick=()=>document.getElementById('recht-'+button.dataset.recht).showModal();
+  button.onclick=()=>{if(button.dataset.recht==='speicher')speicherStatus();document.getElementById('recht-'+button.dataset.recht).showModal()};
+});
+document.querySelectorAll('[data-speicher]').forEach(button=>{
+  button.onclick=()=>{sichtSpeicher.setzen(button.dataset.speicher);speicherStatus();document.getElementById('recht-speicher').close()};
 });
 </script>
 
@@ -645,7 +695,7 @@ function medaille(icon,stufe,n){const f=STF[stufe]||'#555';const z=n>1?`<circle 
     `<circle cx="24" cy="24" r="21" fill="${stufe?`url(#g${stufe})`:'#2a2e35'}" stroke="${f}" stroke-width="3"/>${stufe==='diamant'||stufe==='platin'?`<circle cx="24" cy="24" r="16.5" fill="none" stroke="#fff" stroke-opacity=".5" stroke-dasharray="3 2"/>`:''}`+
     `<text x="24" y="31" font-size="19" text-anchor="middle">${icon}</text>${z}</svg>`}
 let D=null,RZ='gesamt',RS='spielzeit',ersterTab=true;const OFFEN=new Set();
-function tab(t){$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{localStorage.setItem('tab',t)}catch(e){}}
+function tab(t){$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{sichtSpeicher.setItem('tab',t)}catch(e){}}
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 const TAKT=30,ZWEIGE=20;
 async function holeJson(u,opt){try{const r=await fetch(u,opt||{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}return null}
@@ -653,7 +703,7 @@ const DIREKT=!REPO;   // direkt vom Steuer-Server ausgeliefert (/zuschauer): Dat
 async function laden(){
   let d=null;const jetzt=Date.now()/1000;
   if(DIREKT){d=await holeJson('/zuschauer/daten.json');if(!d){$('#stand').textContent='Daten gerade nicht erreichbar';return}D=d;zeichnen();
-    if(ersterTab){ersterTab=false;let t=null;try{t=localStorage.getItem('tab')}catch(e){}tab(t||(d.dm.laeuft?'dm':'pve'))}return}
+    if(ersterTab){ersterTab=false;let t=null;try{t=sichtSpeicher.getItem('tab')}catch(e){}tab(t||(d.dm.laeuft?'dm':'pve'))}return}
   // Live-Zweige: der Takt, der vor 8 s lief, ist sicher schon geschrieben (Zweig live-XX)
   for(const zur of [8,38]){const t=Math.floor((jetzt-zur)/TAKT);
     const x=await holeJson(`https://raw.githubusercontent.com/${REPO}/live-${String(((t%ZWEIGE)+ZWEIGE)%ZWEIGE).padStart(2,'0')}/daten.json`);
@@ -662,7 +712,7 @@ async function laden(){
   if(!d)d=await holeJson(`https://raw.githubusercontent.com/${REPO}/daten/daten.json`);
   if(!d){$('#stand').textContent='Daten gerade nicht erreichbar';return}
   D=d;zeichnen();
-  if(ersterTab){ersterTab=false;let t=null;try{t=localStorage.getItem('tab')}catch(e){}tab(t||(d.dm.laeuft?'dm':'pve'))}
+  if(ersterTab){ersterTab=false;let t=null;try{t=sichtSpeicher.getItem('tab')}catch(e){}tab(t||(d.dm.laeuft?'dm':'pve'))}
 }
 // Update 7: Bausteine, die Webseite und Kosmetik-Vorschau gemeinsam benutzen (eine Quelle, damit die Vorschau genau stimmt)
 const PKT=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
@@ -1175,7 +1225,7 @@ let ORTE=null;
 function ortBei(p){if(!ORTE||!p)return '';let best=null,bd=1e9;for(const o of ORTE){if(!['Capital','City','Village','Camp','Local','RailroadStation','LocalOffice','Marine'].includes(o[3]))continue;
   const d=Math.hypot(o[1]-p[0],o[2]-p[1]);if(d<bd){bd=d;best=o}}return best?(bd<700?best[0]:bd<1800?'nahe '+best[0]:'Wildnis'):''}
 const koordText=p=>`<div class="koord">X ${Math.round(p[0])} · Y ${Math.round(p[1])}<br>Planquadrat ${pq(p)}</div><span class="mut">${esc(ortBei(p))}</span>`;
-let MEBENE={orte:true,raster:true};try{Object.assign(MEBENE,JSON.parse(localStorage.getItem('meine_ebenen')||'{}'))}catch(e){}
+let MEBENE={orte:true,raster:true};try{Object.assign(MEBENE,JSON.parse(sichtSpeicher.getItem('meine_ebenen')||'{}'))}catch(e){}
 let MO=null,MR=null;
 function rasterZeichnen(){if(!MK)return;MR.clearLayers();if(!MEBENE.raster)return;const z=MK.getZoom(),s=z>=-1.5?1000:(z>=-3?1000:3000);
   for(let v=0;v<=15360;v+=s){L.polyline([[v,0],[v,15360]],{color:'#fff',weight:1,opacity:.18,interactive:false}).addTo(MR);L.polyline([[0,v],[15360,v]],{color:'#fff',weight:1,opacity:.18,interactive:false}).addTo(MR)}
@@ -1187,9 +1237,9 @@ let MModus='dm';
 $$('#mModus button').forEach(b=>b.onclick=()=>{MModus=b.dataset.modus;if(MREIT==='dm'||MREIT==='pve')MREIT='uebersicht';reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
 const MREITER=[['uebersicht','📋 Übersicht'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level'],['shop','🛒 Rubel-Shop']];
 let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
-try{MREIT=localStorage.getItem('meine_reiter')||MREIT;MWAHL=localStorage.getItem('meine_char')||MWAHL}catch(e){}
+try{MREIT=sichtSpeicher.getItem('meine_reiter')||MREIT;MWAHL=sichtSpeicher.getItem('meine_char')||MWAHL}catch(e){}
 (function(){const h=decodeURIComponent(location.hash||'');const m=h.match(/^#meine(?:\/([a-z]+))?(?:\/(.+))?$/);if(m){if(m[1])MREIT=m[1];if(m[2])MWAHL=m[2]}})();
-function reiterMerken(){try{localStorage.setItem('meine_reiter',MREIT);localStorage.setItem('meine_char',MWAHL)}catch(e){}
+function reiterMerken(){try{sichtSpeicher.setItem('meine_reiter',MREIT);sichtSpeicher.setItem('meine_char',MWAHL)}catch(e){}
   if($('#t-meine').classList.contains('an'))history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}
 function reiterZeigen(){
   if(MREIT==='pve'||MREIT==='dm'){MModus=MREIT;MREIT='uebersicht'}
@@ -1233,7 +1283,7 @@ async function karteZeichnen(d){if(!d)return;
         <div class="mut" style="color:#bbb">Tippen auf die Karte zeigt Koordinaten</div></div>`;
       dv.querySelector('.legkopf').onclick=()=>{const x=dv.querySelector('.leginhalt'),o=x.style.display==='none';x.style.display=o?'block':'none';dv.querySelector('.legpf').textContent=o?'▾':'▸';};
       L.DomEvent.disableClickPropagation(dv);
-      dv.querySelectorAll('[data-me]').forEach(c=>c.onchange=()=>{MEBENE[c.dataset.me]=c.checked;try{localStorage.setItem('meine_ebenen',JSON.stringify(MEBENE))}catch(e){}rasterZeichnen();orteZeichnen()});return dv};
+      dv.querySelectorAll('[data-me]').forEach(c=>c.onchange=()=>{MEBENE[c.dataset.me]=c.checked;try{sichtSpeicher.setItem('meine_ebenen',JSON.stringify(MEBENE))}catch(e){}rasterZeichnen();orteZeichnen()});return dv};
     leg.addTo(MK)}
   MG.clearLayers();if(!$('#mKarte').offsetWidth)return;MK.invalidateSize();rasterZeichnen();orteZeichnen();
   const FARBE=['#3fa66b','#4c8fd6','#d9ab2e','#c060c0','#e0703a','#50c0c0'];
@@ -1846,7 +1896,7 @@ holeJson('/zuschauer/waffen_bilder.json').then(x=>{if(x&&x.namen){WB=x.namen;if(
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 $('#takt').textContent='Aktualisiert sich alle '+(DIREKT?10:TAKT)+' Sekunden von selbst.';
 setInterval(()=>{$$('.countdown').forEach(x=>x.textContent=countdown(+x.dataset.bis));if(D)statusZeichnen()},1000);
-laden();ichLaden().then(()=>{try{if(((location.hash||'').startsWith('#meine')||localStorage.getItem('tab')==='meine')&&ICH&&ICH.benutzer){tab('meine')}}catch(e){}});voteLaden();
+laden();ichLaden().then(()=>{try{if(((location.hash||'').startsWith('#meine')||sichtSpeicher.getItem('tab')==='meine')&&ICH&&ICH.benutzer){tab('meine')}}catch(e){}});voteLaden();
 if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an'))meineLaden()},15000);
 setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
 function naechster(){const s=DIREKT?10:TAKT-(Date.now()/1000)%TAKT+9;setTimeout(()=>{if(!document.hidden)laden();naechster()},s*1000)}naechster();
