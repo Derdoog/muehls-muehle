@@ -1181,7 +1181,7 @@ function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
     ${zeile('📦 Versorgungskisten',cmSeg('kisten',O.kisten,R.kisten))}${zeile('💰 Kopfgeld',cmAnAus('kopfgeld'))}${zeile('📏 Distanzwertung',cmSeg('distanz',O.distanz,R.distanz))}
     ${zeile('🟥🟨 Teams',cmAnAus('teams'))}${O.bedrohungen.map(([b,n])=>zeile('Gegner: '+esc(n),cmSeg(b,[['1','An'],['0','Aus']],(R.bedrohungen||[]).includes(b)?'1':'0','d'))).join('')}
     ${zeile('💀 Hardcore',cmAnAus('hardcore'))}${hc?'':zeile('Fadenkreuz',cmAnAus('fadenkreuz'))+zeile('3rd Person',cmAnAus('third'))+zeile('Aufgeben bei Bewusstlosigkeit',cmAnAus('bewusstlos_respawn'))}
-    ${zeile('Bewusstlosigkeit',cmSeg('bewusstlos',O.bewusstlos,R.bewusstlos))}${zeile('Ausdauer',cmSeg('ausdauer',O.ausdauer,R.ausdauer))}
+    ${zeile('Login- und Respawn-Timer',cmSeg('login_sekunden',[1,3,5,8,10,15].map(n=>[String(n),n+' s']),R.login_sekunden))}${zeile('Bewusstlosigkeit',cmSeg('bewusstlos',O.bewusstlos,R.bewusstlos))}${zeile('Ausdauer',cmSeg('ausdauer',O.ausdauer,R.ausdauer))}
     </div><div style="margin-top:12px"><button class="login cmbtn" id="cmWeiter" style="border-color:var(--acc)">Weiter zur Zusammenfassung →</button></div>`;
   $$('[data-cmk]').forEach(b=>b.onclick=()=>{M.karte=b.dataset.cmk;const kk=f.karten.find(x=>x.id===M.karte),st=kk&&kk.standard;if(st&&st.modus&&kk.modi.some(m=>m.id===st.modus))M.modus=st.modus;cmZeichnen()});
   $$('[data-cg]').forEach(b=>b.onclick=()=>{const g=b.dataset.cg,key=b.dataset.ck,v=b.dataset.cv;
