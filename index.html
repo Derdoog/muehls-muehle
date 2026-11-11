@@ -175,6 +175,10 @@
   .stat-podest-kachel small{color:var(--acc2)}
   .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
   @media(max-width:950px){.stat-podest{grid-template-columns:minmax(0,1fr);gap:8px}}
+  .performance-liste{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
+  .performance-liste li{display:grid;grid-template-columns:1em minmax(0,1fr);gap:6px}
+  .performance-liste .plus{color:#8fd16a}
+  .performance-liste .minus{color:#e8775f}
   .stat-uebersicht{display:grid;gap:12px;min-width:0}
   .stat-uebersicht>.panel{margin:0;padding:clamp(12px,2vw,20px)}
   .stat-uebersicht>.panel h4{margin:0 0 10px;color:var(--acc2)}
@@ -1371,11 +1375,19 @@ function dmPerformance(m){
     :leer?`<h5>${titel}</h5><p class="mut">${leer}</p>`:'';
   const distanz=bilanzZeile('Killbilanz nach Distanz',dist);
   const hoehenZeile=bilanzZeile('Killbilanz nach Höhenlage',hoehe,'Für die gewerteten Runden liegen noch keine zuordenbaren Höhenwerte vor.');
+  const punkte=(titel,zeichen,klasse,texte)=>`<div><b>${titel}</b><ul class="performance-liste">
+    ${texte.filter(Boolean).map(t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`).join('')}</ul></div>`;
   return `<section class="waffen-gruppe"><h4>Performance</h4><strong>${st}</strong>
     <p class="mut">${spiele.length?`Letzte ${spiele.length} Runden mit Kill-/Todesdaten · ${kills} Kills · ${tode} Tode`:'Noch keine Runden mit Kill-/Todesdaten.'}</p>${trend}
     <div class="waffen-gruppen">
-    <div><b>Stärken</b><p>${positionsStaerke}${bewegungsStaerke}${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?'Du hast auf '+esc(staerke.name)+' mehr Kills als Tode. ':''}${top?`Deine meisten Kills hast du mit ${esc(top[0])} erzielt (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Dein weitester Kill gelang aus ${m.weitester} m.`:''}</p></div>
-    <div><b>Verbesserungspotenzial</b><p>${positionsTipp}${serienText}${schwacheHoehe?hoehenText(schwacheHoehe)+' ':''}${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
+    ${punkte('Stärken','+','plus',[positionsStaerke,bewegungsStaerke,besteHoehe?hoehenText(besteHoehe):'',
+      staerke?'Du hast auf '+esc(staerke.name)+' mehr Kills als Tode.':'',
+      top?`Deine meisten Kills hast du mit ${esc(top[0])} erzielt (${top[1]}).`:'Noch keine Waffenstärke erkennbar.',
+      m.weitester?`Dein weitester Kill gelang aus ${m.weitester} m.`:''])}
+    ${punkte('Verbesserungspotenzial','−','minus',[positionsTipp,serienText,schwacheHoehe?hoehenText(schwacheHoehe):'',
+      schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen.':'',
+      spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills.':'',
+      verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'])}
     </div>${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
     ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}<br><small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
