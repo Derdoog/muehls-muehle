@@ -137,6 +137,8 @@
   .waffen-detail{padding:12px;background:var(--bg2)}
   .waffen-detail .wimg{display:block;width:min(100%,440px);height:clamp(100px,26vw,220px);object-fit:contain;margin:0 auto 12px}
   .waffen-rekorde,.waffen-werte{display:flex;flex-wrap:wrap;gap:6px 16px}
+  .waffen-kategorie{margin-top:16px}
+  .waffen-kategorie>h4{margin:0 0 6px;color:var(--acc2)}
   .waffen-gruppen{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:12px 0}
   .waffen-gruppe{padding:12px;border:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
   .waffen-gruppe h4{margin:0 0 8px}
@@ -666,6 +668,103 @@ function woboWaffendaten(waffe, nummer){
       </dl><a href="${esc(url)}">Quelle: WOBO</a>
     </details>`).join('')}</section>`;
 }
+const WAFFEN_KATEGORIEN={
+  "Sturmgewehre": [
+    "asval.webp",
+    "augshort.webp",
+    "aug.webp",
+    "akm.webp",
+    "aks74u.webp",
+    "ak101.webp",
+    "ak74.webp",
+    "famas.webp",
+    "m16a2.webp",
+    "m4a1.webp",
+    "scarl.webp",
+    "vikhr.webp"
+  ],
+  "Präzisionsgewehre": [
+    "b95.webp",
+    "cz527.webp",
+    "cz550.webp",
+    "m14.webp",
+    "leeenfield.webp",
+    "mosin9130.webp",
+    "winchester70.webp",
+    "scout.webp",
+    "sawedoffb95.webp",
+    "sawedoffmosin9130.webp",
+    "ssg82.webp",
+    "sv98.webp",
+    "svd.webp",
+    "vss.webp"
+  ],
+  "Kampfgewehre": [
+    "fal.webp",
+    "scarh.webp"
+  ],
+  "Maschinenpistolen": [
+    "pp19.webp",
+    "cz61.webp",
+    "mp18.webp",
+    "pm73rak.webp",
+    "mp5k.webp",
+    "ump45.webp"
+  ],
+  "Gewehre": [
+    "izh18.webp",
+    "repeater.webp",
+    "sawedoffizh18.webp",
+    "sks.webp",
+    "ruger1022.webp"
+  ],
+  "Schrotflinten": [
+    "izh18shotgun.webp",
+    "mp133shotgun.webp",
+    "izh43shotgun.webp",
+    "r12.webp",
+    "sawedoffizh18shotgun.webp",
+    "sawedoffizh43shotgun.webp",
+    "saiga.webp"
+  ],
+  "Pistolen und Revolver": [
+    "cz75.webp",
+    "deagle.webp",
+    "derringer_black.webp",
+    "engraved1911.webp",
+    "fnx45.webp",
+    "makarovij70.webp",
+    "colt1911.webp",
+    "longhorn.webp",
+    "luger.webp",
+    "magnum.webp",
+    "mkii.webp",
+    "glock19.webp",
+    "p1.webp",
+    "sawedoffmagnum.webp"
+  ],
+  "Armbrüste": [
+    "crossbow_autumn.webp"
+  ],
+  "Werfer und Signalwaffen": [
+    "flaregun.webp",
+    "m79.webp"
+  ],
+  "Nahkampf": [],
+  "Sonstige": []
+};
+function waffenGruppen(liste,treffer,zeile){
+  const gruppen=new Map(Object.keys(WAFFEN_KATEGORIEN).map(k=>[k,[]]));
+  for(const w of liste){
+    const n=w.waffe.toLowerCase(), bild=WB?.[n];
+    const k=Object.keys(WAFFEN_KATEGORIEN).find(k=>WAFFEN_KATEGORIEN[k].includes(bild))
+      ||(n==='nahkampf'?'Nahkampf':'Sonstige');
+    gruppen.get(k).push(w);
+  }
+  return [...gruppen].filter(([,werte])=>werte.length).map(([k,werte])=>
+    `<section class="waffen-kategorie"><h4>${esc(k)} <small class="mut">(${werte.length})</small></h4>
+    ${werte.sort((a,b)=>b.kills-a.kills||treffer(b)-treffer(a)||a.waffe.localeCompare(b.waffe,'de')).map(zeile).join('')}</section>`).join('');
+}
 function waffenKatalog(m){
   const el=$('#dWaffen'), katalog=m.waffenkatalog||[];
   const sig=JSON.stringify([katalog,WB]);
@@ -674,7 +773,7 @@ function waffenKatalog(m){
   const offen=new Set([...el.querySelectorAll('details[data-waffe][open]')].map(x=>x.dataset.waffe));
   const name=n=>`<b class="name" data-dm="${esc(n)}">${GT(n,'dm')}</b>`;
   const nummer=n=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:2});
-  el.innerHTML=katalog.map(w=>{
+  el.innerHTML=waffenGruppen(katalog,w=>(w.spieler||[]).reduce((n,x)=>n+x[3],0),w=>{
     const spieler=w.spieler||[], beste=spieler.filter(x=>x[1]>0&&x[1]===spieler[0][1]);
     const rekord=(i,t)=>{const max=Math.max(0,...spieler.map(x=>x[i]));return `<div><b>${t}</b> ${max?nummer(max)+' m · '+spieler.filter(x=>x[i]===max).map(x=>name(x[0])).join(', '):'–'}</div>`};
     const sum=i=>nummer(spieler.reduce((n,x)=>n+x[i],0));
@@ -686,18 +785,18 @@ function waffenKatalog(m){
       <div class="waffen-detail">${wbild(w.waffe)}<h4>${esc(titel)}</h4>
       <div class="waffen-gruppen">
         <section class="waffen-gruppe"><h4>Deathmatch gesamt</h4><div class="waffen-werte">
-          <span>${nummer(w.kills)} Kills</span><span>${sum(3)} Treffer</span><span>${sum(2)} Kopf-Kills</span><span>${sum(4)} Kopftreffer</span><span>${sum(5)} Schaden</span>
-        </div></section>
+          <span>${nummer(w.kills)} Kills</span><span>${sum(3)} Treffer</span><span>${sum(2)} Kopf-Kills</span><span>${sum(4)} Kopftreffer</span><span>${sum(5)} protokollierter Schaden</span>
+        </div>${trefferzonen(w.zonen)}</section>
         <section class="waffen-gruppe"><h4>Distanzrekorde</h4><div class="waffen-rekorde">
           ${rekord(6,'Weitester Kill')}${rekord(7,'Weitester Treffer')}
         </div></section>
         ${technik}
       </div>
-      <h4>Statistik je Spieler</h4>${spieler.length?spieler.map(([n,k,kk,t,tk,sch,km,tm])=>`<details class="waffen-spieler">
+      <h4>Statistik je Spieler</h4>${spieler.length?spieler.map(([n,k,kk,t,tk,sch,km,tm,zonen])=>`<details class="waffen-spieler">
       <summary><b>${GT(n,'dm')}</b><strong>${nummer(k)} Kills</strong></summary>
       <div class="waffen-werte mut"><span>${nummer(kk)} Kopf-Kills</span><span>${nummer(t)} Treffer</span><span>${nummer(tk)} Kopftreffer</span><span>${nummer(sch)} Schaden</span>
-      <span>Weitester Kill: ${km?nummer(km)+' m':'–'}</span><span>Weitester Treffer: ${tm?nummer(tm)+' m':'–'}</span>${name(n)}</div></details>`).join(''):'<div class="mut">Noch keine Werte im Server-Log.</div>'}</div></details>`
-  }).join('')||'<div class="mut">Waffenkatalog noch nicht verfügbar.</div>';
+      <span>Weitester Kill: ${km?nummer(km)+' m':'–'}</span><span>Weitester Treffer: ${tm?nummer(tm)+' m':'–'}</span>${name(n)}</div>${trefferzonen(zonen)}</details>`).join(''):'<div class="mut">Noch keine Werte im Server-Log.</div>'}</div></details>`
+  })||'<div class="mut">Waffenkatalog noch nicht verfügbar.</div>';
 }
 function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
   if(!s.schaetze||!s.schaetze.length){el.hidden=!(s.rang&&s.rang.length);el.innerHTML=s.rang&&s.rang.length?`<h3>🏴‍☠️ Schatz-Rangliste</h3>${s.rang.slice(0,5).map((r,i)=>`<div class="rh"><span>${i+1}.</span><b>${esc(r[0])}</b><span class="mut">${r[1]} Funde${r[2]?' · ⛓ '+r[2]+' Ketten':''}</span></div>`).join('')}`:'';return}
@@ -929,12 +1028,16 @@ if(typeof document!=='undefined'&&document.addEventListener){document.addEventLi
 document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')return;const b=ev.target.closest&&ev.target.closest('.bg[role=button]');if(!b)return;ev.preventDefault();b.click()})}
 const kach=l=>`<div class="kacheln" style="margin-top:8px">${l.map(([a,b])=>`<div class="kachel"><b style="font-size:19px">${a}</b><span>${b}</span></div>`).join('')}</div>`;
 const ZN={kopf:'Kopf',torso:'Torso',arme:'Arme',beine:'Beine'};
-function zonenText(z){return z?Object.keys(ZN).map(k=>`${ZN[k]} ${z[k]||0} %`).join(' · '):'–'}
+function trefferzonen(z){
+  return `<h5>Treffer nach Körperzone</h5>${z?`<p class="mut">Anteil an den Treffern mit bekannter Körperzone.</p>
+    <dl class="waffen-basis">${Object.entries(ZN).map(([k,label])=>`<div><dt>${label}</dt><dd>${z[k]||0} %</dd></div>`).join('')}</dl>`
+    :'<p class="mut">Für diese Auswahl sind keine Körperzonen erfasst.</p>'}`;
+}
 function eigeneWaffen(liste,bereich,offen){
   if(!liste?.length)return '<div class="mut">Noch keine Treffer oder Kills gezählt.</div>';
   const nummer=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:2});
   const distanz=n=>n==null?'–':nummer(n)+' m';
-  return `<div class="waffen-liste">${liste.map(w=>{
+  return `<div class="waffen-liste">${waffenGruppen(liste,w=>w.treffer,w=>{
     const id=bereich+':'+w.waffe, alias=w.waffe.toLowerCase(), bild=WB?.[alias];
     const modell=WOBO_WAFFEN[alias]?alias:(bild&&Object.keys(WOBO_WAFFEN).find(k=>WB[k]===bild));
     const werte=[
@@ -950,17 +1053,17 @@ function eigeneWaffen(liste,bereich,offen){
           <section class="waffen-gruppe"><h4>Meine Treffer und Kills</h4><dl class="waffen-basis">
             ${werte.map(([label,wert])=>`<div><dt>${label}</dt><dd>${typeof wert==='number'?nummer(wert):esc(wert??'–')}</dd></div>`).join('')}
           </dl></section>
-          <section class="waffen-gruppe"><h4>Meine Distanzen und Trefferzonen</h4><dl class="waffen-basis">
+          <section class="waffen-gruppe"><h4>Meine Trefferentfernungen</h4><dl class="waffen-basis">
             <div><dt>Weitester Kill</dt><dd>${distanz(w.kill_distanz_max||null)}</dd></div>
             <div><dt>Weitester Treffer</dt><dd>${distanz(w.treffer_distanz_max||null)}</dd></div>
             <div><dt>Mittlere Entfernung</dt><dd>${distanz(w.distanz_mittel)}</dd></div>
-          </dl><div class="mut">${zonenText(w.zonen)}</div></section>
+          </dl>${trefferzonen(w.zonen)}</section>
           ${modell?woboWaffendaten(modell,nummer):''}
         </div>
       </div></details>`;
-  }).join('')}</div>`;
+  })}</div>`;
 }
-function summeText(s){if(!s||!s.treffer)return '';return kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+`<div class="mut">Trefferzonen: ${zonenText(s.zonen)}</div>`}
+function summeText(s){if(!s||!s.treffer)return '';return kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+`${trefferzonen(s.zonen)}`}
 function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).map(x=>[bereich+':'+x.id,(bereich==='dm'?'⚔️ ':'🌲 ')+x.titel+' ('+(STN[x.stufe]||'')+')']);
   const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
   return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
