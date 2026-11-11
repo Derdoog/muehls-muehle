@@ -137,6 +137,10 @@
   .waffen-detail{padding:12px;background:var(--bg2)}
   .waffen-detail .wimg{display:block;width:min(100%,440px);height:clamp(100px,26vw,220px);object-fit:contain;margin:0 auto 12px}
   .waffen-rekorde,.waffen-werte{display:flex;flex-wrap:wrap;gap:6px 16px}
+  .zonen-kopf{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:12px}
+  .zonen-kopf h5{margin:0;font-size:13px;color:var(--acc2)}
+  .waffen-gesamt{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:8px;align-items:start}
+  .waffen-gesamt .beste-waffe .wimg{display:block;width:100%;height:68px;object-fit:contain;margin:4px 0}
   .zonen-raster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
   .zonen-raster>div{display:grid;justify-items:center;gap:3px;padding:6px 2px;background:var(--panel2);border:1px solid var(--line)}
   .zonen-raster dt{text-align:center;color:var(--mut);font-size:12px}
@@ -198,6 +202,7 @@
   #dr-wertung .rh > *{min-width:0;overflow-wrap:anywhere}
   @media(max-width:760px){#dr-wertung :is(th,td){padding:5px 4px;font-size:12px}}
   #dLevel th:nth-child(2),#dLevel td:nth-child(2){text-align:left}
+  #t-meine[data-modus="dm"] .m-nur-pve,#t-meine[data-modus="pve"] .m-nur-dm{display:none}
   .mr{display:none}.mr.an{display:block;animation:rein .2s ease-out}
   .mwahl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:8px}
   .wahl{font:inherit;padding:4px 6px;background:var(--bg2);color:var(--text);border:1px solid var(--line2);max-width:100%}
@@ -412,11 +417,13 @@ nav button{min-width:0}
   </section>
   <section class="tab" id="t-meine">
     <div class="panel"><h3 id="mTitel">Meine Statistik</h3><div id="mListe"></div><div id="mWahl" class="mwahl"></div></div>
-    <div class="reiter" id="mReiter"></div>
+    <div class="reiter" id="mModus" role="group" aria-label="Statistikmodus">
+      <button type="button" data-modus="dm">⚔️ Deathmatch</button><button type="button" data-modus="pve">🌲 PvE</button>
+    </div><div class="reiter" id="mReiter"></div>
     <div id="mStat">
       <div class="mr" id="mr-uebersicht"></div><div class="mr" id="mr-dm"></div><div class="mr" id="mr-pve"></div><div class="mr" id="mr-waffen"></div>
       <div class="mr" id="mr-erfolge"></div>
-      <div class="mr" id="mr-karte"><div class="panel"><h3>🗺 Meine Karte (PvE Chernarus)</h3><div id="mKarte"></div><div class="mut" id="mr-karte-text" style="margin-top:8px"></div><div id="mr-heat" style="margin-top:12px"></div></div></div>
+      <div class="mr" id="mr-karte"><div class="panel m-nur-pve"><h3>🗺 Meine Karte (PvE Chernarus)</h3><div id="mKarte"></div><div class="mut" id="mr-karte-text" style="margin-top:8px"></div></div><div id="mr-heat" class="panel m-nur-dm" style="margin-top:12px"></div></div>
       <div class="mr" id="mr-titel"></div><div class="mr" id="mr-shop"></div><div class="mr" id="mr-level"></div>
     </div>
   </section>
@@ -704,6 +711,7 @@ const WAFFEN_KATEGORIEN={
     "ak101.webp",
     "ak74.webp",
     "famas.webp",
+    "sawedofffamas.webp",
     "m16a2.webp",
     "m4a1.webp",
     "scarl.webp",
@@ -965,14 +973,21 @@ function rasterZeichnen(){if(!MK)return;MR.clearLayers();if(!MEBENE.raster)retur
 function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)return;const z=MK.getZoom();
   ORTE.forEach(o=>{const gross=['Capital','City'].includes(o[3]);if(!gross&&!(o[3]==='Village'&&z>=-3)&&!(['Camp','Local','LocalOffice','RailroadStation'].includes(o[3])&&z>=-1.5))return;
     L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
+let MModus='dm';
+$$('#mModus button').forEach(b=>b.onclick=()=>{MModus=b.dataset.modus;if(MREIT==='dm'||MREIT==='pve')MREIT='uebersicht';reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
 const MREITER=[['uebersicht','📋 Übersicht'],['dm','⚔️ Deathmatch'],['pve','🌲 PvE'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level'],['shop','🛒 Rubel-Shop']];
 let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
 try{MREIT=localStorage.getItem('meine_reiter')||MREIT;MWAHL=localStorage.getItem('meine_char')||MWAHL}catch(e){}
 (function(){const h=decodeURIComponent(location.hash||'');const m=h.match(/^#meine(?:\/([a-z]+))?(?:\/(.+))?$/);if(m){if(m[1])MREIT=m[1];if(m[2])MWAHL=m[2]}})();
 function reiterMerken(){try{localStorage.setItem('meine_reiter',MREIT);localStorage.setItem('meine_char',MWAHL)}catch(e){}
   if($('#t-meine').classList.contains('an'))history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}
-function reiterZeigen(){if(!MREITER.some(r=>r[0]===MREIT))MREIT='uebersicht';
-  $('#mReiter').innerHTML=MREITER.map(([id,t])=>`<button data-mr="${id}" class="${id===MREIT?'an':''}">${t}</button>`).join('');
+function reiterZeigen(){
+  if(MREIT==='pve'||MREIT==='dm')MModus=MREIT;
+  const sichtbar=MREITER.filter(([id])=>id==='dm'||id==='pve'?id===MModus:true);
+  if(!sichtbar.some(r=>r[0]===MREIT))MREIT='uebersicht';
+  $('#t-meine').dataset.modus=MModus;
+  $$('#mModus button').forEach(b=>{const an=b.dataset.modus===MModus;b.classList.toggle('an',an);b.setAttribute('aria-pressed',String(an))});
+  $('#mReiter').innerHTML=sichtbar.map(([id,t])=>`<button data-mr="${id}" class="${id===MREIT?'an':''}">${t}</button>`).join('');
   $$('#mReiter [data-mr]').forEach(b=>b.onclick=()=>{MREIT=b.dataset.mr;reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
   $$('.mr').forEach(x=>x.classList.toggle('an',x.id==='mr-'+MREIT))}
 let MLAEUFT=false;
@@ -982,8 +997,8 @@ async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encod
   reiterZeigen();reiterMerken();
   $('#mTitel').textContent='Meine Statistik ('+ICH.benutzer+')';
   const pt=d.pve_gamertags||[];
-  $('#mWahl').innerHTML=pt.length>1?`<label class="mut">🌲 PvE-Charakter: <select id="mWahlSel" class="wahl"><option value="alle">Alle zusammen (${pt.length})</option>${pt.map(g=>`<option value="${esc(g)}" ${g===MWAHL?'selected':''}>${esc(g)}</option>`).join('')}</select></label>`:'';
-  $('#mWahl').innerHTML+=`<span class="mut">⚔️ DM-Gamertag: <b style="color:var(--text)">${d.dm_gamertag?esc(d.dm_gamertag):'– noch keiner –'}</b></span>`;
+  $('#mWahl').innerHTML=pt.length>1?`<label class="mut m-nur-pve">🌲 PvE-Charakter: <select id="mWahlSel" class="wahl"><option value="alle">Alle zusammen (${pt.length})</option>${pt.map(g=>`<option value="${esc(g)}" ${g===MWAHL?'selected':''}>${esc(g)}</option>`).join('')}</select></label>`:'';
+  $('#mWahl').innerHTML+=`<span class="mut m-nur-dm">⚔️ DM-Gamertag: <b style="color:var(--text)">${d.dm_gamertag?esc(d.dm_gamertag):'– noch keiner –'}</b></span>`;
   const sel=$('#mWahlSel');if(sel){sel.value=pt.includes(MWAHL)?MWAHL:'alle';sel.onchange=()=>{MWAHL=sel.value;delete $('#mStat').dataset.sig;meineLaden()}}
   const sig=JSON.stringify([d.pve,d.dm,d.pve_einzeln,d.dm_titel]).length+'|'+MWAHL+'|'+JSON.stringify(d.shop&&d.shop.test?d.shop.meine_kosmetik:0);
   try{if($('#mStat').dataset.sig!==sig){meineStat(d);$('#mStat').dataset.sig=sig}}catch(e){console.error(e);$('#mr-uebersicht').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
@@ -1065,7 +1080,7 @@ function trefferzonen(z){
 function eigeneTrefferzonen(z){
   const symbole={kopf:'👤',torso:'👕',arme:'💪',beine:'🦵'};
   if(!z)return '<p class="mut">Keine Körperzonen erfasst.</p>';
-  return `<p class="mut">Anteil an Treffern mit bekannter Körperzone</p><dl class="zonen-raster">
+  return `<div class="zonen-kopf"><h5>Trefferverteilung</h5><small class="mut">Treffer mit erfasster Körperzone</small></div><dl class="zonen-raster">
     ${Object.entries(ZN).map(([k,label])=>`<div><dt><span class="zonen-symbol" aria-hidden="true">${symbole[k]}</span>${label}</dt><dd>${z[k]||0} %</dd></div>`).join('')}
   </dl>`;
 }
@@ -1101,7 +1116,16 @@ function eigeneWaffen(liste,bereich,offen){
       </div></details>`;
   })}</div>`;
 }
-function summeText(s){if(!s||!s.treffer)return '';return '<h4>Gesamtperformance</h4>'+kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+eigeneTrefferzonen(s.zonen)}
+function summeText(s,waffen){
+  const beste=[...(waffen||[])].filter(w=>w.kills>0||w.treffer>0)
+    .sort((a,b)=>b.kills-a.kills||b.treffer-a.treffer||a.waffe.localeCompare(b.waffe,'de'))[0];
+  if(!s?.treffer&&!beste)return '';
+  const werte=s?.treffer?kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],
+    [(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']]):'';
+  const top=beste?`<section class="waffen-gruppe beste-waffe"><h4>Beste Waffe</h4><b>${esc(beste.waffe)}</b>
+    ${wbild(beste.waffe)}<div class="mut">${beste.kills} Kills · ${beste.treffer} Treffer</div></section>`:'';
+  return `<h4>Gesamtperformance</h4><div class="waffen-gesamt">${werte}${top}</div>${eigeneTrefferzonen(s?.zonen)}`;
+}
 function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).map(x=>[bereich+':'+x.id,(bereich==='dm'?'⚔️ ':'🌲 ')+x.titel+' ('+(STN[x.stufe]||'')+')']);
   const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
   return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
@@ -1110,8 +1134,8 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
   const keinPve=`<div class="mut">${(d.pve_gamertags||[]).length?'Für diese Auswahl gibt es noch keine PvE-Daten.':'Dir ist noch kein PvE-Gamertag zugeordnet.'}</div>`;
   const wahlTxt=v?(v.zusammen&&v.zusammen.length>1?'Alle zusammen: '+v.zusammen.map(esc).join(', '):esc(v.name)):'';
   // Übersicht
-  $('#mr-uebersicht').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}${d.dm_titel?`<span class="titel">${esc(d.dm_titel)}</span>`:''}</h3>${m?kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.siege+' / '+m.runden,'Siege / Runden']]):keinDm}
-    <h3 class="bereich pve">🌲 PvE Chernarus${v?' · '+wahlTxt:''}</h3>${v?kach([[dauer(v.spielzeit),'Spielzeit'],[v.strecke+' km','gelaufen'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[(v.schatz.funde||0),'Schätze']]):keinPve}
+  $('#mr-uebersicht').innerHTML=`<div class="panel"><section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}${d.dm_titel?`<span class="titel">${esc(d.dm_titel)}</span>`:''}</h3>${m?kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.siege+' / '+m.runden,'Siege / Runden']]):keinDm}
+    </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE Chernarus${v?' · '+wahlTxt:''}</h3>${v?kach([[dauer(v.spielzeit),'Spielzeit'],[v.strecke+' km','gelaufen'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[(v.schatz.funde||0),'Schätze']]):keinPve}</section>
     ${nachtragText()}</div>${vsTestkonto(d)}`;
   // Deathmatch
   if(m){const p=m.profil||{};
@@ -1136,20 +1160,20 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
   // Waffen
   const waffenOffen=new Set($$('#mr-waffen details[data-eigene-waffe][open]').map(x=>x.dataset.eigeneWaffe));
   $('#mr-waffen').innerHTML=`<div class="panel"><div class="hinweis">ℹ️ ${esc(d.waffen_hinweis||'')}</div>
-    <h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe)+eigeneWaffen(m.waffen_detail,'dm',waffenOffen):keinDm}
-    <h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe)+eigeneWaffen(v.waffen_detail,'pve',waffenOffen):keinPve}
+    <section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe,m.waffen_detail)+eigeneWaffen(m.waffen_detail,'dm',waffenOffen):keinDm}
+    </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe,v.waffen_detail)+eigeneWaffen(v.waffen_detail,'pve',waffenOffen):keinPve}</section>
     <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).${d.schrot_hinweis?' '+esc(d.schrot_hinweis):''}</div></div>`;
   // Erfolge
-  $('#mr-erfolge').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Haupterfolge ${ST}</h4><div class="bgs">${(m.haupt||[]).map(x=>badgeKarte(x,'dm')).join('')}</div><h4>🎖 Stil-Erfolge</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
-    <h3 class="bereich pve">🌲 PvE-Erfolge${v?' · '+wahlTxt:''}</h3>${v?`<h4>🏅 Meilensteine</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`:keinPve}</div>`;
+  $('#mr-erfolge').innerHTML=`<div class="panel"><section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Haupterfolge ${ST}</h4><div class="bgs">${(m.haupt||[]).map(x=>badgeKarte(x,'dm')).join('')}</div><h4>🎖 Stil-Erfolge</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
+    </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE-Erfolge${v?' · '+wahlTxt:''}</h3>${v?`<h4>🏅 Meilensteine</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`:keinPve}</section></div>`;
   // Karte & Heatmap (Karte selbst: karteZeichnen)
   const km=d.karte||{};
   $('#mr-karte-text').innerHTML=`Nur für dich sichtbar. <b>Kein Live-Kompass:</b> Wege, Position, Kills und Tode zeigt die Karte erst ${km.verzug_min??30} Minuten nach deinem Logout${km.grob==='aus'?'':`, solange du online bist nur grob ein ${km.grob==='1km'?'1×1':'2×2'}-km-Gebiet`}. Deine Basen und Lager siehst du immer.`;
   $('#mr-heat').innerHTML=(m&&Object.keys(m.heat||{}).length)?`<h4>🔥 Deine Deathmatch-Heatmap je Arena <span class="mut">(nur für dich, nach Rundenende)</span></h4><div class="bgs" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${Object.values(m.heat).map(h=>`<div><b>${esc(h.titel)}</b>${heatBild(h)}</div>`).join('')}</div><div class="mut">Brauner Rand = Arena-Mauer.</div>`:'<div class="mut">Noch keine Deathmatch-Heatmap.</div>';
   // Titel
   $('#mr-titel').innerHTML=`<div class="panel"><h3>🏷 Titel unter deinem Namen</h3><div class="mut">Deathmatch und PvE getrennt: ein DM-Titel nur für deinen DM-Gamertag, PvE-Titel je PvE-Charakter.</div>
-    <h4>⚔️ Deathmatch</h4>${m?titelSelect(m.name,'dm',m.stil,m.titel_wahl):keinDm}
-    <h4>🌲 PvE</h4>${(d.pve_einzeln||[]).length?d.pve_einzeln.map(x=>titelSelect(x.name,'pve',x.stil,x.titel_wahl)).join(''):keinPve}</div>`;
+    <section class="m-nur-dm"><h4>⚔️ Deathmatch</h4>${m?titelSelect(m.name,'dm',m.stil,m.titel_wahl):keinDm}
+    </section><section class="m-nur-pve"><h4>🌲 PvE</h4>${(d.pve_einzeln||[]).length?d.pve_einzeln.map(x=>titelSelect(x.name,'pve',x.stil,x.titel_wahl)).join(''):keinPve}</section></div>`;
   $$('#mr-titel [data-titel]').forEach(s=>s.onchange=async()=>{const [b,id]=(s.value||(s.dataset.bereich+':')).split(':');
     const r=await fetch('/zuschauer/titel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gamertag:s.dataset.titel,bereich:b||s.dataset.bereich,id})});
     const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Ging nicht');return}delete $('#mStat').dataset.sig;meineLaden();laden()})}
@@ -1222,11 +1246,11 @@ function levelZeichnen(d){const el=$('#mr-level');if(!el)return;const s=d.shop||
   if(!L){el.innerHTML='<div class="panel"><h3>⭐ Level</h3><div class="mut">Gerade nicht verfügbar.</div></div>';return}
   const R=(L.raenge||[]).map((r,i,a)=>`<span class="chip">${r[0]}${i<a.length-1?'–'+(a[i+1][0]-1):'+'}: ${esc(r[1])}</span>`).join(' ');
   const xd=L.xp_dm||{},xp=L.xp_pve||{};
-  el.innerHTML=`<div class="panel"><h3>⭐ Deathmatch-Level${s.gt?' · '+esc(s.gt):''}</h3>${L.dm?LVB('dm','',L.dm):'<div class="mut">Noch keine gewertete Runde.</div>'}
+  el.innerHTML=`<div class="panel m-nur-dm"><h3>⭐ Deathmatch-Level${s.gt?' · '+esc(s.gt):''}</h3>${L.dm?LVB('dm','',L.dm):'<div class="mut">Noch keine gewertete Runde.</div>'}
     <div class="mut">XP je gewertete Runde: ${xd.punkt} je Punkt, +${xd.kopf} je Kopfschuss, +${xd.runde} fürs Mitspielen, Platz 1/2/3 +${(xd.platz||[]).join('/')}, +${xd.erfolg} je Erfolg. Deckel ${xd.max_runde} je Runde, ${xd.max_tag} je Tag.</div></div>
-  <div class="panel"><h3>⭐ PvE-Level (je Leben)</h3>${(L.pve||[]).length?L.pve.map(x=>`<h4>${esc(x.name)}</h4>${LVB('pve','',x)}<div class="mut">Bezahlt bis Level ${x.bezahlt_bis||0}: Rubel gibt es erst wieder ab Level ${(x.bezahlt_bis||0)+1}.</div>`).join(''):'<div class="mut">Für deine PvE-Charaktere gibt es noch keine Level-Daten.</div>'}
+  <div class="panel m-nur-pve"><h3>⭐ PvE-Level (je Leben)</h3>${(L.pve||[]).length?L.pve.map(x=>`<h4>${esc(x.name)}</h4>${LVB('pve','',x)}<div class="mut">Bezahlt bis Level ${x.bezahlt_bis||0}: Rubel gibt es erst wieder ab Level ${(x.bezahlt_bis||0)+1}.</div>`).join(''):'<div class="mut">Für deine PvE-Charaktere gibt es noch keine Level-Daten.</div>'}
     <div class="mut" style="margin-top:6px">XP: ${xp.liste} je 5 Minuten in Bewegung, ${xp.km} je km (höchstens ${xp.km_max_tag} km am Tag), Überleben 1/3/6/12/24 h = ${(xp.meilensteine||[]).map(m=>m[1]).join('/')}, Bauen ${xp.bau}, Platzieren ${xp.platz}, Zombie-Treffer ${xp.zombie} (höchstens ${xp.zombie_max_tag} am Tag), wieder wach ${xp.wach}, erster Login am Tag ${xp.login}, Schatz ${xp.schatz}. Beim Tod zurück auf 0.</div></div>
-  <div class="panel"><h3>🎖️ Ränge</h3><h4>Deathmatch</h4>${RBREIHE('dm')}<h4>PvE</h4>${RBREIHE('pve')}<div class="mut">Tipp: Das Abzeichen steht überall vor dem Namen. Antippen zeigt Rang und Level.</div><div class="mut" style="margin-top:6px">Kurve: Level n kostet 100 + 25×(n−1) XP, höchstens Level 50, danach Prestige-Sterne. Je Level-Aufstieg ${RUB(L.auszahlung||50)} (PvE je Charakter nur einmal je Level).</div></div>`}
+  <div class="panel"><h3>🎖️ Ränge</h3><section class="m-nur-dm"><h4>Deathmatch</h4>${RBREIHE('dm')}</section><section class="m-nur-pve"><h4>PvE</h4>${RBREIHE('pve')}</section><div class="mut">Tipp: Das Abzeichen steht überall vor dem Namen. Antippen zeigt Rang und Level.</div><div class="mut" style="margin-top:6px">Kurve: Level n kostet 100 + 25×(n−1) XP, höchstens Level 50, danach Prestige-Sterne. Je Level-Aufstieg ${RUB(L.auszahlung||50)} (PvE je Charakter nur einmal je Level).</div></div>`}
 // ------------------------------------------------------------ Update 7: Kosmetik-Vorschau (nur im angemeldeten Bereich, nur im Browser)
 // Zeigt den eigenen Namen mit der Ausstattung in nachgebauten Stellen der Seite. Die Zahlen sind Beispielwerte und werden NIRGENDS gespeichert;
 // gezeichnet wird mit denselben Bausteinen wie auf der echten Seite (GT/TT/PLK, kfZeile, eloZeile, standZeile, SIEGER, prKopf, dmProfilTeile).
