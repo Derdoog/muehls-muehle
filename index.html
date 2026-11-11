@@ -1360,37 +1360,33 @@ function dmPerformance(m){
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
   const kontext=m.kill_kontext||{};
   const [mitSerie,mitPosition]=kontext.gegner_serie||[0,0];
-  const serienText=mitPosition>=5&&mitSerie>0
-    ?`Bei ${positionsAnteil(mitSerie,mitPosition)} deiner auswertbaren Tode gegen Gegner aus gehaltener Position hatte der Schütze im selben Leben bereits mindestens einen protokollierten Kill. `:'';
-  const eigeneDistanz=(kontext.bewegung_distanz?.[0]||[]).map(([ruhig,bewegt],i)=>({ruhig,bewegt,i}))
-    .filter(x=>x.ruhig+x.bewegt>=5).sort((a,b)=>(b.ruhig+b.bewegt)-(a.ruhig+a.bewegt))[0];
-  const bewegungsStaerke=eigeneDistanz?`Im Distanzbereich „${distanzNamen[eigeneDistanz.i]}“ hast du ${positionsAnteil(eigeneDistanz.bewegt,eigeneDistanz.ruhig+eigeneDistanz.bewegt)} deiner auswertbaren Kills nach mehr als 5 m gemessener Bewegung erzielt. `:'';
-  const positionsStaerke=messbareKills>=5&&gehaltenKills>=Math.ceil(messbareKills/2)
-    ?`Du hast ${positionsAnteil(gehaltenKills,messbareKills)} deiner auswertbaren Kills aus gehaltener Position erzielt. Das heißt: In den letzten 30 Sekunden vor diesen Kills hast du dich laut Log kaum bewegt. `:'';
-  const positionsTipp=messbareTode>=5&&gehaltenTode>=Math.ceil(messbareTode/2)
-    ?`Du wurdest bei ${positionsAnteil(gehaltenTode,messbareTode)} deiner auswertbaren Tode von Gegnern aus gehaltener Position erledigt. Das heißt: Sie haben sich in den letzten 30 Sekunden vor dem Kill laut Log kaum bewegt. Prüfe beim Vorrücken zuerst aus der Deckung die Winkel, aus denen dich jemand sehen könnte. `:'';
-  const hoehenText=x=>`${esc(x.name)}: ${x.k} Kills, ${x.t} Tode.`;
+  const positionsTipp=messbareTode>=5&&gehaltenTode*2>=messbareTode
+    ?`Bei ${positionsAnteil(gehaltenTode,messbareTode)} deiner auswertbaren Tode hielt der Gegner seine Position.${
+      mitPosition>=5&&mitSerie>0?` Bei ${positionsAnteil(mitSerie,mitPosition)} dieser Fälle hatte der Schütze in seinem laufenden Leben schon einen Kill.`:''
+    } Prüfe beim Vorrücken zuerst aus der Deckung die Winkel.`:'';
+  const positionsStaerke=messbareKills>=5&&gehaltenKills*2>=messbareKills
+    ?`Du hast ${positionsAnteil(gehaltenKills,messbareKills)} deiner auswertbaren Kills aus gehaltener Position erzielt.`:'';
+  const distanzStaerke=staerke?(()=>{
+    const [ruhig,bewegt]=kontext.bewegung_distanz?.[0]?.[dist.indexOf(staerke)]||[0,0];
+    const bewegung=ruhig+bewegt>=5&&bewegt>ruhig
+      ?` Bei ${positionsAnteil(bewegt,ruhig+bewegt)} deiner dort auswertbaren Kills warst du vorher in Bewegung.`:'';
+    return `${esc(staerke.name)} ist deine stärkste Distanz.${bewegung}`;
+  })():'';
   const bilanzZeile=(titel,werte,leer='')=>werte.some(x=>x.k||x.t)
     ?`<h5>${titel}</h5>${waffenKennzahlen(werte.map(x=>[x.name,x.k+' Kills / '+x.t+' Tode']))}`
     :leer?`<h5>${titel}</h5><p class="mut">${leer}</p>`:'';
   const distanz=bilanzZeile('Killbilanz nach Distanz',dist);
   const hoehenZeile=bilanzZeile('Killbilanz nach Höhenlage',hoehe,'Für die gewerteten Runden liegen noch keine zuordenbaren Höhenwerte vor.');
   const punkte=(titel,zeichen,klasse,texte)=>`<div><b>${titel}</b><ul class="performance-liste">
-    ${texte.filter(Boolean).map(t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`).join('')}</ul></div>`;
+    ${texte.some(Boolean)?texte.filter(Boolean).map(t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`).join(''):'<li class="mut">Noch kein klares Muster.</li>'}</ul></div>`;
   return `<section class="waffen-gruppe"><h4>Performance</h4><strong>${st}</strong>
     <p class="mut">${spiele.length?`Letzte ${spiele.length} Runden mit Kill-/Todesdaten · ${kills} Kills · ${tode} Tode`:'Noch keine Runden mit Kill-/Todesdaten.'}</p>${trend}
     <div class="waffen-gruppen">
-    ${punkte('Stärken','+','plus',[positionsStaerke,bewegungsStaerke,besteHoehe?hoehenText(besteHoehe):'',
-      staerke?'Du hast auf '+esc(staerke.name)+' mehr Kills als Tode.':'',
-      top?`Deine meisten Kills hast du mit ${esc(top[0])} erzielt (${top[1]}).`:'Noch keine Waffenstärke erkennbar.',
-      m.weitester?`Dein weitester Kill gelang aus ${m.weitester} m.`:''])}
-    ${punkte('Verbesserungspotenzial','−','minus',[positionsTipp,serienText,schwacheHoehe?hoehenText(schwacheHoehe):'',
-      schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen.':'',
-      spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills.':'',
-      verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'])}
+    ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst mehr Kills als Tode, wenn du ${esc(besteHoehe.name.toLowerCase())} stehst.`:'',positionsStaerke])}
+    ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name.toLowerCase())} hast du mehr Tode als Kills.`:'',schwacheHoehe?`Du stirbst häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.name.toLowerCase())} stehst.`:'',positionsTipp])}
     </div>${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
-    ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}<br><small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
+    ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}<br><small class="mut">Distanz, Höhe und Bewegung beziehen sich auf die erfassten Duelle aus gewerteten Runden.</small></section>`;
 }
 let infoNummer=0;
 function statistikInfo(text){
