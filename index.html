@@ -110,7 +110,7 @@
   .leaflet-popup-content{font-size:13px} .koord{font:12px Consolas,monospace}
   .status{display:inline-flex;gap:6px;align-items:center;background:var(--panel2);border:1px solid var(--line2);padding:4px 12px;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
   img.arena{float:right;width:min(260px,38%);aspect-ratio:16/10;object-fit:cover;border:1px solid var(--line2);margin:0 0 8px 12px;filter:saturate(.85) contrast(1.05)}
-  img.arena.klein{width:min(200px,40%)} img.mini{width:64px;height:40px;object-fit:cover;border:1px solid var(--line);flex:0 0 auto}
+  img.arena.klein{width:min(200px,40%)} .runde{display:flow-root} img.arena.flach{width:min(180px,34%)} img.mini{width:64px;height:40px;object-fit:cover;border:1px solid var(--line);flex:0 0 auto}
   .naechste{display:flex;gap:10px;align-items:center;margin-top:8px} .naechste img{width:90px;height:56px;object-fit:cover;border:1px solid var(--line)}
   .vote button img{display:block;width:100%;height:56px;object-fit:cover;margin-bottom:6px;position:relative}
   .pk{color:var(--acc2);font-size:12px} .countdown{color:var(--acc2)}
@@ -777,7 +777,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   if(w.distanz)wz.push(`📏 Distanz: unter ${w.grenzen[0]} m = ${w.distanz_punkte[0]}, bis ${w.grenzen[1]} m = ${w.distanz_punkte[1]}, darüber = ${w.distanz_punkte[2]} Punkte, Kopfschuss +${w.kopfschuss}`);
   if(w.kopfgeld)wz.push(`💰 Kopfgeld: ${m.kopfgeld?'<b>'+esc(m.kopfgeld)+'</b> trägt es, wer ihn erlegt bekommt +'+w.kopfgeld_bonus+' extra':'noch niemand (ab 3 Punkten)'}`);
   if(m.juggernaut&&m.juggernaut.length)wz.push('🛡️ Juggernaut: <b>'+m.juggernaut.map(esc).join(', ')+'</b> (+'+w.jugg_bonus+' für den, der ihn erlegt)');
-  $('#dRunde').innerHTML=m.laeuft?`<div class="panel runde">${m.bild?`<img class="arena" src="${esc(m.bild)}" alt="">`:''}<div class="mut">Läuft gerade seit ${dauer(Date.now()/1000-(m.seit||d.stand))}</div><div class="gross">${esc(m.karte)} · ${esc(m.modus)}</div>
+  $('#dRunde').innerHTML=m.laeuft?`<div class="panel runde">${m.bild?`<img class="arena${ro.aktiv?'':' flach'}" src="${esc(m.bild)}" alt="">`:''}<div class="mut">Läuft gerade seit ${dauer(Date.now()/1000-(m.seit||d.stand))}</div><div class="gross">${esc(m.karte)} · ${esc(m.modus)}</div>
       <div>${[m.zeit,...(m.regeln||[])].filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>
       ${wz.length?`<div style="margin-top:6px;font-size:14px">${wz.join('<br>')}</div>`:''}${m.online&&m.online.length?`<div class="mut" style="margin-top:6px">Im Spiel (${m.online.length}): ${m.online.map(esc).join(', ')}</div>`:''}${plan}</div>`
     :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>'+(plan?`<div class="panel runde">${plan}</div>`:'');
