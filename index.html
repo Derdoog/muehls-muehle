@@ -251,6 +251,25 @@ nav button{min-width:0}
 @media(hover:hover){.bg:not(.auf):hover .det{background:var(--panel2,#1b201c);opacity:1}}
 @media(max-width:380px){nav button{padding:8px 4px;font-size:11px;letter-spacing:.02em} nav .live{margin-left:4px}}
 @media(max-width:330px){nav button{white-space:normal;line-height:1.2}}
+/* Update 7: Kosmetik-Vorschau (Meine -> Rubel-Shop) */
+.vs{border-color:var(--acc)}
+.vs-marke{display:inline-block;font:700 10px var(--kopf);letter-spacing:.08em;text-transform:uppercase;color:#1a1205;background:var(--acc2);padding:1px 6px;margin-left:6px;vertical-align:middle}
+.vs-raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-top:8px}
+.vs-raster>div{background:var(--panel2);border:1px solid var(--line);padding:8px 10px;min-width:0}
+.vs-raster h4{margin:0 0 6px}
+.vs-raster .sieger{margin-bottom:0}
+.vs-probe{margin:6px 0 2px}
+.ware .vsan{outline:2px dashed var(--acc2);outline-offset:-2px}
+.vs-demo{margin-top:10px;padding:10px;border:1px dashed var(--line2)}
+/* Update 7: Rang-Abzeichen vor dem Namen (DM: Winkel auf Schild, PvE: Survival-Plakette) */
+.rb{display:inline-block;width:1.15em;height:1.25em;vertical-align:-.25em;margin-right:.28em;flex:none;cursor:help;line-height:0}
+.rb svg{width:100%;height:100%;display:block;overflow:visible}
+.rb-pve{width:1.25em}
+.lvbox .rb{width:1.5em;height:1.6em;vertical-align:-.4em}
+.rbtip{position:fixed;z-index:9999;background:#111;color:#eee;border:1px solid #555;padding:4px 8px;font-size:13px;border-radius:4px;pointer-events:none;max-width:80vw;box-shadow:0 2px 8px #0008}
+.rbreihe{display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0}
+.rbreihe>span{display:inline-flex;align-items:center;white-space:nowrap}
+.rbreihe .rb{width:1.7em;height:1.8em}
 </style>
 </head>
 <body>
@@ -318,15 +337,53 @@ const uhr=t=>{const d=new Date(t*1000),h=new Date(),hm=d.toLocaleTimeString('de-
 const vor=t=>{if(!t)return '–';const s=Date.now()/1000-t;return s<120?'gerade eben':s<3600?`vor ${Math.round(s/60)} min`:s<86400?`vor ${Math.round(s/3600)} h`:`vor ${Math.round(s/86400)} T.`};
 const ICON={kill:'🎯',tod:'✝️',verbindung:'🔌',bewusstlos:'😵',erfolg:'🏅',kampflog:'⚠️'};
 const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-const TT=n=>{const t=(D&&D.titel&&D.titel[n])||((D&&D.kosmetik&&D.kosmetik[n])||{}).titel_text;return t?`<span class="titel">${esc(t)}</span>`:''};
+const TT=n=>{const t=(D&&D.titel&&D.titel[n])||(KS(n)||{}).titel_text;return t?`<span class="titel">${esc(t)}</span>`:''};
 // Update 5: Kosmetik (gekaufte Hintergründe / brennender Gamertag), Rubel-Anzeige
-const KS=n=>(D&&D.kosmetik&&D.kosmetik[n])||null,KC=v=>v?' ks-'+String(v).replace(/_/g,'-'):'';
+let VORS=null;   // Update 7: Kosmetik-Vorschau {n, k}: nur waehrend des Zeichnens der Vorschau gesetzt, sonst immer null
+const KS=n=>(VORS&&n===VORS.n)?VORS.k:((D&&D.kosmetik&&D.kosmetik[n])||null),KC=v=>v?' ks-'+String(v).replace(/_/g,'-'):'';
 const KSK=n=>{const k=KS(n);return k?KC(k.hg)+KC(k.rahmen)+KC(k.effekt):''};   // Update 6: aussen Hintergrund/Rahmen/Effekt, innen die Namensfarbe
 const KSN=n=>{const k=KS(n);return k?KC(k.name).trim():''};
 const PLK=n=>{const k=KS(n);if(!k)return '';const p=k.plakette;return (p&&/^#[0-9a-f]{6}$/i.test(p.f)?`<span class="plak" style="color:${p.f};border-color:${p.f}">${esc(p.t)}</span>`:'')+(k.abz_text?`<span class="abz">${esc(k.abz_text)}</span>`:'')};
-const GT=n=>{const k=KS(n);if(!k)return esc(n);return `<span class="gt${KSK(n)}">${k.sym?esc(k.sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span></span>${PLK(n)}`};
+const GT=(n,w)=>{const b=w?RB(w,n):'',k=KS(n);if(!k)return b+esc(n);return b+`<span class="gt${KSK(n)}">${k.sym?esc(k.sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span></span>${PLK(n)}`};
 const LV=(w,n)=>((D&&D.level&&D.level[w])||[]).find(x=>x.name===n);
-const LVB=(w,n,x)=>{x=x||LV(w,n);if(!x)return '';return `<div class="lvbox"><span class="lvz">${x.level}</span><div><b>${esc(x.rang)}</b> · ${w==='dm'?'Deathmatch':'PvE'}-Level ${x.level}${x.prestige?' · Prestige ⭐×'+x.prestige:''}<div class="lvbar"><i style="width:${Math.max(0,Math.min(100,x.prozent||0))}%"></i></div><span class="mut">${x.im_level} / ${x.bis} XP bis Level ${Math.min(50,x.level+1)}${w==='pve'?' · gilt nur für dieses Leben'+(x.best?', bestes Leben: Level '+x.best:''):''}</span></div></div>`};
+// Update 7 (Tom t823u): Rang-Abzeichen, DM 7 Stufen (Winkel), PvE 6 Stufen (Survival), selbst gezeichnet als SVG
+const RG_DM=[[0,'Partisan'],[5,'Rekrut'],[10,'Wachsoldat'],[20,'Frontkämpfer'],[30,'Haudegen'],[40,'Spezialeinheit'],[50,'Bloody Ninja']];
+const RG_PVE=[[0,'Frischling'],[5,'Überlebender'],[10,'Streuner'],[20,'Plünderer'],[30,'Veteran der Ödnis'],[40,'Legende von Chernarus']];
+const RGL=w=>((D&&D.level&&D.level['raenge_'+w])||(w==='dm'?RG_DM:RG_PVE));
+const RGI=(w,lv)=>{let i=0;RGL(w).forEach((r,j)=>{if((lv||0)>=r[0])i=j});return i};
+const RBW=(y,c,sw)=>`<polyline points="4.5,${y} 10,${y+3.4} 15.5,${y}" fill="none" stroke="${c}" stroke-width="${sw||2.1}" stroke-linejoin="miter" stroke-linecap="square"/>`;
+const RBB=(y,c)=>`<path d="M4.8 ${y} Q10 ${y+3.6} 15.2 ${y}" fill="none" stroke="${c}" stroke-width="1.7"/>`;
+const RBS=(x,y,r,c)=>{let p='';for(let i=0;i<10;i++){const a=Math.PI/5*i-Math.PI/2,q=i%2?r*.45:r;p+=(i?'L':'M')+(x+q*Math.cos(a)).toFixed(2)+' '+(y+q*Math.sin(a)).toFixed(2)}return `<path d="${p}Z" fill="${c}"/>`};
+const SCHILD='M10 1.2 L18.4 4 V10.6 C18.4 15.8 14.6 19.4 10 21 C5.4 19.4 1.6 15.8 1.6 10.6 V4 Z';
+const RB_DM=[
+  ['#3d4a26','#7d8a4e',RBW(9.5,'#cfd8a0')],
+  ['#45562a','#8a9a55',RBW(6.8,'#e2e8b8')+RBW(11.3,'#e2e8b8')],
+  ['#33475a','#7f98ad',RBW(5,'#dbe6ef')+RBW(9,'#dbe6ef')+RBW(13,'#dbe6ef')],
+  ['#5a3a1c','#b07a3e',RBW(3.8,'#efb878')+RBW(7.6,'#efb878')+RBW(11.4,'#efb878')+RBB(15,'#efb878')],
+  ['#3e444c','#c8ced6',RBW(3.2,'#f4f6f8',1.8)+RBW(6.6,'#f4f6f8',1.8)+RBW(10,'#f4f6f8',1.8)+RBB(13.4,'#f4f6f8')+RBB(16.2,'#f4f6f8')],
+  ['#15202b','#e2b53e',RBS(10,5.6,3.4,'#f2c84b')+RBW(10.4,'#f2c84b')+RBW(14.2,'#f2c84b')],
+  ['#1a0505','#e0242c',`<path d="M4.6 4.8 L15.4 16.6 M15.4 4.8 L4.6 16.6" stroke="#e9e9e9" stroke-width="1.6" stroke-linecap="round"/><path d="M4.6 4.8 L6 6.3 M15.4 4.8 L14 6.3" stroke="#e0242c" stroke-width="2.4"/><path d="M10 7.4 C11.8 10 12.3 11 12.3 12 A2.3 2.3 0 0 1 7.7 12 C7.7 11 8.2 10 10 7.4Z" fill="#ff2a2a" stroke="#1a0505" stroke-width=".6"/>`]];
+const RB_PVE=[
+  ['#24492a','#6fae5a',`<path d="M11 18 V11" stroke="#bfe6a0" stroke-width="1.8" stroke-linecap="round"/><path d="M11 12.5 C7 12.5 5.5 9.5 6 7 C9 7 11 9 11 12.5Z M11 11 C11 7.5 13 5.2 16.4 5.4 C16.8 8.6 14.6 11 11 11Z" fill="#bfe6a0"/>`],
+  ['#4a2c14','#c27a32',`<path d="M5.5 17.5 L16.5 14.6 M5.5 14.6 L16.5 17.5" stroke="#a5703d" stroke-width="2" stroke-linecap="round"/><path d="M11 4.5 C14.6 8.2 15 10.4 14.2 12.6 C13.6 14.2 12.4 15 11 15 C9.2 15 7.6 13.8 7.6 11.8 C7.6 10.2 8.6 9.2 9.4 8.4 C9.4 10 10 10.8 10.8 11 C10.4 8.8 10.6 6.6 11 4.5Z" fill="#ffb040"/><path d="M11 9.6 C12.6 11.4 12.6 13.4 11 14.2 C9.6 13.4 9.8 11.6 11 9.6Z" fill="#ffe27a"/>`],
+  ['#22414a','#6fa7b5',`<circle cx="11" cy="11" r="6.6" fill="none" stroke="#bfe0e8" stroke-width="1.3"/><path d="M11 4.6 L13 11 L11 17.4 L9 11Z" fill="#bfe0e8"/><path d="M11 4.6 L13 11 L9 11Z" fill="#ff5a4a"/><circle cx="11" cy="11" r="1" fill="#22414a"/>`],
+  ['#5a2a12','#d0763a',`<rect x="6.2" y="7" width="9.6" height="11" rx="2.2" fill="#e8b07a"/><path d="M6.2 10.6 H15.8" stroke="#5a2a12" stroke-width="1.2"/><rect x="9" y="12.6" width="4" height="3" rx=".6" fill="#5a2a12"/><path d="M8.6 7 C8.6 4.4 13.4 4.4 13.4 7" fill="none" stroke="#e8b07a" stroke-width="1.5"/>`],
+  ['#4d4020','#c9ad5e',`<path d="M11 4.2 C7.2 4.2 5.4 6.8 5.4 9.8 C5.4 11.8 6.4 13 7.6 13.6 V16 H14.4 V13.6 C15.6 13 16.6 11.8 16.6 9.8 C16.6 6.8 14.8 4.2 11 4.2Z" fill="#ece0bd"/><circle cx="8.8" cy="10" r="1.5" fill="#4d4020"/><circle cx="13.2" cy="10" r="1.5" fill="#4d4020"/><path d="M11 11.6 L10.2 13 H11.8Z" fill="#4d4020"/><path d="M9.2 16 V17.4 M11 16 V17.4 M12.8 16 V17.4" stroke="#ece0bd" stroke-width="1"/><path d="M4 18.4 L18 4" stroke="#c9ad5e" stroke-width="1.2" opacity=".7"/>`],
+  ['#2a1e04','#f2c84b',`<path d="M3.8 16.8 L8.6 9 L11 12.4 L13.4 8.2 L18.2 16.8Z" fill="#f2c84b"/><path d="M8.6 9 L9.8 10.9 L8.8 10.6 L7.7 10.5Z M13.4 8.2 L14.9 10.8 L13.6 10.2 L12.3 10.6Z" fill="#fff6cf"/>${RBS(11,5,2.4,'#fff1b0')}<path d="M5 18.6 H17" stroke="#f2c84b" stroke-width="1.2"/>`]];
+const RBSVG=(w,i)=>{if(w==='dm'){const b=RB_DM[i];return `<svg viewBox="0 0 20 22" aria-hidden="true"><path d="${SCHILD}" fill="${b[0]}" stroke="${b[1]}" stroke-width="1.3"/>${b[2]}</svg>`}
+  const b=RB_PVE[i];return `<svg viewBox="0 0 22 22" aria-hidden="true"><path d="M11 .9 L19.8 6 V16 L11 21.1 L2.2 16 V6Z" fill="${b[0]}" stroke="${b[1]}" stroke-width="1.3"/>${b[2]}</svg>`};
+const RBX=(w,n)=>{if(VORS&&VORS.lvs&&w==='dm'&&n in VORS.lvs)return VORS.lvs[n];return LV(w,n)};
+const RB=(w,n,x)=>{x=x||RBX(w,n);const lv=x?x.level||0:0,pr=x?x.prestige||0:0,i=RGI(w,lv),nm=RGL(w)[i][1];
+  const tip=`${nm} · ${w==='dm'?'Deathmatch':'PvE'}-Level ${lv}${pr?' · Prestige ⭐×'+pr:''}`;
+  return `<span class="rb rb-${w} rb-${w}${i}" title="${esc(tip)}" data-rbt="${esc(tip)}" role="img" aria-label="${esc(tip)}">${RBSVG(w,i)}</span>`};
+const RBREIHE=w=>`<div class="rbreihe">${RGL(w).map((r,i,a)=>`<span>${RB(w,'',{level:r[0]})}${esc(r[1])} <span class="mut">&nbsp;${r[0]}${i<a.length-1?'–'+(a[i+1][0]-1):(w==='dm'?'+':'–50')}</span></span>`).join('')}</div>`;
+function rbPass(){document.querySelectorAll('[data-dm],[data-n]').forEach(el=>{if(el.querySelector('.rb'))return;const dm=el.hasAttribute('data-dm'),n=dm?el.dataset.dm:el.dataset.n;if(!n)return;el.insertAdjacentHTML('afterbegin',RB(dm?'dm':'pve',n))})}
+let rbL=0;new MutationObserver(()=>{if(rbL)return;rbL=1;requestAnimationFrame(()=>{rbL=0;try{rbPass()}catch(e){}})}).observe(document.documentElement,{childList:true,subtree:true});
+document.addEventListener('click',e=>{const b=e.target.closest&&e.target.closest('.rb');if(!b)return;e.preventDefault();e.stopPropagation();
+  let tp=document.querySelector('.rbtip');if(!tp){tp=document.createElement('div');tp.className='rbtip';document.body.appendChild(tp)}
+  tp.textContent=b.dataset.rbt;const r=b.getBoundingClientRect();tp.style.left=Math.max(4,Math.min(innerWidth-tp.offsetWidth-4,r.left))+'px';tp.style.top=(r.bottom+6)+'px';tp.hidden=false;
+  clearTimeout(tp._z);tp._z=setTimeout(()=>tp.hidden=true,2500)},true);
+const LVB=(w,n,x)=>{x=x||LV(w,n);if(!x)return '';return `<div class="lvbox"><span class="lvz">${x.level}</span><div><b>${RB(w,'',x)}${esc(RGL(w)[RGI(w,x.level)][1])}</b> · ${w==='dm'?'Deathmatch':'PvE'}-Level ${x.level}${x.prestige?' · Prestige ⭐×'+x.prestige:''}<div class="lvbar"><i style="width:${Math.max(0,Math.min(100,x.prozent||0))}%"></i></div><span class="mut">${x.im_level} / ${x.bis} XP bis Level ${Math.min(50,x.level+1)}${w==='pve'?' · gilt nur für dieses Leben'+(x.best?', bestes Leben: Level '+x.best:''):''}</span></div></div>`};
 const RUB=k=>{k=Math.round(+k||0);return (k<0?'-':'')+Math.floor(Math.abs(k)/100)+','+String(Math.abs(k)%100).padStart(2,'0')+' ₽'};
 // Update 4: Waffenbilder (lokal vom eigenen Server)
 let WB=null;const wbild=w=>{const f=WB&&WB[String(w||'').toLowerCase()];return f?`<img class="wimg" src="/zuschauer/waffe/${encodeURIComponent(f)}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src');this.className='wimg leer'">`:'<span class="wimg leer" title="kein Bild"></span>'};
@@ -356,6 +413,15 @@ async function laden(){
   D=d;zeichnen();
   if(ersterTab){ersterTab=false;let t=null;try{t=localStorage.getItem('tab')}catch(e){}tab(t||(d.dm.laeuft?'dm':'pve'))}
 }
+// Update 7: Bausteine, die Webseite und Kosmetik-Vorschau gemeinsam benutzen (eine Quelle, damit die Vorschau genau stimmt)
+const PKT=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
+const kfZeile=k=>k.erfolg?`<div class="kf-erf">${esc(k.erfolg)}</div>`:k.taeter?`<div><b>${GT(k.taeter,'dm')}</b>${TT(k.taeter)} ➜ ${RB('dm',k.opfer)}${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${PKT(k)}${k.elo?` <span class="elo" title="Elo-Gewinn des Schützen (der Getötete verliert genauso viel)">+${k.elo} Elo</span>`:''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`;
+const STAND_KOPF='<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>';
+const standZeile=(s,i,m)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0],'dm')}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`;
+const ELO_KOPF='<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th title="Kills geteilt durch Tode"><span class="lang">Kills pro Tod</span><span class="kurz">K/D</span></th><th class="nm">Siege</th><th class="nm">Beste Serie</th></tr>';
+const eloZeile=(s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${GT(s.name,'dm')}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td class="nm">${s.siege}</td><td class="nm">${s.beste_serie}</td></tr>`;
+const SIEGER=gt=>`<div class="sieger">🏆 ${GT(gt,'dm')} 🏆</div>`;
+const prKopf=(n,unter,w)=>`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px">${RB(w||'dm',n)}${KS(n)&&KS(n).sym?esc(KS(n).sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${TT(n)}</h2><div class="mut">${unter}</div></div>`;
 function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   $('#stand').textContent=(alt>600?'⚠ letzter Stand ':'Stand ')+uhr(d.stand)+(alt>600?' (Steuerung gerade nicht erreichbar)':'');
   statusZeichnen();
@@ -382,7 +448,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     :[['name','Spieler'],['spielzeit','Spielzeit'],['kills','Kills'],['tode','Tode'],['kd','K/D'],['weitester','Weitester'],['strecke','Strecke'],['erfolge','🏅'],['zuletzt','Zuletzt']];
   if(!SP.some(x=>x[0]===RS))RS='spielzeit';
   const rs=[...rows].sort((a,b)=>RS==='name'?a.name.localeCompare(b.name):(b[RS]-a[RS]));
-  const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${GT(s.name)}</b>${TT(s.name)}`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
+  const zelle=(s,k)=>k==='name'?`<b class="name" data-n="${esc(s.name)}">${GT(s.name,'pve')}</b>${TT(s.name)}`:k==='spielzeit'?dauer(s.spielzeit):k==='weitester'?(s.weitester?s.weitester+' m':'–'):k==='strecke'?s.strecke+' km':k==='zuletzt'?(s.online?'online':vor(s.zuletzt)):esc(s[k]);
   const NM=new Set(['strecke','erfolge','zuletzt']);   // Update 4.2: auf dem Handy ausgeblendet
   const NM2=new Set(['weitester']);   // Update 4.3: unter 400 px zusaetzlich aus (Kills-Spalte bleibt lesbar)
   $('#pRang').innerHTML='<tr>'+SP.map(([k,t])=>`<th data-s="${k}" class="${k===RS?'an':''}${NM.has(k)?' nm':''}${NM2.has(k)?' nm2':''}">${t}</th>`).join('')+'</tr>'+rs.map(s=>`<tr class="${s.online?'on':''}">${SP.map(([k])=>`<td${NM.has(k)?' class="nm"':NM2.has(k)?' class="nm2"':''}>${zelle(s,k)}</td>`).join('')}</tr>`).join('');
@@ -403,14 +469,13 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
       <div>${[m.zeit,...(m.regeln||[])].filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>
       ${wz.length?`<div style="margin-top:6px;font-size:14px">${wz.join('<br>')}</div>`:''}${m.online&&m.online.length?`<div class="mut" style="margin-top:6px">Im Spiel (${m.online.length}): ${m.online.map(esc).join(', ')}</div>`:''}${plan}</div>`
     :'<div class="hinweis">Gerade läuft kein Deathmatch, der Server ist im PvE-Modus. Unten die Wertung der bisherigen Runden.</div>'+(plan?`<div class="panel runde">${plan}</div>`:'');
-  const pkt=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
   $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
-    (m.kills.map(k=>k.erfolg?`<div class="kf-erf">${esc(k.erfolg)}</div>`:k.taeter?`<div><b>${GT(k.taeter)}</b>${TT(k.taeter)} ➜ ${esc(k.opfer)} <span class="mut">${esc(k.waffe)} · ${k.m} m</span>${k.kopf?' <span class="kopfs">🎯</span>':''}${pkt(k)}${k.elo?` <span class="elo" title="Elo-Gewinn des Schützen (der Getötete verliert genauso viel)">+${k.elo} Elo</span>`:''}</div>`:`<div>${esc(k.opfer)} ✝ <span class="mut">${esc(k.ursache)}${k.punkte<0?' · '+k.punkte:''}</span></div>`).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
-  $('#dStand').innerHTML=m.stand.length?'<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>'+m.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0])}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join(''):'<tr><td class="mut">–</td></tr>';
-  $('#dElo').innerHTML=m.elo.length?'<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th title="Kills geteilt durch Tode"><span class="lang">Kills pro Tod</span><span class="kurz">K/D</span></th><th class="nm">Siege</th><th class="nm">Beste Serie</th></tr>'+m.elo.map((s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${GT(s.name)}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td class="nm">${s.siege}</td><td class="nm">${s.beste_serie}</td></tr>`).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
+    (m.kills.map(kfZeile).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
+  $('#dStand').innerHTML=m.stand.length?STAND_KOPF+m.stand.map((s,i)=>standZeile(s,i,m)).join(''):'<tr><td class="mut">–</td></tr>';
+  $('#dElo').innerHTML=m.elo.length?ELO_KOPF+m.elo.map(eloZeile).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
   $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
     <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span>${(r.erfolge||[]).length?`<span class="mut rerf">🏅 ${r.erfolge.slice(0,3).map(x=>esc(x[0])+': '+esc(x[3])).join(' · ')}${r.erfolge.length>3?' · +'+(r.erfolge.length-3)+' weitere':''}</span>`:''}</div></summary>
-    <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0])}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
+    <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0],'dm')}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
     ${r.weitester?`<div>🎯 Weitester Kill: <b>${esc(r.weitester[0])}</b> ➜ ${esc(r.weitester[1])} · ${esc(r.weitester[2]||'')} · ${r.weitester[3]} m</div>`:''}
     ${(r.erfolge||[]).length?`<div>🏅 Erfolge dieser Runde: ${r.erfolge.map(x=>'<b>'+esc(x[0])+'</b> '+esc(x[3])).join(' · ')}</div>`:''}
     ${r.leben&&r.leben.length?`<div>⏱️ Am längsten überlebt: ${r.leben.map(l=>'<b>'+esc(l[0])+'</b> '+dauer(l[1])).join(' · ')}</div>`:''}
@@ -526,7 +591,7 @@ async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encod
   $('#mWahl').innerHTML=pt.length>1?`<label class="mut">🌲 PvE-Charakter: <select id="mWahlSel" class="wahl"><option value="alle">Alle zusammen (${pt.length})</option>${pt.map(g=>`<option value="${esc(g)}" ${g===MWAHL?'selected':''}>${esc(g)}</option>`).join('')}</select></label>`:'';
   $('#mWahl').innerHTML+=`<span class="mut">⚔️ DM-Gamertag: <b style="color:var(--text)">${d.dm_gamertag?esc(d.dm_gamertag):'– noch keiner –'}</b></span>`;
   const sel=$('#mWahlSel');if(sel){sel.value=pt.includes(MWAHL)?MWAHL:'alle';sel.onchange=()=>{MWAHL=sel.value;delete $('#mStat').dataset.sig;meineLaden()}}
-  const sig=JSON.stringify([d.pve,d.dm,d.pve_einzeln,d.dm_titel]).length+'|'+MWAHL;
+  const sig=JSON.stringify([d.pve,d.dm,d.pve_einzeln,d.dm_titel]).length+'|'+MWAHL+'|'+JSON.stringify(d.shop&&d.shop.test?d.shop.meine_kosmetik:0);
   try{if($('#mStat').dataset.sig!==sig){meineStat(d);$('#mStat').dataset.sig=sig}}catch(e){console.error(e);$('#mr-uebersicht').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
   $('#mListe').innerHTML=(d.status==='wartet'||(!pt.length&&!d.dm_gamertag))?`<div class="hinweis">⏳ Dein Konto wartet auf die Zuordnung. <b>Dein Admin ordnet dir deine Gamertags zu.</b> Danach siehst du hier deine Statistik.</div>`
     :d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem PvE-Server gesehen</span></div></div>`
@@ -612,7 +677,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
   // Übersicht
   $('#mr-uebersicht').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}${d.dm_titel?`<span class="titel">${esc(d.dm_titel)}</span>`:''}</h3>${m?kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.siege+' / '+m.runden,'Siege / Runden']]):keinDm}
     <h3 class="bereich pve">🌲 PvE Chernarus${v?' · '+wahlTxt:''}</h3>${v?kach([[dauer(v.spielzeit),'Spielzeit'],[v.strecke+' km','gelaufen'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[(v.schatz.funde||0),'Schätze']]):keinPve}
-    ${nachtragText()}</div>`;
+    ${nachtragText()}</div>${vsTestkonto(d)}`;
   // Deathmatch
   if(m){const p=m.profil||{};
     $('#mr-dm').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch · ${esc(m.name)}</h3>`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
@@ -693,7 +758,8 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
   <div class="panel"><h3>🧾 Meine Bestellungen</h3>${(s.bestellungen||[]).length?(s.bestellungen.map(b=>`<div class="rh"><span>#${esc(b.id)} · ${datumB(b.t)}</span><b>${b.namen.map(x=>x[1]+'× '+esc(x[0])).join(', ')}</b>
     <span class="mut">${esc(b.summe_text)} · ${esc(b.weg_text)}${b.ziel&&b.ziel.text?' ('+esc(b.ziel.text)+')':''} · <b style="color:var(--acc2)">${esc(b.status_text)}</b>${b.hinweis?' · '+esc(b.hinweis):''}${b.grund?' · '+esc(b.grund):''}</span>
     ${b.status==='offen'?`<button class="login" data-storno="${esc(b.id)}">Stornieren</button>`:''}</div>`).join('')):'<div class="mut">Noch keine Bestellung.</div>'}</div>
-  <div class="panel"><h3>✨ Kosmetik für dein Profil</h3><div class="mut" style="margin-bottom:8px">Sichtbar in den Ranglisten, im Killfeed und in deinem Profil. Gekauft ist gekauft, wechseln kostet nichts.</div>
+  <div id="vsBox"></div>
+  <div class="panel"><h3>✨ Kosmetik für dein Profil</h3><div class="mut" style="margin-bottom:8px">Sichtbar in den Ranglisten, im Killfeed und in deinem Profil. Gekauft ist gekauft, wechseln kostet nichts. Mit „👁 Vorschau“ probierst du jedes Teil an, auch ohne es zu kaufen (oben im Vorschau-Kasten).</div>
     ${kosmetikTeil(s,mk)}
     </div>${clanTeil(s,mk)}${diensteTeil(s,mk)}
   <div class="panel"><h3>📒 Kontoauszug</h3>${(s.auszug||[]).length?`<div class="buch">${s.auszug.slice(0,60).map(x=>`<span class="mut dat">${datumB(x.t)}</span><span>${esc(x.text)}</span><span class="${x.betrag<0?'minus':'plus'}">${x.betrag>0?'+':''}${esc(x.betrag_text)}</span><span class="mut saldo">${esc(x.saldo_text||'')}</span>`).join('')}</div>`:'<div class="mut">Noch keine Buchung. Spiel eine gewertete Deathmatch-Runde!</div>'}</div>`;
@@ -707,11 +773,11 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
     if(j){KORB={};alert('Bestellung #'+j.bestellung.id+' ist eingegangen und wartet auf die Freigabe.'+(j.bestellung.hinweis?'\n'+j.bestellung.hinweis:''));shopNeu()}};
   $$('#mr-shop [data-storno]').forEach(b=>b.onclick=async()=>{if(!confirm('Bestellung #'+b.dataset.storno+' stornieren? Du bekommst die Rubel zurück.'))return;if(await shopPost('/zuschauer/shop/stornieren',{id:b.dataset.storno}))shopNeu()});
   $$('#mr-shop [data-kk]').forEach(b=>b.onclick=async()=>{if(!confirm('Kaufen?'))return;if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'kaufen',id:b.dataset.kk})){shopNeu();laden()}});
-  $$('#mr-shop [data-kw]').forEach(b=>b.onclick=async()=>{if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'waehlen',platz:b.dataset.pl,id:b.dataset.an==='1'?'':b.dataset.kw})){shopNeu();laden()}});shopExtraBinden(d)}
+  $$('#mr-shop [data-kw]').forEach(b=>b.onclick=async()=>{if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'waehlen',platz:b.dataset.pl,id:b.dataset.an==='1'?'':b.dataset.kw})){delete PROBE[b.dataset.pl];shopNeu();laden()}});shopExtraBinden(d);try{vsBinden(d)}catch(e){console.error(e)}}
 // Update 6: Level-Ranglisten (DM bleibt, PvE je Leben) und Siegerbanner
 function levelPanels(d){const L=d.level||{};
-  const sb=d.siegerbanner;if(sb&&sb.gt)$('#banner').insertAdjacentHTML('beforeend',`<div class="sieger">🏆 ${GT(sb.gt)} 🏆</div>`);
-  const tab=(rows,w)=>rows.length?`<table><tr><th>#</th><th>Spieler</th><th>Level</th><th>Rang</th><th class="nm">XP</th>${w==='pve'?'<th class="nm">Bestes Leben</th>':'<th class="nm">Runden</th>'}</tr>${rows.slice(0,25).map((x,i)=>`<tr><td>${i+1}</td><td><b class="name" ${w==='pve'?'data-n':'data-dm'}="${esc(x.name)}">${GT(x.name)}</b></td><td><b>${x.level}</b>${x.prestige?' ⭐×'+x.prestige:''}<div class="lvbar" style="width:60px"><i style="width:${x.prozent||0}%"></i></div></td><td>${esc(x.rang)}</td><td class="nm">${x.xp}</td><td class="nm">${w==='pve'?'Level '+(x.best||0):(x.runden||0)}</td></tr>`).join('')}</table>`:'<div class="mut">Noch niemand.</div>';
+  const sb=d.siegerbanner;if(sb&&sb.gt)$('#banner').insertAdjacentHTML('beforeend',SIEGER(sb.gt));
+  const tab=(rows,w)=>rows.length?`<table><tr><th>#</th><th>Spieler</th><th>Level</th><th>Rang</th><th class="nm">XP</th>${w==='pve'?'<th class="nm">Bestes Leben</th>':'<th class="nm">Runden</th>'}</tr>${rows.slice(0,25).map((x,i)=>`<tr><td>${i+1}</td><td><b class="name" ${w==='pve'?'data-n':'data-dm'}="${esc(x.name)}">${GT(x.name,w)}</b></td><td><b>${x.level}</b>${x.prestige?' ⭐×'+x.prestige:''}<div class="lvbar" style="width:60px"><i style="width:${x.prozent||0}%"></i></div></td><td>${esc(RGL(w)[RGI(w,x.level)][1])}</td><td class="nm">${x.xp}</td><td class="nm">${w==='pve'?'Level '+(x.best||0):(x.runden||0)}</td></tr>`).join('')}</table>`:'<div class="mut">Noch niemand.</div>';
   const pl=$('#pLevel');if(pl)pl.innerHTML=tab(L.pve||[],'pve')+'<div class="mut" style="margin-top:6px">XP fürs Überleben, Laufen, Bauen, Zombie-Treffer und Schätze. Beim Tod geht es zurück auf Level 0. Je Level-Aufstieg 0,50 ₽, je Charakter nur einmal: nach dem Tod erst wieder ab dem bisher höchsten Level.</div>';
   const dl=$('#dLevel');if(dl)dl.innerHTML=tab(L.dm||[],'dm')+'<div class="mut" style="margin-top:6px">XP aus gewerteten Runden: Punkte, Kopfschüsse, Teilnahme, Podest und Erfolge. Das Level bleibt. Je Level-Aufstieg 0,50 ₽.</div>'}
 function levelZeichnen(d){const el=$('#mr-level');if(!el)return;const s=d.shop||{},L=s.level;
@@ -722,7 +788,76 @@ function levelZeichnen(d){const el=$('#mr-level');if(!el)return;const s=d.shop||
     <div class="mut">XP je gewertete Runde: ${xd.punkt} je Punkt, +${xd.kopf} je Kopfschuss, +${xd.runde} fürs Mitspielen, Platz 1/2/3 +${(xd.platz||[]).join('/')}, +${xd.erfolg} je Erfolg. Deckel ${xd.max_runde} je Runde, ${xd.max_tag} je Tag.</div></div>
   <div class="panel"><h3>⭐ PvE-Level (je Leben)</h3>${(L.pve||[]).length?L.pve.map(x=>`<h4>${esc(x.name)}</h4>${LVB('pve','',x)}<div class="mut">Bezahlt bis Level ${x.bezahlt_bis||0}: Rubel gibt es erst wieder ab Level ${(x.bezahlt_bis||0)+1}.</div>`).join(''):'<div class="mut">Für deine PvE-Charaktere gibt es noch keine Level-Daten.</div>'}
     <div class="mut" style="margin-top:6px">XP: ${xp.liste} je 5 Minuten in Bewegung, ${xp.km} je km (höchstens ${xp.km_max_tag} km am Tag), Überleben 1/3/6/12/24 h = ${(xp.meilensteine||[]).map(m=>m[1]).join('/')}, Bauen ${xp.bau}, Platzieren ${xp.platz}, Zombie-Treffer ${xp.zombie} (höchstens ${xp.zombie_max_tag} am Tag), wieder wach ${xp.wach}, erster Login am Tag ${xp.login}, Schatz ${xp.schatz}. Beim Tod zurück auf 0.</div></div>
-  <div class="panel"><h3>🎖️ Ränge</h3><div>${R}</div><div class="mut" style="margin-top:6px">Kurve: Level n kostet 100 + 25×(n−1) XP, höchstens Level 50, danach Prestige-Sterne. Je Level-Aufstieg ${RUB(L.auszahlung||50)} (PvE je Charakter nur einmal je Level).</div></div>`}
+  <div class="panel"><h3>🎖️ Ränge</h3><h4>Deathmatch</h4>${RBREIHE('dm')}<h4>PvE</h4>${RBREIHE('pve')}<div class="mut">Tipp: Das Abzeichen steht überall vor dem Namen. Antippen zeigt Rang und Level.</div><div class="mut" style="margin-top:6px">Kurve: Level n kostet 100 + 25×(n−1) XP, höchstens Level 50, danach Prestige-Sterne. Je Level-Aufstieg ${RUB(L.auszahlung||50)} (PvE je Charakter nur einmal je Level).</div></div>`}
+// ------------------------------------------------------------ Update 7: Kosmetik-Vorschau (nur im angemeldeten Bereich, nur im Browser)
+// Zeigt den eigenen Namen mit der Ausstattung in nachgebauten Stellen der Seite. Die Zahlen sind Beispielwerte und werden NIRGENDS gespeichert;
+// gezeichnet wird mit denselben Bausteinen wie auf der echten Seite (GT/TT/PLK, kfZeile, eloZeile, standZeile, SIEGER, prKopf, dmProfilTeile).
+let PROBE={},PPLAK=null;   // anprobierte Teile je Platz ('' = Platz leer) und anprobierter Clan-Tag
+function mitVorschau(n,k,fn,lvs){const a=VORS;VORS={n,k,lvs};try{return fn()}finally{VORS=a}}
+function ksAus(s,akt,pl){const K={};(s.kosmetik||[]).forEach(x=>K[x.id]=x);const a={};
+  Object.entries(akt||{}).forEach(([p,id])=>{if(id&&K[id]&&K[id].platz===p)a[p]=id});
+  if(a.symbol)a.sym=K[a.symbol].symbol;if(a.titel)a.titel_text=K[a.titel].titel;
+  if(a.abzeichen)a.abz_text=K[a.abzeichen].abz_text||K[a.abzeichen].name.replace(/^Abzeichen /,'');
+  if(pl&&pl.text&&pl.sichtbar!==false)a.plakette={t:pl.text,f:(s.plakette_farben||{})[pl.farbe]||'#e8e8e8'};
+  return Object.keys(a).length?a:null}
+function vsSatz(s){const mk=s.meine_kosmetik||{aktiv:{}},a=Object.assign({},mk.aktiv||{});
+  Object.entries(PROBE).forEach(([p,id])=>{if(id)a[p]=id;else delete a[p]});return {akt:a,pl:PPLAK||mk.plakette}}
+const VS_ANDERE=['Beispiel_A','Beispiel_B','Beispiel_C'];
+function vsDemo(n){const ST=['gold','silber','bronze','platin',null];
+  const H0=Object.values((D&&D.dm&&D.dm.profile)||{}).map(p=>p.haupt||[]).find(h=>h.length)||[];
+  const haupt=H0.map((x,i)=>Object.assign({},x,{stufe:ST[i%5],stufe_name:ST[i%5]?STN[ST[i%5]]:null,pn:ST[i%5]==='platin'?2:(ST[i%5]?1:0),fortschritt:ST[i%5]?0.6:0.35,naechste:null}));
+  const SD=Object.keys((D&&D.dm&&D.dm.stil_def)||{});
+  const stil=SD.slice(0,8).map((id,i)=>{const st=['bronze','silber','gold','platin'][i%4];return {id,n:2+i,stufe:st,stufe_name:STN[st],pn:st==='platin'?2:1,stufen:[]}});
+  const s={name:n,elo:1642,kills:186,tode:74,kd:2.51,siege:14,runden:48,beste_serie:11,laengstes_leben:1380,weitester:287,kopf:52,rache:9,ziel_siege:3,
+    jugg_runden:4,jugg_kills:6,kopfgeld_kills:5,stil};
+  const pr={podest:[14,9,7],kopfquote:28,karte_fav:['Prison',15],modus_fav:['Jeder gegen jeden',21],nemesis:['Beispiel_B',11],opfer:['Beispiel_C',19],
+    rivale:['Beispiel_B',23,20],elo_verlauf:[1500,1512,1530,1521,1555,1580,1572,1601,1620,1642],saisons:[['2026-10',2]],
+    waffen:[['M4A1',58,231],['SVD',33,96],['KA-M',27,118],['Mosin 91/30',19,44]],
+    treffer:{treffer:612,kills:186,kopf_treffer:92,kopfquote:15,treffer_pro_kill:3.3,schaden:24850,zonen:{kopf:15,torso:58,arme:13,beine:14}},haupt};
+  const lv={level:12,rang:'Wachsoldat',xp:2420,im_level:160,bis:400,prozent:40,prestige:0};
+  const elo=[{name:'Beispiel_A',elo:1701,kills:240,tode:96,kd:2.5,siege:19,beste_serie:13},s,{name:'Beispiel_C',elo:1588,kills:150,tode:88,kd:1.7,siege:9,beste_serie:8}];
+  const kills=[{taeter:n,opfer:'Beispiel_B',waffe:'M4A1',m:87,kopf:true,punkte:3,gruende:['Distanz','Kopfschuss'],elo:12},
+    {taeter:'Beispiel_C',opfer:'Beispiel_A',waffe:'SVD',m:212,kopf:false,punkte:2,gruende:['Distanz'],elo:9},
+    {taeter:n,opfer:'Beispiel_C',waffe:'KA-M',m:34,kopf:false,punkte:1,gruende:['Kill'],elo:8}];
+  const stand=[[n,9,2,13],['Beispiel_A',7,4,10],['Beispiel_B',3,6,4]];
+  const lvs={[n]:lv,Beispiel_A:{level:50,prestige:2},Beispiel_B:{level:33},Beispiel_C:{level:7}};
+  return {s,pr,lv,elo,kills,stand,lvs}}
+const vsOhneKlick=h=>h.replace(/ data-(?:dm|n)="[^"]*"/g,'');   // Beispiel-Namen nicht anklickbar
+function vorschauHtml(s,n,akt,pl,kopf){const k=ksAus(s,akt,pl),X=vsDemo(n);
+  return mitVorschau(n,k,()=>vsOhneKlick(`<div class="vs-raster">
+    <div><h4>🪪 Profil</h4>${prKopf(n,'Deathmatch-Profil · <span class="vs-marke">Vorschau – Beispielwerte</span>')}<button class="login" data-vsprofil="1" style="margin-top:6px">Ganzes Profil mit Beispielwerten öffnen</button></div>
+    <div><h4>🏆 Siegerbanner</h4>${SIEGER(n)}<div class="mut" style="margin-top:6px">So steht dein Name 24 Stunden oben auf der Seite, wenn du das Siegerbanner kaufst.</div></div>
+    <div><h4>🎯 Killfeed</h4><div class="kf">${X.kills.map(kfZeile).join('')}</div></div>
+    <div class="scroll" style="grid-column:1/-1"><h4>📊 Stand dieser Runde</h4><table>${STAND_KOPF}${X.stand.map((r,i)=>standZeile(r,i,{kopfgeld:n,juggernaut:[]})).join('')}</table></div>
+    <div class="scroll" style="grid-column:1/-1"><h4>🏆 Elo-Wertung</h4><table>${ELO_KOPF}${X.elo.map(eloZeile).join('')}</table></div>
+    <div style="grid-column:1/-1"><h4>🎖️ Rang-Abzeichen (vor jedem Namen)</h4><div class="mut">Deathmatch:</div>${RBREIHE('dm')}<div class="mut">PvE:</div>${RBREIHE('pve')}</div></div>`),X.lvs)}
+function vsZeichnen(d){const s=d&&d.shop,el=$('#vsBox');if(!s||!s.gt||!el)return;const n=s.gt,mk=s.meine_kosmetik||{besitz:[],aktiv:{}},K={};(s.kosmetik||[]).forEach(x=>K[x.id]=x);
+  const v=vsSatz(s),pr=Object.entries(PROBE).map(([p,id])=>id?`<span class="chip">${esc(K[id]?K[id].name:id)}${mk.besitz.includes(id)?'':' · nicht gekauft'}</span>`:`<span class="chip">${esc(KPL[p]||p)}: ohne</span>`);
+  if(PPLAK)pr.push(`<span class="chip">Clan-Tag ${esc(PPLAK.text)} · nicht beantragt</span>`);
+  const maske=D&&D.titel&&D.titel[n]&&v.akt.titel?`<div class="hinweis">Hinweis: Du hast einen Erfolgs-Titel gewählt („${esc(D.titel[n])}“). Er steht statt des Wunschtitels neben deinem Namen. Unter „Titel“ kannst du ihn abwählen.</div>`:'';
+  el.innerHTML=`<div class="panel vs"><h3>👁 Vorschau <span class="vs-marke">Beispielwerte</span></h3>
+    <div class="mut">So sieht <b>${esc(n)}</b> an den wichtigsten Stellen der Seite aus. Zu sehen ist deine getragene Ausstattung${pr.length?' plus das, was du gerade anprobierst':''}. Alle Zahlen sind Beispielwerte, nichts davon kommt in eine Statistik oder Rangliste, und die anderen sehen nichts davon.</div>
+    <div class="vs-probe">${pr.length?'🧪 Anprobiert: '+pr.join(' ')+' <button class="login grau" data-vs0="1">Zurück zu meiner Ausstattung</button>':'<span class="mut">Tipp: Bei jedem Teil unten auf „👁 Vorschau“ tippen, um es ohne Kauf anzuprobieren. Mehrere Teile lassen sich kombinieren.</span>'}</div>
+    ${maske}${vorschauHtml(s,n,v.akt,v.pl)}</div>`;
+  $$('#mr-shop [data-kv]').forEach(b=>{const an=PROBE[b.dataset.pl]===b.dataset.kv;b.textContent=an?'✓ Anprobiert':'👁 Vorschau';b.closest('.ware>div')?.classList.toggle('vsan',an)});
+  $$('#vsBox [data-vs0]').forEach(b=>b.onclick=()=>{PROBE={};PPLAK=null;vsZeichnen(d)});
+  $$('#vsBox [data-vsprofil]').forEach(b=>b.onclick=()=>vsProfil(s,n,v))}
+function vsProfil(s,n,v){const X=vsDemo(n),k=ksAus(s,v.akt,v.pl);
+  mitVorschau(n,k,()=>{const T=dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil · <span class="vs-marke">Vorschau – Beispielwerte</span> · nichts davon ist echt gespeichert');
+    T[1]=T[1].map(r=>[r[0],vsOhneKlick(r[1])]);profilDialog(vsOhneKlick(T[0]),T[1])},X.lvs)}
+function vsBinden(d){$$('#mr-shop [data-kv]').forEach(b=>b.onclick=()=>{const p=b.dataset.pl,id=b.dataset.kv;
+    if(PROBE[p]===id)delete PROBE[p];else PROBE[p]=id;vsZeichnen(d);const x=$('#vsBox');if(x&&x.scrollIntoView)x.scrollIntoView({behavior:'smooth',block:'start'})});
+  $$('#mr-shop [data-kvleer]').forEach(b=>b.onclick=()=>{const p=b.dataset.kvleer;if(p in PROBE&&!PROBE[p])delete PROBE[p];else PROBE[p]='';vsZeichnen(d)});
+  const pt=$('#pkText'),probe=()=>{const x=(pt&&pt.value||'').trim();PPLAK=x?{text:x.slice(0,12),farbe:PFARBE,sichtbar:true}:null;vsZeichnen(d)};
+  if(pt)pt.addEventListener('input',probe);$$('#mr-shop input[name=pkFarbe]').forEach(i=>i.addEventListener('change',()=>{if(PPLAK)probe()}));
+  vsZeichnen(d)}
+// Testkonto: komplettes Demo-Profil mit der getragenen Ausstattung direkt auf "Meine -> Übersicht"
+function vsTestkonto(d){const s=d.shop;if(!s||!s.test||!s.gt)return '';const n=s.gt,mk=s.meine_kosmetik||{aktiv:{}},X=vsDemo(n),k=ksAus(s,mk.aktiv,mk.plakette);
+  const T=mitVorschau(n,k,()=>dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil · <span class="vs-marke">Vorschau – Beispielwerte</span>'),X.lvs);
+  return `<div class="panel vs"><h3>🧪 Testkonto · Demo-Profil <span class="vs-marke">Beispielwerte</span></h3>
+    <div class="hinweis">Das ist ein Testkonto: es spielt nicht mit, steht in keiner Rangliste und bekommt keine Rubel aus Runden oder Level. Damit du trotzdem alles siehst, steht hier ein komplettes Profil mit <b>Beispielwerten</b> und deiner getragenen Ausstattung. Ausstattung wechseln und einzelne Teile anprobieren: Reiter „🛒 Rubel-Shop“.</div>
+    ${vorschauHtml(s,n,mk.aktiv,mk.plakette)}
+    <div class="vs-demo">${vsOhneKlick(T[0])}${T[1].slice(0,3).map(r=>`<h4>${r[0]}</h4>${vsOhneKlick(r[1])}`).join('')}</div></div>`}
 const KPL={hg:'🎨 Hintergrund',name:'🖋️ Namensfarbe',rahmen:'🖼️ Profilrahmen',effekt:'✨ Effekt',symbol:'💀 Killfeed-Symbol',abzeichen:'🏷️ Saison-Abzeichen',titel:'📜 Wunschtitel'};
 function kosmVorschau(k,gt){const c=' ks-'+k.id.replace(/_/g,'-');
   if(k.platz==='name')return `<span class="gt"><span class="${c.trim()}">${esc(gt)}</span></span>`;
@@ -733,7 +868,8 @@ function kosmVorschau(k,gt){const c=' ks-'+k.id.replace(/_/g,'-');
 function kosmetikTeil(s,mk){const pl=[...new Set((s.kosmetik||[]).map(k=>k.platz))];
   return pl.map(p=>`<h4>${KPL[p]||esc(p)}</h4><div class="ware">${s.kosmetik.filter(k=>k.platz===p).map(k=>{const hab=mk.besitz.includes(k.id),an=mk.aktiv[k.platz]===k.id,zu=k.kaufbar===false;
     return `<div><span>${kosmVorschau(k,s.gt)}</span><b>${esc(k.name)}</b>${k.von?`<span class="mut">kaufbar ${esc(k.von.slice(8)+'.'+k.von.slice(5,7))}.–${esc(k.bis.slice(8)+'.'+k.bis.slice(5,7))}.</span>`:''}
-      <div class="zeile"><span class="preis">${hab?'gekauft':esc(k.preis_text)}</span>${hab?`<button class="login" data-kw="${esc(k.id)}" data-pl="${k.platz}" data-an="${an?1:0}">${an?'Ablegen':'Tragen'}</button>`:`<button class="login" data-kk="${esc(k.id)}" ${k.preis>s.stand||!s.an||zu?'disabled':''}>${zu?'Nicht jetzt':'Kaufen'}</button>`}</div></div>`}).join('')}</div>`).join('')}
+      <div class="zeile"><span class="preis">${hab?'gekauft':esc(k.preis_text)}</span>${hab?`<button class="login" data-kw="${esc(k.id)}" data-pl="${k.platz}" data-an="${an?1:0}">${an?'Ablegen':'Tragen'}</button>`:`<button class="login" data-kk="${esc(k.id)}" ${k.preis>s.stand||!s.an||zu?'disabled':''}>${zu?'Nicht jetzt':'Kaufen'}</button>`}</div>
+      <div class="zeile"><button class="login grau" data-kv="${esc(k.id)}" data-pl="${k.platz}">👁 Vorschau</button></div></div>`}).join('')}</div>${mk.aktiv[p]?`<div class="mut" style="margin:-6px 0 10px"><button class="login grau" data-kvleer="${p}">👁 Vorschau ohne ${esc((KPL[p]||p).replace(/^\S+ /,''))}</button></div>`:''}`).join('')}
 let PFARBE='gelb',RFARBE='gelb';
 function farbWahl(F,akt,name){return `<div class="farben">${Object.entries(F||{}).map(([k,h])=>`<label><input type="radio" name="${name}" value="${k}" ${k===akt?'checked':''}><i style="background:${h}"></i>${esc(k)}</label>`).join('')}</div>`}
 function clanTeil(s,mk){const p=mk.plakette,of=(mk.antraege||[]).find(a=>a.art==='plakette'),F=s.plakette_farben||{};
@@ -787,13 +923,16 @@ function profilDialog(kopf,reiter){const id='pr'+Math.random().toString(36).slic
 function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile||{})[n]||{};
   const rn=(D.dm.runden||[]).map(r=>({r,i:r.stand.findIndex(x=>x[0]===n)})).filter(x=>x.i>=0).slice(0,12);
   if(!s&&!rn.length){const p=D.pve.spieler.find(x=>x.name===n);if(p)profil(n);return}
+  const T=dmProfilTeile(n,s,pr,rn);profilDialog(T[0],T[1]);
+  const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n)}
+function dmProfilTeile(n,s,pr,rn,lv,unter){   // Update 7: auch fuer die Vorschau mit Beispielwerten
   const z=[];if(s){if(pr.podest)z.push(['🏆 Podestplätze','🥇 '+pr.podest[0]+' · 🥈 '+pr.podest[1]+' · 🥉 '+pr.podest[2]]);if(s.beste_serie)z.push(['🔥 Beste Serie',s.beste_serie+' Kills']);if(s.laengstes_leben)z.push(['⏱️ Längstes Leben',dauer(s.laengstes_leben)]);
     if(s.weitester)z.push(['🎯 Weitester Kill',s.weitester+' m']);z.push(['💀 Kopfschüsse',(s.kopf||0)+' ('+(pr.kopfquote||0)+' % der Kills)']);if(s.rache)z.push(['⚔️ Rache',s.rache+'×']);
     if(s.ziel_siege)z.push(['🏁 Ziel-Siege',s.ziel_siege]);z.push(['🛡️ Juggernaut',(s.jugg_runden||0)+'× gewesen, '+(s.jugg_kills||0)+'× erlegt']);z.push(['💰 Kopfgeld kassiert',(s.kopfgeld_kills||0)+'×']);
     if(pr.karte_fav)z.push(['🗺 Lieblingskarte',pr.karte_fav[0]+' ('+pr.karte_fav[1]+'×)']);if(pr.modus_fav)z.push(['🎲 Lieblingsmodus',pr.modus_fav[0]+' ('+pr.modus_fav[1]+'×)']);
     if(pr.nemesis)z.push(['😈 Nemesis',pr.nemesis[0]+' ('+pr.nemesis[1]+'× erwischt)']);if(pr.opfer)z.push(['🎯 Lieblingsopfer',pr.opfer[0]+' ('+pr.opfer[1]+'×)']);if(pr.rivale)z.push(['⚔️ Rivale',pr.rivale[0]+' · '+pr.rivale[1]+' : '+pr.rivale[2]])}
   const ED=D.dm.erfolge_def||{},hab={};(pr.erfolge||[]).forEach(e=>hab[e[0]]=e[1]);const fs=pr.fortschritt||{};
-  const ueb=`${LVB('dm',n)}${s?kach([[s.elo,'Elo'],[s.kd,'Kills pro Tod'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']]):''}${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}
+  const ueb=`${LVB('dm',n,lv)}${s?kach([[s.elo,'Elo'],[s.kd,'Kills pro Tod'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']]):''}${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}
     ${(pr.elo_verlauf||[]).length>1?`<h4>📈 Elo-Verlauf</h4>${eloBild(pr.elo_verlauf.map((x,i)=>[i,x]))}`:''}
     ${(pr.saisons||[]).length?`<h4>👑 Saisons</h4>${pr.saisons.map(x=>`<span class="chip">${MN[+x[0].slice(5)-1]} ${x[0].slice(0,4)}: Platz ${x[1]}</span>`).join('')}`:''}`;
   const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table></div>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
@@ -801,9 +940,8 @@ function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile
   const erf=`<h4>🏅 DM-Haupterfolge (${HP.filter(x=>x.stufe).length} von ${HP.length})</h4><div class="bgs">${HP.map(x=>badgeKarte(x,'dm')).join('')}</div>
     <h4>🎖 DM-Stil-Erfolge</h4><div class="bgs">${stilOeff(D.dm.stil_def,s&&s.stil).map(x=>badgeKarte(x,'dm')).join('')}</div>`;
   const run=rn.length?rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode · <a href="/zuschauer/runde/${r.id}" style="color:inherit">ansehen</a></div>`).join(''):'<div class="mut">Keine Runde in der letzten Zeit.</div>';
-  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px">${KS(n)&&KS(n).sym?esc(KS(n).sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div></div>`,
-    [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf],['📜 Runden',run+'<div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>']]);
-  const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n)}
+  return [prKopf(n,unter??`Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}`),
+    [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf],['📜 Runden',run+'<div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>']]]}
 function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
   const WT=['Mo','Di','Mi','Do','Fr','Sa','So'],mx=Math.max(1,...(pr.wochentag||[0])),zt=pr.erfolge_zeit||{},fs=pr.fortschritt||{};
   const ueb=LVB('pve',n)+kach([[dauer(s.spielzeit),'Spielzeit'],[dauer(pr.ueberlebt),'am Leben seit'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.strecke+' km','gelaufen']])
@@ -813,7 +951,7 @@ function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n]
   const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table></div>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
   const erf=`<h4>🏅 PvE-Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h4><div class="bgs">${p.erfolge_alle.map(e=>meilenKarte({icon:e[1],titel:e[2],text:e[3],erreicht:e[0] in zt,t:zt[e[0]],stufe:'gold',wert:(fs[e[0]]||[0])[0],schwelle:(fs[e[0]]||[0,1])[1],einheit:''})).join('')}</div>
     <h4>🎖 PvE-Stil-Erfolge</h4><div class="bgs">${stilOeff(p.stil_def,pr.stil).map(x=>badgeKarte(x,'pve')).join('')}</div>`;
-  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px">${KS(n)&&KS(n).sym?esc(KS(n).sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div></div>`,
+  profilDialog(prKopf(n,`${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}`,'pve'),
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf]]);
   const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n)}
 const _tab=tab;tab=t=>{_tab(t);if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
