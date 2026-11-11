@@ -1284,6 +1284,14 @@ function gehaltenePosition(werte){
     ${waffenKennzahlen([['Eigene Kills aus gehaltener Position',positionsAnteil(k,kg)],['Tode gegen Gegner in gehaltener Position',positionsAnteil(t,tg)]])}
     <small class="mut">Anteile beziehen sich auf auswertbare Kills bzw. Tode. In der Gesamtbewertung erscheint ein Hinweis ab fünf auswertbaren Fällen, wenn mindestens die Hälfte auf gehaltene Positionen entfällt.</small>`;
 }
+function bewegungsKontext(daten){
+  const zeilen=(werte,namen,seite)=>werte?.[seite]?.flatMap(([ruhig,bewegt],i)=>ruhig+bewegt>=5
+    ?[[namen[i],positionsAnteil(ruhig,ruhig+bewegt)+' gehalten · '+positionsAnteil(bewegt,ruhig+bewegt)+' bewegt']]:[])||[];
+  const kills=zeilen(daten?.bewegung_distanz,distanzNamen,0).concat(zeilen(daten?.bewegung_hoehe,hoehenNamen,0));
+  const tode=zeilen(daten?.bewegung_distanz,distanzNamen,1).concat(zeilen(daten?.bewegung_hoehe,hoehenNamen,1));
+  const liste=(titel,werte)=>werte.length?`<h5>${titel}</h5><dl class="waffen-basis">${werte.map(([k,v])=>`<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`:'';
+  return liste('Deine Kills nach Bewegung, Distanz und Höhe',kills)+liste('Bewegung deiner Gegner vor deinen Toden',tode);
+}
 function zeigeMatch(index,liste){
   if(!matchDialog){
     matchDialog=document.createElement('dialog');
@@ -1304,7 +1312,7 @@ function zeigeMatch(index,liste){
     <h4>Match-Performance</h4><p>${k>t?'Positive':k<t?'Negative':'Ausgeglichene'} Killbilanz</p>
     ${waffenKennzahlen([['Kills',k],['Tode',t],['Kopf-Kills',a.distanz?a.kopf:'–'],['Weitester Kill',a.weitester?a.weitester+' m':'–']])}
     <div class="waffen-gruppen">${duelBilanz('Bilanz nach Distanz',a.distanz,distanzNamen,'Keine Distanzen für dieses Match erfasst.')}
-    ${duelBilanz('Bilanz nach Höhenlage',a.hoehe,hoehenNamen,'Für dieses Match sind keine Höhenwerte gespeichert.')}</div>${gehaltenePosition(a.gehalten)}
+    ${duelBilanz('Bilanz nach Höhenlage',a.hoehe,hoehenNamen,'Für dieses Match sind keine Höhenwerte gespeichert.')}</div>${gehaltenePosition(a.gehalten)}${bewegungsKontext(a)}
     <a href="/zuschauer/runde/${esc(r[0])}">Öffentliche Rundendetails</a></div>`;
   matchDialog.querySelector('[data-match-zu]').onclick=()=>matchDialog.close();
   matchDialog.querySelectorAll('[data-match-nav]').forEach(b=>b.onclick=()=>zeigeMatch(index+Number(b.dataset.matchNav),liste));
@@ -1346,6 +1354,13 @@ function dmPerformance(m){
   const besteHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
   const schwacheHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
+  const kontext=m.kill_kontext||{};
+  const [mitSerie,mitPosition]=kontext.gegner_serie||[0,0];
+  const serienText=mitPosition>=5&&mitSerie>0
+    ?`Bei ${positionsAnteil(mitSerie,mitPosition)} deiner auswertbaren Tode gegen Gegner aus gehaltener Position hatte der Schütze im selben Leben bereits mindestens einen protokollierten Kill. `:'';
+  const eigeneDistanz=(kontext.bewegung_distanz?.[0]||[]).map(([ruhig,bewegt],i)=>({ruhig,bewegt,i}))
+    .filter(x=>x.ruhig+x.bewegt>=5).sort((a,b)=>(b.ruhig+b.bewegt)-(a.ruhig+a.bewegt))[0];
+  const bewegungsStaerke=eigeneDistanz?`Im Distanzbereich „${distanzNamen[eigeneDistanz.i]}“ hast du ${positionsAnteil(eigeneDistanz.bewegt,eigeneDistanz.ruhig+eigeneDistanz.bewegt)} deiner auswertbaren Kills nach mehr als 5 m gemessener Bewegung erzielt. `:'';
   const positionsStaerke=messbareKills>=5&&gehaltenKills>=Math.ceil(messbareKills/2)
     ?`Du hast ${positionsAnteil(gehaltenKills,messbareKills)} deiner auswertbaren Kills aus gehaltener Position erzielt. Das heißt: In den letzten 30 Sekunden vor diesen Kills hast du dich laut Log kaum bewegt. `:'';
   const positionsTipp=messbareTode>=5&&gehaltenTode>=Math.ceil(messbareTode/2)
@@ -1359,11 +1374,11 @@ function dmPerformance(m){
   return `<section class="waffen-gruppe"><h4>Performance</h4><strong>${st}</strong>
     <p class="mut">${spiele.length?`Letzte ${spiele.length} Runden mit Kill-/Todesdaten · ${kills} Kills · ${tode} Tode`:'Noch keine Runden mit Kill-/Todesdaten.'}</p>${trend}
     <div class="waffen-gruppen">
-    <div><b>Stärken</b><p>${positionsStaerke}${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?'Du hast auf '+esc(staerke.name)+' mehr Kills als Tode. ':''}${top?`Deine meisten Kills hast du mit ${esc(top[0])} erzielt (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Dein weitester Kill gelang aus ${m.weitester} m.`:''}</p></div>
-    <div><b>Verbesserungspotenzial</b><p>${positionsTipp}${schwacheHoehe?hoehenText(schwacheHoehe)+' ':''}${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
+    <div><b>Stärken</b><p>${positionsStaerke}${bewegungsStaerke}${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?'Du hast auf '+esc(staerke.name)+' mehr Kills als Tode. ':''}${top?`Deine meisten Kills hast du mit ${esc(top[0])} erzielt (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Dein weitester Kill gelang aus ${m.weitester} m.`:''}</p></div>
+    <div><b>Verbesserungspotenzial</b><p>${positionsTipp}${serienText}${schwacheHoehe?hoehenText(schwacheHoehe)+' ':''}${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
     </div>${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
-    ${gehaltenePosition(m.position_gehalten)}<br><small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
+    ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}<br><small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
 }
 let infoNummer=0;
 function statistikInfo(text){
