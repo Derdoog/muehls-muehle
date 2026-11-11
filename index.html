@@ -783,27 +783,26 @@ const WOBO_WAFFEN={
   "vsd": [["762x54 Rounds", 451.12, 144.82, 150, 640, "https://wobo.tools/dayz-weapon-info-tool/VSD/"]],
   "vss": [["9x39 Rounds", 900, 75, 75, 410, "https://wobo.tools/dayz-weapon-info-tool/VSS/"], ["9x39 Armour Piercing Rounds", 900, 75, 75, 410, "https://wobo.tools/dayz-weapon-info-tool/VSS_AP/"]],
 };
+const WAFFEN_REFERENZ=[{"wert": 150, "name": "vs-89"}, {"wert": 150, "name": "vsd"}, {"wert": 640, "name": "vsd"}];
 function woboWaffendaten(waffe, nummer){
   const daten=WOBO_WAFFEN[waffe.toLowerCase()];
   if(!daten)return '';
-  const bild=WB?.[waffe.toLowerCase()];
-  const kategorie=Object.entries(WAFFEN_KATEGORIEN).find(([,bilder])=>bilder.includes(bild));
-  const vergleich=kategorie?Object.entries(WOBO_WAFFEN)
-    .filter(([name])=>kategorie[1].includes(WB?.[name])).flatMap(([,werte])=>werte):[];
-  const maximum=[3,4].map(i=>Math.max(0,...vergleich.map(werte=>werte[i]??0)));
-  const schaden=(titel,wert,max)=>{
+  const referenz=WAFFEN_REFERENZ;
+  const skala=(titel,wert,index,einheit)=>{
+    const max=referenz[index]?.wert;
     const prozent=wert!=null&&max>0?100*wert/max:null;
-    return `<div class="schaden-vergleich"><dt>${titel}</dt><dd>${wert==null?'–':nummer(wert)+' pro Schuss'}${prozent==null?'':' · '+nummer(prozent)+' %'}</dd>
-      ${prozent==null?'':`<meter min="0" max="100" value="${prozent}" aria-label="${titel} im Vergleich zur Kategorie"></meter>`}</div>`;
+    const basis=referenz[index];
+    return `<div class="schaden-vergleich"><dt>${titel}</dt><dd>${wert==null?'–':nummer(wert)+' '+einheit}${prozent==null?'':' · '+Math.round(prozent)+' %'}</dd>
+      ${prozent==null?'':`<meter min="0" max="100" value="${Math.min(100,prozent)}" aria-label="${titel}: ${Math.round(prozent)} % der Referenz" title="100 %: ${esc(basis.name.toUpperCase())} · ${nummer(max)} ${einheit}"></meter>`}</div>`;
   };
-  return `<section class="waffen-gruppe"><h4>DayZ-Waffendaten</h4>${kategorie?`<p class="mut">${esc(kategorie[0])} · 100 % = höchster hinterlegter Basisschaden je Schadensart.</p>`: ''}${daten.map(([munition,rate,health,schock,reichweite,url])=>`
+  return `<section class="waffen-gruppe"><h4>DayZ-Waffendaten ${statistikInfo('100 % entspricht je Wert der stärksten regulären Schusswaffe im Katalog. Schrotflinten, Werfer, Signalwaffen und Armbrüste zählen nicht zur Referenz. Werte über 100 % werden als Zahl angezeigt.')}</h4>${daten.map(([munition,rate,health,schock,reichweite,url])=>`
     <details class="wobo-munition" ${daten.length===1?'open':''}>
       <summary><strong>${esc(munition)}</strong></summary>
       <dl class="waffen-basis">
         <div><dt>Feuerrate</dt><dd>${rate===null?'–':nummer(rate)+' Schuss/min'}</dd></div>
-        ${schaden('Health-Basisschaden',health,maximum[0])}
-        ${schaden('Schock-Basisschaden',schock,maximum[1])}
-        <div><dt>Geschätzte Reichweite</dt><dd>${reichweite===null?'–':'ca. '+nummer(reichweite)+' m ohne Aufsätze'}</dd></div>
+        ${skala('Schaden',health,0,'pro Schuss')}
+        ${skala('Schock',schock,1,'pro Schuss')}
+        ${skala('Reichweite',reichweite,2,'m')}
       </dl><a href="${esc(url)}">Quelle: WOBO</a>
     </details>`).join('')}</section>`;
 }
