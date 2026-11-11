@@ -147,8 +147,19 @@
   .zonen-raster dd{margin:0;font-weight:700}
   .zonen-symbol{display:block;font-size:18px}
   @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  .stat-podest{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,165px),1fr));gap:8px}
+  .stat-podest{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+  .stat-podest-gruppe{grid-column:span 3;display:grid;grid-template-columns:subgrid;grid-template-rows:auto 1fr;min-width:0}
+  .stat-podest-gruppe.stat-karte{grid-column:span 2}
+  .stat-podest-gruppe h5{grid-column:1/-1;margin:0;padding:6px 8px;border-top:2px solid var(--acc2);background:var(--panel2);color:var(--acc2)}
   .stat-podest-kachel{min-width:0;padding:10px;border:1px solid var(--line2);background:var(--panel2);overflow-wrap:anywhere}
+  .stat-podest-kachel img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;margin:5px 0;border:1px solid var(--line)}
+  .stat-podest-kachel .stat-symbol{display:inline-block;margin-right:4px;font-size:15px}
+  @media(max-width:950px){
+    .stat-podest{grid-template-columns:minmax(0,1fr);gap:14px}
+    .stat-podest-gruppe,.stat-podest-gruppe.stat-karte{grid-column:1;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+    .stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}
+  }
+  @media(max-width:380px){.stat-podest-gruppe,.stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}}
   .stat-podest-kachel small,.stat-podest-kachel .mut{display:block}
   .stat-podest-kachel small{margin-bottom:5px;color:var(--acc2)}
   .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
@@ -1210,17 +1221,23 @@ function podestKartenRivalen(m){
   const p=m.profil||{};
   const kachel=(titel,inhalt,wert='')=>`<div class="stat-podest-kachel"><small>${titel}</small><b>${inhalt}</b>${wert?`<span class="mut">${wert}</span>`:''}</div>`;
   const spieler=n=>`<button class="name" type="button" data-stat-rivale="${esc(n)}">${GT(n,'dm')}</button>`;
+  const symbol=(zeichen,titel)=>`<span class="stat-symbol" aria-hidden="true">${zeichen}</span>${titel}`;
+  const karte=p.karte_fav?.[0];
+  const bild=karte&&((D?.dm?.karten||[]).find(k=>k.karte===karte&&k.bild)?.bild
+    ||(D?.dm?.runden||[]).find(r=>r.karte===karte&&r.bild)?.bild);
   const kacheln=[
-    ...(p.podest||[]).slice(0,3).map((n,i)=>kachel(['🥇 Siege','🥈 Zweite Plätze','🥉 Dritte Plätze'][i],n)),
-    p.karte_fav&&kachel('🗺️ Lieblingskarte',esc(p.karte_fav[0]),p.karte_fav[1]+' Runden'),
-    p.modus_fav&&kachel('🎲 Lieblingsmodus',esc(p.modus_fav[0]),p.modus_fav[1]+' Runden'),
-    p.nemesis&&kachel('😈 Dein Nemesis',spieler(p.nemesis[0]),p.nemesis[1]+'× von diesem Spieler erwischt'),
-    p.opfer&&kachel('🎯 Häufigstes Opfer',spieler(p.opfer[0]),p.opfer[1]+'× erledigt'),
-    p.rivale&&kachel('⚔️ Dein Rivale',spieler(p.rivale[0]),p.rivale[1]+' Kills / '+p.rivale[2]+' Tode'),
-    (m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)&&kachel('💰 Kopfgeld und Juggernaut', (m.kopfgeld_kills||0)+' Kopfgelder', (m.jugg_runden||0)+'× Juggernaut · '+(m.jugg_kills||0)+' erlegt')
-  ].filter(Boolean);
+    ...['🥇 Siege','🥈 Zweite Plätze','🥉 Dritte Plätze'].map((titel,i)=>kachel(titel,p.podest?.[i]??0)),
+    kachel('Meistgespielte Karte',karte?esc(karte)+(bild?`<img src="${esc(bild)}" alt="" loading="lazy">`:''):'–',karte?p.karte_fav[1]+' Runden':''),
+    kachel('🎲 Lieblingsmodus',p.modus_fav?esc(p.modus_fav[0]):'–',p.modus_fav?p.modus_fav[1]+' Runden':''),
+    kachel(symbol('☠️','Dein Nemesis'),p.nemesis?spieler(p.nemesis[0]):'–',p.nemesis?p.nemesis[1]+'× von diesem Spieler erwischt':''),
+    kachel(symbol('🎯','Häufigstes Opfer'),p.opfer?spieler(p.opfer[0]):'–',p.opfer?p.opfer[1]+'× erledigt':''),
+    kachel(symbol('⚔️','Dein Rivale'),p.rivale?spieler(p.rivale[0]):'–',p.rivale?p.rivale[1]+' Kills / '+p.rivale[2]+' Tode':'')
+  ];
+  const spezial=(m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)
+    ?`<p class="mut">💰 ${m.kopfgeld_kills||0} Kopfgelder · 🛡️ ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0} Juggernauts erlegt</p>`:'';
   const saison=(m.saisons||[]).map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)} · Platz ${s[1]}</span>`).join(' ');
-  return uebersichtPanel('Podest, Karten und Rivalen',`<div class="stat-podest">${kacheln.join('')}</div>${!kacheln.length?'<p class="mut">Noch keine Werte erfasst.</p>':''}${saison?`<p class="mut">👑 Saison-Platzierungen</p>${saison}`:''}`);
+  return uebersichtPanel('Podest, Karten und Rivalen',`<div class="stat-podest">${[['Podest',0,3,''],['Karte & Modus',3,5,' stat-karte'],['Rivalen',5,8,'']].map(([titel,von,bis,klasse])=>
+    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}${saison?`<p class="mut">👑 Saison-Platzierungen</p>${saison}`:''}`);
 }
 document.addEventListener('click',e=>{
   const spieler=e.target.closest('[data-stat-rivale]');
