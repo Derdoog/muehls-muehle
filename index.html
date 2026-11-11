@@ -126,6 +126,8 @@
   .reiter button:hover{color:var(--text);border-color:var(--line2)}
   .reiter button.an{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border-color:var(--acc)}
   .reiter.klein{margin:10px 0 8px}.reiter.klein button{padding:5px 10px;font-size:11px}
+  #dMatchAktion:not(:empty){margin:0 0 10px}
+  #dLevel th:nth-child(2),#dLevel td:nth-child(2){text-align:left}
   .mr{display:none}.mr.an{display:block;animation:rein .2s ease-out}
   .mwahl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:8px}
   .wahl{font:inherit;padding:4px 6px;background:var(--bg2);color:var(--text);border:1px solid var(--line2);max-width:100%}
@@ -291,6 +293,7 @@ nav button{min-width:0}
 </header>
 <main>
   <div class="status" id="sStatus" hidden></div>
+  <div id="dMatchAktion"></div>
   <div id="banner"></div>
   <section class="tab an" id="t-pve">
     <div id="pBanner"></div>
@@ -308,6 +311,14 @@ nav button{min-width:0}
   </section>
   <section class="tab" id="t-dm">
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="regelbtn" id="regelnBtn">❓ Regeln &amp; Punkte</button></div>
+    <div class="reiter" id="dReiter" role="group" aria-label="Deathmatch-Ansicht">
+      <button type="button" class="an" data-dr="live" aria-pressed="true">🎯 Übersicht</button>
+      <button type="button" data-dr="matches" aria-pressed="false">📜 Letzte Matches</button>
+      <button type="button" data-dr="wertung" aria-pressed="false">🏆 Wertungen</button>
+      <button type="button" data-dr="waffen" aria-pressed="false">🔫 Waffen</button>
+      <button type="button" data-dr="karten" aria-pressed="false">🗺 Karten</button>
+    </div>
+    <div class="dr" id="dr-live">
     <div id="dRunde"></div>
     <div class="panel" id="dVote" hidden></div>
     <div class="panel" id="dCustom" hidden></div>
@@ -315,18 +326,19 @@ nav button{min-width:0}
       <div class="panel"><h3>🎯 Killfeed</h3><div id="dKf" class="kf"></div></div>
       <div class="panel scroll"><h3>Stand dieser Runde</h3><table id="dStand"></table></div>
     </div>
-    <div class="zwei">
+    </div>
+    <div class="dr" id="dr-matches" hidden>      <div class="panel"><h3>📜 Letzte Runden</h3><div id="dRunden"></div><div class="mut" style="margin-top:6px">Auf eine Runde tippen für Top 10, weitesten Kill und längste Leben.</div></div></div>
+    <div class="dr" id="dr-wertung" hidden>
+      <div class="zwei">
       <div class="panel scroll"><h3>🏆 Elo-Wertung über alle Runden</h3><table id="dElo"></table>
         <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil. Gewertet werden nur Runden mit mindestens 2 Spielern.</div></div>
-      <div class="panel"><h3>📜 Letzte Runden</h3><div id="dRunden"></div><div class="mut" style="margin-top:6px">Auf eine Runde tippen für Top 10, weitesten Kill und längste Leben.</div></div>
-    </div>
-    <div class="zwei">
-      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div>
       <div class="panel"><h3>🏛 Ruhmeshalle Deathmatch</h3><div id="dRuhm"></div></div>
-    </div>
+      </div>
     <div class="panel scroll"><h3>⭐ Deathmatch-Level</h3><div id="dLevel"></div></div>
     <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
-    <div class="panel scroll"><h3>🔫 Waffen-Rangliste (alle Spieler)</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div>
+    </div>
+    <div class="dr" id="dr-waffen" hidden>    <div class="panel scroll"><h3>🔫 Waffen-Rangliste (alle Spieler)</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div></div>
+    <div class="dr" id="dr-karten" hidden>      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div></div>
   </section>
   <section class="tab" id="t-meine">
     <div class="panel"><h3 id="mTitel">Meine Statistik</h3><div id="mListe"></div><div id="mWahl" class="mwahl"></div></div>
@@ -344,6 +356,15 @@ nav button{min-width:0}
 <script>
 const REPO='Derdoog/muehls-muehle';
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const dmReiter=$$('#dReiter [data-dr]');
+dmReiter.forEach(button=>button.onclick=()=>{
+  dmReiter.forEach(reiter=>{
+    const aktiv=reiter===button;
+    reiter.classList.toggle('an',aktiv);
+    reiter.setAttribute('aria-pressed',String(aktiv));
+    $('#dr-'+reiter.dataset.dr).hidden=!aktiv;
+  });
+});
 const esc=t=>String(t??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const dauer=s=>{s=Math.max(0,Math.round(s||0));const h=Math.floor(s/3600),m=Math.floor(s%3600/60);return h?`${h} h ${m} min`:`${m} min`};
 const uhr=t=>{const d=new Date(t*1000),h=new Date(),hm=d.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});return d.toDateString()===h.toDateString()?hm:d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'})+' '+hm};
@@ -504,8 +525,8 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   const re=m.rekorde||{},dmR=[['elo','🏆 Höchste Elo',v=>v],['kills','⚔️ Meiste Kills',v=>v],['siege','🥇 Meiste Siege',v=>v],['beste_serie','🔥 Längste Serie',v=>v+' Kills'],
     ['weitester','🎯 Weitester Kill',v=>v+' m'],['laengstes_leben','⏱️ Längstes Leben',v=>dauer(v)],['kopf','💀 Meiste Kopfschüsse',v=>v],['rache','⚔️ Meiste Rache',v=>v],
     ['kopfgeld_kills','💰 Meiste Kopfgelder',v=>v],['jugg_kills','🛡️ Juggernaut-Jäger',v=>v]];
-  $('#dRuhm').innerHTML=ruhm(m.elo,dmR,'data-dm')+(re.runde_kills?`<div class="rh"><span>🏅 Meiste Kills in einer Runde</span><b>${esc(re.runde_kills[0])}</b><span class="mut">${re.runde_kills[1]} Kills · ${esc(re.runde_kills[2])}</span></div>`:'')
-    +(re.weitester?`<div class="rh"><span>📏 Weitester Schuss</span><b>${esc(re.weitester[0])}</b><span class="mut">${re.weitester[3]} m · ${esc(re.weitester[2]||'')} · ${esc(re.weitester[4])}</span></div>`:'')||'<div class="mut">Noch keine Rekorde.</div>';
+  $('#dRuhm').innerHTML=ruhm(m.elo,dmR,'data-dm')+(re.runde_kills?`<div class="rh"><span>🏅 Meiste Kills in einer Runde</span><b>${GT(re.runde_kills[0],'dm')}</b><span class="mut">${re.runde_kills[1]} Kills · ${esc(re.runde_kills[2])}</span></div>`:'')
+    +(re.weitester?`<div class="rh"><span>📏 Weitester Schuss</span><b>${GT(re.weitester[0],'dm')}</b><span class="mut">${re.weitester[3]} m · ${esc(re.weitester[2]||'')} · ${esc(re.weitester[4])}</span></div>`:'')||'<div class="mut">Noch keine Rekorde.</div>';
   $('#pRuhm').innerHTML=ruhm(p.spieler,[['kills','⚔️ Meiste Kills',v=>v],['weitester','🎯 Weitester Kill',v=>v+' m'],['kopf','💀 Meiste Kopfschüsse',v=>v],['spielzeit','⏳ Meiste Spielzeit',v=>dauer(v)],
     ['strecke','🥾 Weiteste Strecke',v=>v+' km'],['erfolge','🏅 Meiste Erfolge',v=>v],['sitzungen','🔁 Meiste Besuche',v=>v]],'data-n')
     +(()=>{const u=Object.entries(p.profile||{}).filter(([n,x])=>x.ueberlebt).sort((a,b)=>b[1].ueberlebt-a[1].ueberlebt)[0];return u?`<div class="rh"><span>🛡️ Lebt am längsten (aktuell)</span><b class="name" data-n="${esc(u[0])}">${esc(u[0])}</b><span class="mut">${dauer(u[1].ueberlebt)} Spielzeit ohne Tod</span></div>`:''})()||'<div class="mut">Noch keine Rekorde.</div>';
@@ -524,7 +545,7 @@ function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
     ${s.rang&&s.rang.length?`<div class="mut" style="margin-top:6px">🏴‍☠️ Rangliste: ${s.rang.slice(0,5).map((r,i)=>esc(r[0])+' '+r[1]).join(' · ')}</div>`:''}
     <div class="mut" style="margin-top:6px">Gefunden ist ein Schatz, wenn du direkt daneben stehst (Spielerliste alle 5 min) oder dort ein Emote machst.</div>`}
 function ruhm(liste,felder,attr){return felder.map(([k,t,f])=>{const best=[...(liste||[])].filter(s=>(s[k]||0)>0).sort((a,b)=>b[k]-a[k])[0];
-  return best?`<div class="rh"><span>${t}</span><b class="name" ${attr}="${esc(best.name)}">${esc(best.name)}</b><span class="mut">${f(best[k])}</span></div>`:''}).join('')}
+  return best?`<div class="rh"><span>${t}</span><b class="name" ${attr}="${esc(best.name)}">${GT(best.name,attr==='data-dm'?'dm':'pve')}</b><span class="mut">${f(best[k])}</span></div>`:''}).join('')}
 function countdown(bis){const s=Math.max(0,Math.round(bis-Date.now()/1000));return s<=0?'gleich':Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' min'}
 function statusZeichnen(){const s=D&&D.status,el=$('#sStatus');if(!s||!s.t||Date.now()/1000-s.t>900||s.status==='unbekannt'){el.hidden=true;return}el.hidden=false;
   const rest=Math.max(1,Math.round((s.startzeit_min||3)-(Date.now()/1000-s.t)/60));
@@ -535,18 +556,21 @@ function statusZeichnen(){const s=D&&D.status,el=$('#sStatus');if(!s||!s.t||Date
 let VOTE=null;
 // ---------------- Update 8: Custom-Matches von Zuschauern (Tom t825u/t826u)
 let CMF=null,MF=null,CMS='form',CMZ=null;
-function cmPanel(c){const el=$('#dCustom');if(!el)return;if(!c||!c.an){el.hidden=true;return}el.hidden=false;
+function cmPanel(c){const el=$('#dCustom'),aktion=$('#dMatchAktion');aktion.replaceChildren();if(!c||!c.an){el.hidden=true;return}el.hidden=false;
   const meine=(CMF&&CMF.meine)||[],dran=ICH&&ICH.benutzer;
-  const knopf=DIREKT?(c.moeglich?`<button class="login cmbtn" id="cmNeu">🎮 Match erstellen</button>`:`<button class="login cmbtn" disabled>🎮 Match erstellen</button> <span class="mut">${esc(c.grund||'')}</span>`):'<span class="mut">Match erstellen geht nur direkt auf der Seite des Servers.</span>';
+  if(DIREKT&&c.moeglich){
+    const knopf=document.createElement('button');
+    knopf.type='button';knopf.className='login cmbtn';knopf.textContent='🎮 Match erstellen';
+    knopf.onclick=()=>{if(!dran){loginForm(false);return}matchForm()};
+    aktion.append(knopf);
+  }
   el.innerHTML=`<h3>🎮 Custom-Matches</h3>
     ${c.aktuell?`<div class="hinweis">Gerade läuft ein Custom-Match ${c.aktuell.gt?'von <b>'+esc(c.aktuell.gt)+'</b>':'aus der Abstimmung'}.</div>`:''}
     ${c.liste.length?c.liste.map((x,i)=>`<div class="cmq"><span class="nr">${i+1}</span>${x.bild?`<img src="${esc(x.bild)}" alt="" loading="lazy">`:''}<div style="flex:1;min-width:0"><b>${esc(x.titel)}</b>
       <div class="mut">${x.zufall?'🎲 aus der Abstimmung':'von '+GT(x.gt||'?','dm')} · ${x.minuten} min</div><div>${(x.regeln||[]).map(r=>`<span class="chip">${esc(r)}</span>`).join('')}</div></div>
       ${dran&&meine.includes(x.id)?`<button class="login" data-cmzu="${esc(x.id)}">Zurückziehen</button>`:''}</div>`).join('')
       :'<div class="mut">Noch keine Custom-Matches in der Warteschlange.</div>'}
-    <div style="margin-top:10px">${knopf}</div>
     <div class="mut" style="margin-top:6px">Bis zu ${c.max} Matches laufen nacheinander, jeweils nach der laufenden Runde. Je Konto ${c.je_konto} offen. Die Abstimmung kann die Reihenfolge ändern (gewählt = rückt nach vorne).</div>`;
-  const nb=$('#cmNeu');if(nb)nb.onclick=()=>{if(!dran){loginForm(false);return}matchForm()};
   $$('[data-cmzu]').forEach(b=>b.onclick=async()=>{if(!confirm('Dein Match aus der Warteschlange nehmen?'))return;await cmPost({aktion:'zurueckziehen',id:b.dataset.cmzu});await cmLaden();laden()})}
 async function cmLaden(){if(!DIREKT)return null;CMF=await holeJson('/zuschauer/match');return CMF}
 async function cmPost(d){try{const r=await fetch('/zuschauer/match',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
