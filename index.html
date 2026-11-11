@@ -176,9 +176,8 @@
   .stat-saison{margin-top:10px}
   .stat-saison h5{margin:0 0 4px;color:#d2b582}
   .stat-saison .chip{background:#32291a;color:#f1d497;border-color:#8e733e}
-  .stat-podest-kachel img{display:block;width:min(100%,90px);height:30px;object-fit:cover;margin:4px auto 0;border:1px solid var(--line)}
-  .stat-podest-kachel .stat-symbol{width:24px;height:24px;flex:none}
-  .stat-podest-kachel .stat-kachel-titel{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:6px;width:100%;min-height:30px;text-align:left}
+  .stat-podest-kachel .stat-symbol{width:34px;height:34px;flex:none}
+  .stat-podest-kachel .stat-kachel-titel{display:flex;flex-direction:column;align-items:center;gap:5px;width:100%;text-align:center}
   .stat-podest-kachel small,.stat-podest-kachel .mut{display:block;font-size:11px;line-height:1.25}
   .stat-podest-kachel small{color:var(--acc2)}
   .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
@@ -1320,11 +1319,9 @@ function podestKartenRivalen(m){
 };
   const symbol=(icon,titel)=>`<svg class="stat-symbol" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><path d="${icons[icon]}"/></svg><span>${titel}</span>`;
   const karte=p.karte_fav?.[0];
-  const bild=karte&&((D?.dm?.karten||[]).find(k=>k.karte===karte&&k.bild)?.bild
-    ||(D?.dm?.runden||[]).find(r=>r.karte===karte&&r.bild)?.bild);
   const kacheln=[
     ...['Siege','Zweite Plätze','Dritte Plätze'].map((titel,i)=>kachel(symbol('pokal',titel),p.podest?.[i]??0)),
-    kachel(symbol('karte','Meistgespielte Karte'),karte?esc(karte)+(bild?`<img src="${esc(bild)}" alt="" loading="lazy">`:''):'–',karte?p.karte_fav[1]+' Runden':''),
+    kachel(symbol('karte','Meistgespielte Karte'),karte?esc(karte):'–',karte?p.karte_fav[1]+' Runden':''),
     kachel(symbol('modus','Lieblingsmodus'),p.modus_fav?esc(p.modus_fav[0]):'–',p.modus_fav?p.modus_fav[1]+' Runden':''),
     kachel(symbol('nemesis','Dein Nemesis'),p.nemesis?spieler(p.nemesis[0]):'–',p.nemesis?p.nemesis[1]+'× von diesem Spieler erwischt':''),
     kachel(symbol('ziel','Häufigstes Opfer'),p.opfer?spieler(p.opfer[0]):'–',p.opfer?p.opfer[1]+'× erledigt':''),
