@@ -156,6 +156,20 @@
   .waffen-raster>details>summary small{line-height:1.25}
   @media(max-width:900px){.waffen-raster{grid-template-columns:repeat(3,minmax(0,1fr))}} @media(max-width:640px){.waffen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:340px){.waffen-raster{grid-template-columns:minmax(0,1fr)}}
+  .waffen-raster .waffen-detail{background:linear-gradient(145deg,#191c17,#0e100d)}
+  .waffen-raster .waffen-detail-kopf{background:none;border:0;padding:4px 0 16px}
+  .waffen-detail-kopf h4{font-size:clamp(20px,4vw,32px);color:#f3cc79;text-shadow:0 0 12px #cb7d44;text-transform:uppercase}
+  .waffen-raster .waffen-detail-kopf img.wimg{box-sizing:border-box;width:min(100%,430px);height:clamp(125px,26vw,220px);padding:14px;border:8px ridge #70736b;background:radial-gradient(ellipse,#353733,#161815);box-shadow:0 4px 15px #000a}
+  .waffen-raster .waffen-gruppen{align-items:stretch}
+  .waffen-raster .waffen-gruppe{background:#111410;border-color:#424538}
+  .waffen-raster .waffen-gruppe h4{color:#e7c483;text-transform:uppercase}
+  .waffen-raster .waffen-kennzahlen>div{background:linear-gradient(150deg,#392420,#1b1c18 72%);border-top:2px solid #9f382d}
+  .waffen-raster .waffen-kennzahlen strong{color:#ff9380}
+  .waffen-raster .waffen-rekorde>div{border:1px solid #96723b;background:linear-gradient(90deg,#49361c,#1b1b14);color:#f2d390}
+  .waffen-zonen>div{display:grid;grid-template-columns:3em minmax(0,1fr) 3em;align-items:center;gap:8px;margin:5px 0}
+  .waffen-zonen meter{width:100%;accent-color:#c84d3e}
+  .waffen-zonen meter::-webkit-meter-optimum-value{background:linear-gradient(90deg,#76251e,#e05d47)}
+  .waffen-zonen meter::-webkit-meter-bar{background:#262720;border:0}
   .waffen-kategorie{margin-top:16px}
   .waffen-kategorie>h4{margin:0 0 6px;color:var(--acc2)}
   .waffen-detail{border-top:1px solid var(--line2);padding:clamp(10px,2vw,22px)}
@@ -1074,8 +1088,10 @@ const kach=l=>`<div class="kacheln" style="margin-top:8px">${l.map(([a,b])=>`<di
 const ZN={kopf:'Kopf',torso:'Torso',arme:'Arme',beine:'Beine'};
 function trefferzonen(z){
   return `<h5>Treffer nach Körperzone</h5>${z?`<p class="mut">Anteil an den Treffern mit bekannter Körperzone.</p>
-    <dl class="waffen-basis">${Object.entries(ZN).map(([k,label])=>`<div><dt>${label}</dt><dd>${z[k]||0} %</dd></div>`).join('')}</dl>`
-    :'<p class="mut">Für diese Auswahl sind keine Körperzonen erfasst.</p>'}`;
+    <div class="waffen-zonen">${Object.entries(ZN).map(([k,label])=>{
+      const wert=Math.max(0,Math.min(100,Number(z[k])||0));
+      return `<div><span>${label}</span><meter min="0" max="100" value="${wert}" aria-label="${label}"></meter><strong>${wert} %</strong></div>`;
+    }).join('')}</div>`:'<p class="mut">Für diese Auswahl sind keine Körperzonen erfasst.</p>'}`;
 }
 function eigeneTrefferzonen(z){
   const symbole={kopf:'👤',torso:'👕',arme:'💪',beine:'🦵'};
