@@ -190,6 +190,12 @@
   .bewegung-zeile>div:first-child{display:flex;justify-content:space-between;flex-wrap:wrap;gap:3px 8px;font-size:12px}
   .bewegung-balken{height:5px;margin-top:3px;background:#829c60}
   .bewegung-balken i{display:block;height:100%;background:#d4a34d}
+  .performance-kopf{padding:12px;border:1px solid var(--line2);border-left:3px solid var(--acc2);background:linear-gradient(115deg,var(--panel2),var(--bg2))}
+  .performance-kopf>strong{display:block;font-size:clamp(17px,3vw,22px)}
+  .performance-kopf .waffen-kennzahlen{margin-top:8px}
+  .performance-trend{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line2)}
+  .performance-positiv{color:#a6cb7b}
+  .performance-negativ{color:#f39886}
   .performance-liste{list-style:none;padding:0;margin:8px 0;display:grid;gap:6px}
   .performance-liste li{display:grid;grid-template-columns:1em minmax(0,1fr);gap:6px}
   .performance-liste .plus{color:#8fd16a}
@@ -1376,7 +1382,8 @@ function dmPerformance(m){
   if(spiele.length>=6){
     const n=Math.floor(spiele.length/2),[ak,at]=bilanz(spiele.slice(0,n)),[bk,bt]=bilanz(spiele.slice(n,2*n));
     const delta=(ak-at-bk+bt)/n;
-    trend=`<p class="mut">Killbilanz pro Runde: ${format(ak-at===0?0:(ak-at)/n)} in den letzten ${n} Runden, davor ${format((bk-bt)/n)}. ${delta>0?'Zuletzt verbessert.':delta<0?'Zuletzt gesunken.':'Zuletzt gleich geblieben.'}</p>`;
+    trend=`<div class="performance-trend"><b class="${delta>0?'performance-positiv':delta<0?'performance-negativ':''}">${delta>0?'↑ Zuletzt verbessert':delta<0?'↓ Zuletzt gesunken':'→ Unverändert'}</b>
+      <span class="mut">Killbilanz pro Runde: <strong>${format((ak-at)/n)}</strong> in den letzten ${n} Runden, davor <strong>${format((bk-bt)/n)}</strong>.</span></div>`;
   }
   const namen=['Nahdistanz (<25 m)','Mitteldistanz (25 bis <100 m)','Ferndistanz (ab 100 m)'];
   const dist=(m.distanzbilanz||[]).map(([k,t],i)=>({name:namen[i],k,t}));
@@ -1407,8 +1414,12 @@ function dmPerformance(m){
   const hoehenZeile=bilanzZeile('Killbilanz nach Höhenlage',hoehe,'Für die gewerteten Runden liegen noch keine zuordenbaren Höhenwerte vor.');
   const punkte=(titel,zeichen,klasse,texte)=>`<div><b>${titel}</b><ul class="performance-liste">
     ${texte.some(Boolean)?texte.filter(Boolean).map(t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`).join(''):'<li class="mut">Noch kein klares Muster.</li>'}</ul></div>`;
-  return `<section class="waffen-gruppe"><h4>Performance</h4><strong>${st}</strong>
-    <p class="mut">${spiele.length?`Letzte ${spiele.length} Runden mit Kill-/Todesdaten · ${kills} Kills · ${tode} Tode`:'Noch keine Runden mit Kill-/Todesdaten.'}</p>${trend}
+  const netto=kills-tode;
+  const farbe=spiele.length<3?'':netto>0?'performance-positiv':netto<0?'performance-negativ':'';
+  return `<section class="waffen-gruppe"><h4>Performance</h4>
+    <div class="performance-kopf"><strong class="${farbe}">${st}</strong>
+      ${spiele.length?waffenKennzahlen([['Runden',spiele.length],['Kills',kills],['Tode',tode],['Bilanz',netto>0?'+'+netto:netto]]):'<span class="mut">Noch keine Runden mit Kill-/Todesdaten.</span>'}
+      ${trend}</div>
     <div class="waffen-gruppen">
     ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst mehr Kills als Tode, wenn du ${esc(besteHoehe.name.toLowerCase())} stehst.`:'',positionsStaerke])}
     ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name.toLowerCase())} hast du mehr Tode als Kills.`:'',schwacheHoehe?`Du stirbst häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.name.toLowerCase())} stehst.`:'',positionsTipp])}
