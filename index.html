@@ -491,6 +491,17 @@ nav button{min-width:0}
   .ra p{margin:3px 0} .ra ul{margin:6px 0 0;padding-left:18px} .ra li{margin:3px 0}
   .ra-tag{display:inline-block;margin-left:8px;padding:0 6px;font:700 10px var(--kopf);text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--line2);vertical-align:middle;color:var(--mut)}
   .ra-tag.knapp,.ra-tag.ausgewogen{color:#a6cb7b;border-color:#5d8f3f} .ra-tag.deutlich{color:var(--acc2);border-color:var(--acc)} .ra-tag.dominiert{color:#f39886;border-color:#a8402f}
+
+  /* Update 161: Info-Kacheln in den Rundendetails */
+  .ri{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px;margin:10px 0 8px}
+  .ri-k,.ri-box{display:grid;gap:3px;align-content:start;padding:9px 11px;background:var(--panel2);border:1px solid var(--line);border-top:2px solid var(--acc)}
+  .ri-box{grid-column:span 2} @media(max-width:520px){.ri-box{grid-column:auto}}
+  .ri-t{font:700 11px var(--kopf);text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+  .ri-k>b{font-size:20px;color:var(--acc2)} .ri-s{font-size:12px;color:var(--mut)} .ri-s b{color:var(--text)}
+  .ri-z{display:flex;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid var(--line);font-size:13px} .ri-z:last-child{border-bottom:0}
+  .ri-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px} .ri-chips span{padding:2px 8px;border:1px solid var(--line2);background:var(--bg2);font-size:12px}
+  a.rlink{display:inline-block;margin-top:4px;padding:5px 10px;border:1px solid var(--line2);color:var(--acc2);text-decoration:none;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.05em}
+  a.rlink:hover{border-color:var(--acc)}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
 <style>
@@ -830,11 +841,8 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span>${(r.erfolge||[]).length?`<span class="mut rerf">🏅 ${r.erfolge.slice(0,3).map(x=>esc(x[0])+': '+esc(x[3])).join(' · ')}${r.erfolge.length>3?' · +'+(r.erfolge.length-3)+' weitere':''}</span>`:''}</div></summary>
     <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0],'dm')}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
     ${raBlock(r.analyse)}
-    ${r.weitester?`<div>🎯 Weitester Kill: <b>${esc(r.weitester[0])}</b> ➜ ${esc(r.weitester[1])} · ${esc(r.weitester[2]||'')} · ${r.weitester[3]} m</div>`:''}
-    ${(r.erfolge||[]).length?`<div>🏅 Erfolge dieser Runde: ${r.erfolge.map(x=>'<b>'+esc(x[0])+'</b> '+esc(x[3])).join(' · ')}</div>`:''}
-    ${r.leben&&r.leben.length?`<div>⏱️ Am längsten überlebt: ${r.leben.map(l=>'<b>'+esc(l[0])+'</b> '+dauer(l[1])).join(' · ')}</div>`:''}
-    ${r.kopfschuesse?`<div>💀 Kopfschüsse: ${r.kopfschuesse}</div>`:''}${r.kopfgeld?`<div>💰 Kopfgeld kassiert: ${r.kopfgeld}-mal</div>`:''}
-    ${DIREKT&&r.id?`<div style="margin-top:6px"><a href="/zuschauer/runde/${+r.id}" style="color:var(--gold,#e0b44c)">🔗 Eigene Seite dieser Runde (zum Teilen)</a></div>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
+    ${rInfo(r)}
+    ${DIREKT&&r.id?`<a class="rlink" href="/zuschauer/runde/${+r.id}">🔗 Eigene Seite dieser Runde (zum Teilen)</a>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
   $('#dSaison').innerHTML=(m.saisons||[]).slice(0,6).map(s=>`<div class="rh"><span>${MN[+s.monat.slice(5)-1]} ${s.monat.slice(0,4)}</span><b class="name" data-dm="${esc(s.meister||'')}">${s.meister?'👑 '+esc(s.meister):'–'}</b><span class="mut">${s.runden} Runden${s.top&&s.top[0]?' · '+s.top[0][1]+' Siege · '+s.top[0][2]+' Kills':''}</span></div>`).join('')||'<div class="mut">Noch keine Saison.</div>';
   waffenKatalog(m);
   $('#dSchrot').innerHTML=statistikInfo(['Der Katalog zeigt Kills und Treffer aller Spieler. Schüsse daneben stehen nicht im Server-Log. Deine Werte findest du unter Meine Statistik → Waffen.',d.schrot_hinweis].filter(Boolean).join(' '));
@@ -1552,6 +1560,15 @@ const statistikBlock=(titel,inhalt)=>`<details class="statistik-block" data-stat
 // Update 160: Rundenanalyse (kommt fertig vom Server, nach jeder Runde automatisch)
 const RA_NAME={ausgewogen:'ausgewogen',knapp:'knapp',deutlich:'deutlich',dominiert:'unausgewogen'};
 function raTag(a){return a&&RA_NAME[a.balance]?`<span class="ra-tag ${a.balance}">${RA_NAME[a.balance]}</span>`:''}
+function rInfo(r){   // Update 161: Kacheln statt Textzeilen
+  const k=[];
+  if(r.weitester)k.push(['🎯','Weitester Kill',r.weitester[3]+' m',`<b>${esc(r.weitester[0])}</b> ➜ ${esc(r.weitester[1])}${r.weitester[2]?' · '+esc(r.weitester[2]):''}`]);
+  if(r.kopfschuesse)k.push(['💀','Kopfschüsse',r.kopfschuesse,r.kills?Math.round(100*r.kopfschuesse/r.kills)+' % der Kills':'']);
+  if(r.kopfgeld)k.push(['💰','Kopfgeld kassiert',r.kopfgeld+'×','']);
+  const kach=k.map(([i,t,v,s])=>`<div class="ri-k"><span class="ri-t">${i} ${t}</span><b>${esc(String(v))}</b>${s?`<span class="ri-s">${s}</span>`:''}</div>`).join('');
+  const leben=(r.leben||[]).length?`<div class="ri-box"><span class="ri-t">⏱️ Am längsten überlebt</span>${r.leben.slice(0,3).map((l,i)=>`<div class="ri-z"><span>${['🥇','🥈','🥉'][i]||''} <b>${esc(l[0])}</b></span><span>${dauer(l[1])}</span></div>`).join('')}</div>`:'';
+  const erf=(r.erfolge||[]).length?`<div class="ri-box"><span class="ri-t">🏅 Erfolge dieser Runde</span><div class="ri-chips">${r.erfolge.map(x=>`<span><b>${esc(x[0])}</b> ${esc(x[3])}</span>`).join('')}</div></div>`:'';
+  return kach||leben||erf?`<div class="ri">${kach}${leben}${erf}</div>`:''}
 function raBlock(a){if(!a||(!(a.text||[]).length&&!(a.spieler||[]).length))return '';
   return `<div class="ra"><h5>📝 Rundenanalyse</h5>${(a.text||[]).map(t=>`<p>${esc(t)}</p>`).join('')}${(a.spieler||[]).length?`<ul>${a.spieler.map(([n,st])=>`<li><b>${esc(n)}</b> ${st.map(esc).join(', ')}.</li>`).join('')}</ul>`:''}</div>`}
 function dmPerformance(m){
