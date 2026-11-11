@@ -930,8 +930,36 @@ document.addEventListener('keydown',ev=>{if(ev.key!=='Enter'&&ev.key!==' ')retur
 const kach=l=>`<div class="kacheln" style="margin-top:8px">${l.map(([a,b])=>`<div class="kachel"><b style="font-size:19px">${a}</b><span>${b}</span></div>`).join('')}</div>`;
 const ZN={kopf:'Kopf',torso:'Torso',arme:'Arme',beine:'Beine'};
 function zonenText(z){return z?Object.keys(ZN).map(k=>`${ZN[k]} ${z[k]||0} %`).join(' · '):'–'}
-function waffenTabelle(l,hinweis){if(!l||!l.length)return '<div class="mut">Noch keine Treffer oder Kills gezählt.</div>';
-  return `<div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th><th title="Treffer pro Kill: weniger = präziser">Treffer/Kill</th><th>Anteil Kopftreffer</th><th>Trefferzonen</th><th>mittlere Entfernung</th><th title="weitester tödlicher Schuss">weitester Kill</th><th title="weitester Treffer, auch ohne Kill">weitester Treffer</th><th title="Schaden gesamt (in Klammern: Durchschnitt pro Treffer)">Schaden</th></tr>${l.map(w=>`<tr><td>${wbild(w.waffe)}<b>${esc(w.waffe)}</b></td><td>${w.kills}${w.kopf_kills?` <span class="mut">(davon ${w.kopf_kills} Kopfschüsse)</span>`:''}</td><td>${w.treffer}</td><td>${w.treffer_pro_kill??'–'}</td><td>${w.kopfquote??'–'}${w.kopfquote!=null?' %':''}</td><td class="mut">${zonenText(w.zonen)}</td><td>${w.distanz_mittel!=null?w.distanz_mittel+' Meter':'–'}</td><td>${w.kill_distanz_max?w.kill_distanz_max+' m':'–'}</td><td>${(w.treffer_distanz_max??w.distanz_max)?(w.treffer_distanz_max??w.distanz_max)+' m':'–'}</td><td>${w.schaden||'–'}${w.schaden_pro_treffer?` <span class="mut">(Ø ${w.schaden_pro_treffer})</span>`:''}</td></tr>`).join('')}</table></div>`}
+function eigeneWaffen(liste,bereich,offen){
+  if(!liste?.length)return '<div class="mut">Noch keine Treffer oder Kills gezählt.</div>';
+  const nummer=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:2});
+  const distanz=n=>n==null?'–':nummer(n)+' m';
+  return `<div class="waffen-liste">${liste.map(w=>{
+    const id=bereich+':'+w.waffe, alias=w.waffe.toLowerCase(), bild=WB?.[alias];
+    const modell=WOBO_WAFFEN[alias]?alias:(bild&&Object.keys(WOBO_WAFFEN).find(k=>WB[k]===bild));
+    const werte=[
+      ['Kills',w.kills],['Kopf-Kills',w.kopf_kills],['Treffer',w.treffer],['Kopftreffer',w.kopf_treffer],
+      ['Treffer pro Kill',w.treffer_pro_kill],['Kopftreffer-Anteil',w.kopfquote==null?'–':w.kopfquote+' %'],
+      ['Schaden gesamt',w.schaden],['Ø Schaden pro Treffer',w.schaden_pro_treffer]
+    ];
+    return `<details data-eigene-waffe="${esc(id)}" ${offen.has(id)?'open':''}><summary>
+      <b>${wbild(w.waffe)} ${esc(w.waffe)}</b><strong>${nummer(w.kills)} Kills</strong>
+      <small>${nummer(w.treffer)} Treffer</small></summary>
+      <div class="waffen-detail">${wbild(w.waffe)}
+        <div class="waffen-gruppen">
+          <section class="waffen-gruppe"><h4>Meine Treffer und Kills</h4><dl class="waffen-basis">
+            ${werte.map(([label,wert])=>`<div><dt>${label}</dt><dd>${typeof wert==='number'?nummer(wert):esc(wert??'–')}</dd></div>`).join('')}
+          </dl></section>
+          <section class="waffen-gruppe"><h4>Meine Distanzen und Trefferzonen</h4><dl class="waffen-basis">
+            <div><dt>Weitester Kill</dt><dd>${distanz(w.kill_distanz_max||null)}</dd></div>
+            <div><dt>Weitester Treffer</dt><dd>${distanz(w.treffer_distanz_max||null)}</dd></div>
+            <div><dt>Mittlere Entfernung</dt><dd>${distanz(w.distanz_mittel)}</dd></div>
+          </dl><div class="mut">${zonenText(w.zonen)}</div></section>
+          ${modell?woboWaffendaten(modell,nummer):''}
+        </div>
+      </div></details>`;
+  }).join('')}</div>`;
+}
 function summeText(s){if(!s||!s.treffer)return '';return kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+`<div class="mut">Trefferzonen: ${zonenText(s.zonen)}</div>`}
 function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).map(x=>[bereich+':'+x.id,(bereich==='dm'?'⚔️ ':'🌲 ')+x.titel+' ('+(STN[x.stufe]||'')+')']);
   const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
@@ -965,9 +993,10 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
       +(v.tage.length?`<h4>📆 Letzte Tage</h4><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${v.tage.slice(0,14).map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:'')+'</div>'
     :`<div class="panel">${keinPve}</div>`;
   // Waffen
+  const waffenOffen=new Set($$('#mr-waffen details[data-eigene-waffe][open]').map(x=>x.dataset.eigeneWaffe));
   $('#mr-waffen').innerHTML=`<div class="panel"><div class="hinweis">ℹ️ ${esc(d.waffen_hinweis||'')}</div>
-    <h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe)+waffenTabelle(m.waffen_detail):keinDm}
-    <h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe)+waffenTabelle(v.waffen_detail):keinPve}
+    <h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe)+eigeneWaffen(m.waffen_detail,'dm',waffenOffen):keinDm}
+    <h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe)+eigeneWaffen(v.waffen_detail,'pve',waffenOffen):keinPve}
     <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).${d.schrot_hinweis?' '+esc(d.schrot_hinweis):''}</div></div>`;
   // Erfolge
   $('#mr-erfolge').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Haupterfolge ${ST}</h4><div class="bgs">${(m.haupt||[]).map(x=>badgeKarte(x,'dm')).join('')}</div><h4>🎖 Stil-Erfolge</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
