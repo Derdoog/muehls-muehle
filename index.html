@@ -147,14 +147,14 @@
   .zonen-raster dd{margin:0;font-weight:700}
   .zonen-symbol{display:block;font-size:18px}
   @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  .waffen-raster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .waffen-raster{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
   .waffen-raster>details{min-width:0;border:1px solid var(--line);background:var(--panel2)}
   .waffen-raster>details[open]{grid-column:1/-1}
   .waffen-liste .waffen-raster>details>summary{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:8px;border:0}
-  .waffen-raster>details>summary .wimg{display:block;width:100%;height:56px;object-fit:contain;margin:0}
+  .waffen-raster>details>summary .wimg{display:block;width:100%;height:42px;object-fit:contain;margin:0}
   .waffen-raster>details[open]>summary .wimg{display:none}
   .waffen-raster>details>summary small{line-height:1.25}
-  @media(max-width:640px){.waffen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:900px){.waffen-raster{grid-template-columns:repeat(3,minmax(0,1fr))}} @media(max-width:640px){.waffen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
   @media(max-width:340px){.waffen-raster{grid-template-columns:minmax(0,1fr)}}
   .waffen-kategorie{margin-top:16px}
   .waffen-kategorie>h4{margin:0 0 6px;color:var(--acc2)}
@@ -203,6 +203,7 @@
   @media(max-width:760px){#dr-wertung :is(th,td){padding:5px 4px;font-size:12px}}
   #dLevel th:nth-child(2),#dLevel td:nth-child(2){text-align:left}
   #t-meine[data-modus="dm"] .m-nur-pve,#t-meine[data-modus="pve"] .m-nur-dm{display:none}
+  #mKonto>summary{cursor:pointer;color:var(--acc2);padding:4px 0}
   .mr{display:none}.mr.an{display:block;animation:rein .2s ease-out}
   .mwahl{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:center;margin-top:8px}
   .wahl{font:inherit;padding:4px 6px;background:var(--bg2);color:var(--text);border:1px solid var(--line2);max-width:100%}
@@ -416,12 +417,12 @@ nav button{min-width:0}
     <div class="dr" id="dr-karten" hidden>      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div></div>
   </section>
   <section class="tab" id="t-meine">
-    <div class="panel"><h3 id="mTitel">Meine Statistik</h3><div id="mListe"></div><div id="mWahl" class="mwahl"></div></div>
+    <div class="panel"><h3 id="mTitel">Meine Statistik</h3><details id="mKonto"><summary>Gamertags und Charaktere</summary><div id="mListe"></div><div id="mWahl" class="mwahl"></div></details></div>
     <div class="reiter" id="mModus" role="group" aria-label="Statistikmodus">
       <button type="button" data-modus="dm">⚔️ Deathmatch</button><button type="button" data-modus="pve">🌲 PvE</button>
     </div><div class="reiter" id="mReiter"></div>
     <div id="mStat">
-      <div class="mr" id="mr-uebersicht"></div><div class="mr" id="mr-dm"></div><div class="mr" id="mr-pve"></div><div class="mr" id="mr-waffen"></div>
+      <div class="mr" id="mr-uebersicht"><div class="m-nur-dm" id="mr-dm"></div><div class="m-nur-pve" id="mr-pve"></div><div id="mUebersichtExtra"></div></div><div class="mr" id="mr-waffen"></div>
       <div class="mr" id="mr-erfolge"></div>
       <div class="mr" id="mr-karte"><div class="panel m-nur-pve"><h3>🗺 Meine Karte (PvE Chernarus)</h3><div id="mKarte"></div><div class="mut" id="mr-karte-text" style="margin-top:8px"></div></div><div id="mr-heat" class="panel m-nur-dm" style="margin-top:12px"></div></div>
       <div class="mr" id="mr-titel"></div><div class="mr" id="mr-shop"></div><div class="mr" id="mr-level"></div>
@@ -975,19 +976,18 @@ function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)re
     L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
 let MModus='dm';
 $$('#mModus button').forEach(b=>b.onclick=()=>{MModus=b.dataset.modus;if(MREIT==='dm'||MREIT==='pve')MREIT='uebersicht';reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
-const MREITER=[['uebersicht','📋 Übersicht'],['dm','⚔️ Deathmatch'],['pve','🌲 PvE'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level'],['shop','🛒 Rubel-Shop']];
+const MREITER=[['uebersicht','📋 Übersicht'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level'],['shop','🛒 Rubel-Shop']];
 let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
 try{MREIT=localStorage.getItem('meine_reiter')||MREIT;MWAHL=localStorage.getItem('meine_char')||MWAHL}catch(e){}
 (function(){const h=decodeURIComponent(location.hash||'');const m=h.match(/^#meine(?:\/([a-z]+))?(?:\/(.+))?$/);if(m){if(m[1])MREIT=m[1];if(m[2])MWAHL=m[2]}})();
 function reiterMerken(){try{localStorage.setItem('meine_reiter',MREIT);localStorage.setItem('meine_char',MWAHL)}catch(e){}
   if($('#t-meine').classList.contains('an'))history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}
 function reiterZeigen(){
-  if(MREIT==='pve'||MREIT==='dm')MModus=MREIT;
-  const sichtbar=MREITER.filter(([id])=>id==='dm'||id==='pve'?id===MModus:true);
-  if(!sichtbar.some(r=>r[0]===MREIT))MREIT='uebersicht';
+  if(MREIT==='pve'||MREIT==='dm'){MModus=MREIT;MREIT='uebersicht'}
+  if(!MREITER.some(r=>r[0]===MREIT))MREIT='uebersicht';
   $('#t-meine').dataset.modus=MModus;
   $$('#mModus button').forEach(b=>{const an=b.dataset.modus===MModus;b.classList.toggle('an',an);b.setAttribute('aria-pressed',String(an))});
-  $('#mReiter').innerHTML=sichtbar.map(([id,t])=>`<button data-mr="${id}" class="${id===MREIT?'an':''}">${t}</button>`).join('');
+  $('#mReiter').innerHTML=MREITER.map(([id,t])=>`<button data-mr="${id}" class="${id===MREIT?'an':''}">${t}</button>`).join('');
   $$('#mReiter [data-mr]').forEach(b=>b.onclick=()=>{MREIT=b.dataset.mr;reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
   $$('.mr').forEach(x=>x.classList.toggle('an',x.id==='mr-'+MREIT))}
 let MLAEUFT=false;
@@ -1001,7 +1001,7 @@ async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encod
   $('#mWahl').innerHTML+=`<span class="mut m-nur-dm">⚔️ DM-Gamertag: <b style="color:var(--text)">${d.dm_gamertag?esc(d.dm_gamertag):'– noch keiner –'}</b></span>`;
   const sel=$('#mWahlSel');if(sel){sel.value=pt.includes(MWAHL)?MWAHL:'alle';sel.onchange=()=>{MWAHL=sel.value;delete $('#mStat').dataset.sig;meineLaden()}}
   const sig=JSON.stringify([d.pve,d.dm,d.pve_einzeln,d.dm_titel]).length+'|'+MWAHL+'|'+JSON.stringify(d.shop&&d.shop.test?d.shop.meine_kosmetik:0);
-  try{if($('#mStat').dataset.sig!==sig){meineStat(d);$('#mStat').dataset.sig=sig}}catch(e){console.error(e);$('#mr-uebersicht').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
+  try{if($('#mStat').dataset.sig!==sig){meineStat(d);$('#mStat').dataset.sig=sig}}catch(e){console.error(e);$('#mUebersichtExtra').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
   $('#mListe').innerHTML=(d.status==='wartet'||(!pt.length&&!d.dm_gamertag))?`<div class="hinweis">⏳ Dein Konto wartet auf die Zuordnung. <b>Dein Admin ordnet dir deine Gamertags zu.</b> Danach siehst du hier deine Statistik.</div>`
     :d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem PvE-Server gesehen</span></div></div>`
     :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('');
@@ -1134,9 +1134,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
   const keinPve=`<div class="mut">${(d.pve_gamertags||[]).length?'Für diese Auswahl gibt es noch keine PvE-Daten.':'Dir ist noch kein PvE-Gamertag zugeordnet.'}</div>`;
   const wahlTxt=v?(v.zusammen&&v.zusammen.length>1?'Alle zusammen: '+v.zusammen.map(esc).join(', '):esc(v.name)):'';
   // Übersicht
-  $('#mr-uebersicht').innerHTML=`<div class="panel"><section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}${d.dm_titel?`<span class="titel">${esc(d.dm_titel)}</span>`:''}</h3>${m?kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.siege+' / '+m.runden,'Siege / Runden']]):keinDm}
-    </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE Chernarus${v?' · '+wahlTxt:''}</h3>${v?kach([[dauer(v.spielzeit),'Spielzeit'],[v.strecke+' km','gelaufen'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[(v.schatz.funde||0),'Schätze']]):keinPve}</section>
-    ${nachtragText()}</div>${vsTestkonto(d)}`;
+  $('#mUebersichtExtra').innerHTML=nachtragText()+vsTestkonto(d);
   // Deathmatch
   if(m){const p=m.profil||{};
     $('#mr-dm').innerHTML=`<div class="panel"><h3 class="bereich">⚔️ Deathmatch · ${esc(m.name)}</h3>`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
