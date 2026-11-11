@@ -149,11 +149,14 @@
   @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
   .stat-podest{display:grid;grid-template-columns:3fr 2fr 3fr;gap:10px;align-items:stretch}
-  .stat-podest.hat-erfolge{grid-template-columns:3fr 2fr 3fr minmax(175px,2fr)}
+  .stat-podest-panel{container-type:inline-size}
+  .stat-podest.hat-erfolge{grid-template-columns:minmax(0,3fr) minmax(0,2.3fr) minmax(0,3.3fr) minmax(145px,1.8fr);align-items:start}
   .stat-podest-gruppe.stat-erreicht{grid-template-columns:minmax(0,1fr)}
-  .stat-erreicht .bgs{display:grid;grid-template-columns:minmax(0,1fr);gap:4px;padding:5px;background:var(--panel2)}
-  @media(max-width:1100px){.stat-podest.hat-erfolge{grid-template-columns:repeat(2,minmax(0,1fr))}}
-  @media(max-width:650px){.stat-podest.hat-erfolge{grid-template-columns:minmax(0,1fr)}}
+  .stat-erfolge-kurz{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));align-items:center;justify-items:center;gap:4px;padding:8px;background:var(--panel2)}
+  .stat-erfolge-kurz .med{max-width:100%}
+  .stat-erfolge-kurz button{grid-column:1/-1;justify-self:stretch;font-size:11px;padding:4px}
+  @container (max-width:960px){.stat-podest.hat-erfolge{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @container (max-width:550px){.stat-podest.hat-erfolge{grid-template-columns:minmax(0,1fr)}}
   .stat-podest-gruppe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto minmax(94px,1fr);gap:1px;min-width:0;border:1px solid var(--line2);background:var(--line2)}
   .stat-podest-gruppe.stat-platz{grid-template-columns:repeat(3,minmax(0,1fr))}
   .stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -1326,9 +1329,11 @@ function podestKartenRivalen(m){
   const saison=(m.saisons||[]).map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)} · Platz ${s[1]}</span>`).join(' ');
   const erreicht=[...(m.haupt||[]),...(m.stil||[])].filter(e=>e.stufe);
   return `<section class="panel stat-podest-panel"><div class="stat-podest${erreicht.length?' hat-erfolge':''}">${[['Podest',0,3,' stat-platz'],['Karte & Modus',3,5,' stat-karte'],['Rivalen',5,8,'']].map(([titel,von,bis,klasse])=>
-    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}${erreicht.length?`<section class="stat-podest-gruppe stat-erreicht"><h5>Erreichte Erfolge</h5><div class="bgs">${erreicht.map(e=>badgeKarte(e,'dm')).join('')}</div></section>`:''}</div>${spezial}${saison?`<div class="stat-saison"><h5>Saisonplatzierungen</h5>${saison}</div>`:''}</section>`;
+    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}${erreicht.length?`<section class="stat-podest-gruppe stat-erreicht"><h5>Erreichte Erfolge</h5><div class="stat-erfolge-kurz">${erreicht.slice(0,4).map(e=>`<span title="${esc(e.titel)}" aria-label="${esc(e.titel)}">${medaille(e.icon,e.stufe,e.pn||0)}</span>`).join('')}
+    <button type="button" class="login" data-stat-erfolge>Alle ${erreicht.length} ansehen</button></div></section>`:''}</div>${spezial}${saison?`<div class="stat-saison"><h5>Saisonplatzierungen</h5>${saison}</div>`:''}</section>`;
 }
 document.addEventListener('click',e=>{
+  if(e.target.closest('[data-stat-erfolge]'))$('#mReiter [data-mr="erfolge"]')?.click();
   const spieler=e.target.closest('[data-stat-rivale]');
   if(spieler&&D)dmProfil(spieler.dataset.statRivale);
 });
