@@ -452,7 +452,7 @@ nav button{min-width:0}
 .cmq{display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);padding:8px 10px;margin:6px 0}
 .cmq img{width:64px;height:40px;object-fit:cover;flex:none} .cmq .nr{font:700 18px var(--kopf);color:var(--acc);min-width:22px}
 .cmsum{background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--acc);padding:10px 12px;margin:8px 0}
-.cmbtn{font-size:14px;padding:9px 16px}
+.cmbtn{font-size:14px;padding:9px 16px} #dMatchAktion button.aus{opacity:.55;filter:grayscale(1);color:var(--mut)} .cmgrund{margin-top:8px}
 @media (max-width:700px){.cmr>span:first-child{min-width:100%}.cmk{grid-template-columns:repeat(2,1fr)}.cmq{flex-wrap:wrap}.cmq img{width:48px;height:32px}.cmq>div{flex-basis:calc(100% - 90px)}.cmq>button{flex-basis:100%}}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
@@ -1002,10 +1002,11 @@ let VOTE=null;
 let CMF=null,MF=null,CMS='form',CMZ=null;
 function cmPanel(c){const el=$('#dCustom'),aktion=$('#dMatchAktion');aktion.replaceChildren();if(!c||!c.an){el.hidden=true;return}el.hidden=false;
   const meine=(CMF&&CMF.meine)||[],dran=ICH&&ICH.benutzer;
-  if(DIREKT&&c.moeglich){
+  if(DIREKT){   // Fix 150/151: Knopf immer da und klickbar; jeder Klick zeigt Formular oder Grund (vorher: ohne Wirkung bzw. ganz weg)
     const knopf=document.createElement('button');
-    knopf.type='button';knopf.className='status';knopf.textContent='🎮 Match erstellen';
-    knopf.onclick=()=>{if(!dran){loginForm(false);return}matchForm()};
+    knopf.type='button';knopf.className='status'+(c.moeglich?'':' aus');knopf.textContent='🎮 Match erstellen';
+    knopf.title=c.moeglich?'Match erstellen':'Gerade nicht möglich – klicken für den Grund';
+    knopf.onclick=()=>cmKlick(c);
     aktion.append(knopf);
   }
   el.innerHTML=`<h3>🎮 Custom-Matches</h3>
@@ -1014,8 +1015,24 @@ function cmPanel(c){const el=$('#dCustom'),aktion=$('#dMatchAktion');aktion.repl
       <div class="mut">${x.zufall?'🎲 aus der Abstimmung':'von '+GT(x.gt||'?','dm')} · ${x.minuten} min</div><div>${(x.regeln||[]).map(r=>`<span class="chip">${esc(r)}</span>`).join('')}</div></div>
       ${dran&&meine.includes(x.id)?`<button class="login" data-cmzu="${esc(x.id)}">Zurückziehen</button>`:''}</div>`).join('')
       :'<div class="mut">Noch keine Custom-Matches in der Warteschlange.</div>'}
+    ${DIREKT&&!c.moeglich?`<div class="hinweis cmgrund">⏸ Match erstellen gerade nicht möglich: ${esc(c.grund||'')}</div>`:''}
     <div class="mut" style="margin-top:6px">Bis zu ${c.max} Matches laufen nacheinander, jeweils nach der laufenden Runde. Je Konto ${c.je_konto} offen. Die Abstimmung kann die Reihenfolge ändern (gewählt = rückt nach vorne).</div>`;
   $$('[data-cmzu]').forEach(b=>b.onclick=async()=>{if(!confirm('Dein Match aus der Warteschlange nehmen?'))return;await cmPost({aktion:'zurueckziehen',id:b.dataset.cmzu});await cmLaden();laden()})}
+function cmMeldung(titel,text,knoepfe){$('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 8px">🎮 ${esc(titel)}</h2><div class="hinweis">${text}</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">${knoepfe||''}<button class="login cmbtn" onclick="dlg.close()">OK</button></div>`;if(!$('#dlg').open)$('#dlg').showModal()}
+async function cmKlick(c){   // Fix 150: jeder Klick zeigt etwas: Formular oder den Grund
+  try{
+    if(!DIREKT)return cmMeldung('Match erstellen','Match erstellen geht nur direkt auf der Seite des Servers: <b>dayz.eveslage.com/zuschauer</b>.');
+    if(!c||!c.an)return cmMeldung('Match erstellen','Custom-Matches sind gerade nicht freigegeben. Das schaltet der Admin frei.');
+    if(!c.moeglich)return cmMeldung('Gerade nicht möglich',esc(c.grund||'Custom-Matches gehen gerade nicht.'));
+    if(!(ICH&&ICH.benutzer))return cmMeldung('Bitte anmelden','Zum Erstellen musst du mit deinem Spieler-Konto angemeldet sein.','<button class="login cmbtn" id="cmLogin" style="border-color:var(--acc)">🔑 Anmelden</button>'),$('#cmLogin').onclick=()=>{dlg.close();loginForm(false)};
+    const f=await cmLaden();
+    if(!f)return cmMeldung('Keine Verbindung','Die Daten für das Formular konnten nicht geladen werden. Bitte gleich noch einmal versuchen.');
+    if(!f.moeglich)return cmMeldung('Gerade nicht möglich',esc(f.grund||''));
+    if(!f.gt)return cmMeldung('Kein Deathmatch-Gamertag','Deinem Konto ist noch kein Deathmatch-Gamertag zugeordnet. Das macht der Admin.');
+    if(f.sperre)return cmMeldung('Gerade kein neues Match',esc(f.sperre));
+    if(!f.karten||!f.karten.length)return cmMeldung('Keine Arena bereit','Gerade ist keine fertig gebaute Arena verfügbar.');
+    matchForm()
+  }catch(e){console.error(e);cmMeldung('Fehler','Da ist etwas schiefgelaufen: '+esc(e&&e.message||e)+'. Bitte Seite neu laden.')}}
 async function cmLaden(){if(!DIREKT)return null;CMF=await holeJson('/zuschauer/match');return CMF}
 async function cmPost(d){try{const r=await fetch('/zuschauer/match',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
   const j=await r.json().catch(()=>({}));if(!r.ok){alert(j.meldung||'Das ging nicht');return null}return j}catch(e){alert('Keine Verbindung');return null}}
