@@ -1036,7 +1036,8 @@ const WAFFEN_KATEGORIEN={
   ],
   "Werfer und Signalwaffen": [
     "flaregun.webp",
-    "m79.webp"
+    "m79.webp",
+    "granate.webp"
   ],
   "Nahkampf": [],
   "Sonstige": []
@@ -1406,6 +1407,14 @@ function eigeneWaffen(liste,bereich,offen,rekorde={}){
   };
   return `<div class="waffen-liste">${waffenGruppen(liste,w=>w.treffer,w=>{
     const id=bereich+':'+w.waffe;
+    if(w.vermutlich)return `<details data-eigene-waffe="${esc(id)}" ${offen.has(id)?'open':''}><summary>
+      <b>${esc(w.waffe)}</b>${wbild(w.waffe)}<strong>${nummer(w.kills)} vermutlich</strong>
+      <small>keine Trefferdaten</small></summary>
+      <div class="waffen-detail"><div class="waffen-detail-kopf"><h4>${esc(w.waffe)}</h4>${wbild(w.waffe)}</div>
+        <div class="waffen-gruppen"><section class="waffen-gruppe"><h4>Vermutliche Granatenkills</h4>
+          ${waffenKennzahlen([['Vermutliche Kills',nummer(w.kills)],['Größter Abstand zum Opfer',w.kill_distanz_max?nummer(w.kill_distanz_max)+' m':'–'],['Punkte je Kill','0,5']])}
+          <p class="mut">Das Server-Log nennt bei Granaten keinen Werfer. Den Kill bekommt vermutlich der nächste Gegner (höchstens 50 m entfernt, Position höchstens 30 s alt). Zählt 0,5 Punkte und Elo, aber nicht als Kill, nicht in K/D, Serien oder Erfolgen.</p>
+        </section></div></div></details>`;
     const werte=[
       ['Kills',w.kills],['Kopf-Kills',w.kopf_kills],['Treffer',w.treffer],['Kopftreffer',w.kopf_treffer],
       ['Treffer pro Kill',w.treffer_pro_kill],['Kopftreffer-Anteil',w.kopfquote==null?'–':w.kopfquote+' %'],
@@ -1640,6 +1649,8 @@ function dmPerformance(m){
       return `<div class="vgl-z"><span>${t}</span><div class="vgl-b" aria-hidden="true"><i style="width:${w(du)}%"></i>${sn!=null?`<s style="left:calc(${w(sn)}% - 1px)"></s>`:''}</div>
         <span class="vgl-w"><b>${du==null?'–':zahl(du)+e}</b> · Schnitt ${sn==null?'–':zahl(sn)+e}</span></div>`}).join('')}</div>
     <div class="bil-legende"><span style="color:var(--acc2)">▮ Du</span><span class="s">Schnitt (${vg.spieler} Spieler)</span></div>`:'';
+  const granV=Number(m.granaten_v)||0;   // Update 163
+  const granTxt=granV>=3?`Granatenwerfer: <b>${granV}</b> vermutliche Granatenkills ${statistikInfo('Das Server-Log nennt bei Granaten keinen Werfer. Vermutlich war es der nächste Gegner (höchstens 50 m, Position höchstens 30 s alt). Zählt 0,5 Punkte und Elo, aber nicht als Kill.')}`:'';
   const ursacheTxt=genug&&verlust&&verlust[1]>=3&&verlust[1]*10>=todeSumme
     ?`Am häufigsten erwischt dich <b>${esc(verlust[0])}</b> (${verlust[1]}× von ${todeSumme} erfassten Toden).`:'';
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
@@ -1675,7 +1686,7 @@ function dmPerformance(m){
     <div class="perf-karten">
     ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst klar mehr Kills als Tode, wenn du ${esc(besteHoehe.lage)} stehst.${fall(besteHoehe)}`:'',positionsStaerke,
       besteKarte?`${esc(besteKarte.name)} liegt dir.${rundenTxt(besteKarte)}`:'',besterModus?`Im Modus ${esc(besterModus.name)} bist du stark.${rundenTxt(besterModus)}`:'',
-      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du die beste Bilanz.${fall(besterGegner)}`:'',...vgPlus])}
+      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du die beste Bilanz.${fall(besterGegner)}`:'',...vgPlus,granTxt])}
     ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name)} hast du klar mehr Tode als Kills.${fall(schwaeche)}`:'',schwacheHoehe?`Du stirbst deutlich häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.lage)} stehst.${fall(schwacheHoehe)}`:'',positionsTipp,
       schwacheKarte?`Auf ${esc(schwacheKarte.name)} läuft es schlecht.${rundenTxt(schwacheKarte)}`:'',schwacherModus?`Im Modus ${esc(schwacherModus.name)} tust du dich schwer.${rundenTxt(schwacherModus)}`:'',
       schwersterGegner?`${GT(schwersterGegner.name,'dm')} ist dein schwerster Gegner.${fall(schwersterGegner)}`:'',ursacheTxt,...vgMinus])}
