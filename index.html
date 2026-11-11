@@ -462,6 +462,35 @@ nav button{min-width:0}
 .cmsum{background:var(--panel2);border:1px solid var(--line2);border-left:3px solid var(--acc);padding:10px 12px;margin:8px 0}
 .cmbtn{font-size:14px;padding:9px 16px} #dMatchAktion button.aus{opacity:.55;filter:grayscale(1);color:var(--mut)} .cmgrund{margin-top:8px}
 @media (max-width:700px){.cmr>span:first-child{min-width:100%}.cmk{grid-template-columns:repeat(2,1fr)}.cmq{flex-wrap:wrap}.cmq img{width:48px;height:32px}.cmq>div{flex-basis:calc(100% - 90px)}.cmq>button{flex-basis:100%}}
+
+  /* Update 160: Performance-Block und Rundenanalyse */
+  .perf-karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin:12px 0}
+  .perf-karte{padding:12px 14px;border:1px solid var(--line2);background:var(--panel2)}
+  .perf-karte.plus{border-left:3px solid #8fd16a;background:linear-gradient(110deg,rgba(143,209,106,.08),var(--panel2) 55%)}
+  .perf-karte.minus{border-left:3px solid #e8775f;background:linear-gradient(110deg,rgba(232,119,95,.08),var(--panel2) 55%)}
+  .perf-karte>b{font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.07em}
+  .perf-karte.plus>b{color:#a6cb7b} .perf-karte.minus>b{color:#f39886}
+  .bil{display:grid;gap:7px;margin:8px 0 4px}
+  .bil-z{display:grid;grid-template-columns:minmax(90px,170px) minmax(0,1fr) auto;gap:4px 10px;align-items:center;font-size:13px}
+  .bil-b{display:flex;height:12px;background:var(--bg2);border:1px solid var(--line);overflow:hidden}
+  .bil-b i{display:block;height:100%} .bil-b .k{background:linear-gradient(90deg,#5d8f3f,#8fd16a)} .bil-b .t{background:linear-gradient(90deg,#e8775f,#a8402f)}
+  .bil-w{white-space:nowrap;color:var(--mut);font-variant-numeric:tabular-nums;min-width:96px;text-align:right} .bil-w b{color:var(--text)}
+  .bil-z.stark .bil-w b{color:#a6cb7b} .bil-z.schwach .bil-w b{color:#f39886}
+  .vgl{display:grid;gap:8px;margin:8px 0}
+  .vgl-z{display:grid;grid-template-columns:minmax(110px,170px) minmax(0,1fr) auto;gap:4px 10px;align-items:center;font-size:13px}
+  .vgl-b{position:relative;height:12px;background:var(--bg2);border:1px solid var(--line)}
+  .vgl-b i{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--olive),var(--acc))}
+  .vgl-b s{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--text);opacity:.75;text-decoration:none}
+  .vgl-w{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--mut);min-width:150px;text-align:right} .vgl-w b{color:var(--text)}
+  .bil-legende{display:flex;gap:14px;font-size:12px;color:var(--mut);margin-top:2px}
+  .bil-legende span::before{content:"";display:inline-block;width:10px;height:10px;margin-right:5px;vertical-align:-1px}
+  .bil-legende .k::before{background:#8fd16a} .bil-legende .t::before{background:#e8775f} .bil-legende .s::before{width:2px;background:var(--text)}
+  @media(max-width:520px){.bil-z,.vgl-z{grid-template-columns:minmax(0,1fr) auto} .bil-z .bil-b,.vgl-z .vgl-b{grid-column:1/-1;grid-row:2}}
+  .ra{margin:10px 0 6px;padding:10px 12px;border:1px solid var(--line2);border-left:3px solid var(--acc);background:linear-gradient(110deg,rgba(212,166,42,.07),var(--panel2) 60%)}
+  .ra h5{margin:0 0 6px;font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.07em;color:var(--acc2)}
+  .ra p{margin:3px 0} .ra ul{margin:6px 0 0;padding-left:18px} .ra li{margin:3px 0}
+  .ra-tag{display:inline-block;margin-left:8px;padding:0 6px;font:700 10px var(--kopf);text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--line2);vertical-align:middle;color:var(--mut)}
+  .ra-tag.knapp,.ra-tag.ausgewogen{color:#a6cb7b;border-color:#5d8f3f} .ra-tag.deutlich{color:var(--acc2);border-color:var(--acc)} .ra-tag.dominiert{color:#f39886;border-color:#a8402f}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
 <style>
@@ -797,9 +826,10 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     m.elo.map((s,i)=>dmSpieler(s.name,i,s.elo+' Elo',[s.kills+' Kills',s.tode+' Tode','K/D '+s.kd,
       s.siege+' Siege','Serie '+s.beste_serie],TT(s.name))).join('')
   ):'<div class="mut">Noch keine gewertete Runde.</div>';
-  $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
+  $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}${raTag(r.analyse)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
     <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span>${(r.erfolge||[]).length?`<span class="mut rerf">🏅 ${r.erfolge.slice(0,3).map(x=>esc(x[0])+': '+esc(x[3])).join(' · ')}${r.erfolge.length>3?' · +'+(r.erfolge.length-3)+' weitere':''}</span>`:''}</div></summary>
     <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0],'dm')}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
+    ${raBlock(r.analyse)}
     ${r.weitester?`<div>🎯 Weitester Kill: <b>${esc(r.weitester[0])}</b> ➜ ${esc(r.weitester[1])} · ${esc(r.weitester[2]||'')} · ${r.weitester[3]} m</div>`:''}
     ${(r.erfolge||[]).length?`<div>🏅 Erfolge dieser Runde: ${r.erfolge.map(x=>'<b>'+esc(x[0])+'</b> '+esc(x[3])).join(' · ')}</div>`:''}
     ${r.leben&&r.leben.length?`<div>⏱️ Am längsten überlebt: ${r.leben.map(l=>'<b>'+esc(l[0])+'</b> '+dauer(l[1])).join(' · ')}</div>`:''}
@@ -1519,6 +1549,11 @@ function letzteRunden(runden){
   return statistikBlock('Meine letzten Runden',zeilen?`<div class="stat-runden">${zeilen}</div>`:'<div class="mut">Noch keine Runden erfasst.</div>');
 }
 const statistikBlock=(titel,inhalt)=>`<details class="statistik-block" data-statistik="${esc(titel)}"><summary>${esc(titel)}</summary><div>${inhalt||'<p class="mut">Noch keine Daten.</p>'}</div></details>`;
+// Update 160: Rundenanalyse (kommt fertig vom Server, nach jeder Runde automatisch)
+const RA_NAME={ausgewogen:'ausgewogen',knapp:'knapp',deutlich:'deutlich',dominiert:'unausgewogen'};
+function raTag(a){return a&&RA_NAME[a.balance]?`<span class="ra-tag ${a.balance}">${RA_NAME[a.balance]}</span>`:''}
+function raBlock(a){if(!a||(!(a.text||[]).length&&!(a.spieler||[]).length))return '';
+  return `<div class="ra"><h5>📝 Rundenanalyse</h5>${(a.text||[]).map(t=>`<p>${esc(t)}</p>`).join('')}${(a.spieler||[]).length?`<ul>${a.spieler.map(([n,st])=>`<li><b>${esc(n)}</b> ${st.map(esc).join(', ')}.</li>`).join('')}</ul>`:''}</div>`}
 function dmPerformance(m){
   // Update 158: fairere Bewertung (K/D-Trend, ab 3 Runden, klarer Abstand 60/40, Fallzahlen), Nahdistanz fein, Karten/Modi, Gegner, Todesursachen
   const spiele=(m.runden_liste||[]).filter(r=>r[4]).slice(0,10);
@@ -1538,8 +1573,8 @@ function dmPerformance(m){
   }
   const quote=x=>x.k/(x.k+x.t);
   const fall=x=>` <span class="mut">(${x.k} Kills / ${x.t} Tode)</span>`;
-  const istStark=(x,min=5)=>genug&&x.k+x.t>=min&&quote(x)>=0.6;
-  const istSchwach=(x,min=5)=>genug&&x.k+x.t>=min&&quote(x)<=0.4;
+  const istStark=(x,min=5)=>genug&&x.k+x.t>=min&&(quote(x)>=0.6||(x.k+x.t>=30&&quote(x)>=0.55));
+  const istSchwach=(x,min=5)=>genug&&x.k+x.t>=min&&(quote(x)<=0.4||(x.k+x.t>=30&&quote(x)<=0.45));
   const besteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>((b.k-b.t)-(a.k-a.t))||(quote(b)-quote(a)))[0];
   const schlechtesteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>((a.k-a.t)-(b.k-b.t))||(quote(a)-quote(b)))[0];
   const top=(m.waffen||[]).find(x=>x[1]>0);
@@ -1574,14 +1609,20 @@ function dmPerformance(m){
   const ueber=(key,f=1.25)=>vgOk&&vs[key]>0&&vi[key]!=null&&vi[key]>=vs[key]*f;
   const unter=(key,f=0.75)=>vgOk&&vs[key]>0&&vi[key]!=null&&vi[key]<=vs[key]*f;
   const kopfOk=(vi.kills||0)>=10;
-  const vgPlus=[ueber('kpr')?`Du machst deutlich mehr Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
+  const nahPlus=vgOk&&vi.nah!=null&&vs.nah!=null&&vi.nah>=vs.nah+8?`Auf kurze Distanz (unter 25 m) gewinnst du <b>${vi.nah} %</b> deiner Duelle, der Schnitt liegt bei ${zahl(vs.nah)} %.`:'';
+  const nahMinus=vgOk&&vi.nah!=null&&vs.nah!=null&&vi.nah<=vs.nah-8?`Auf kurze Distanz (unter 25 m) gewinnst du nur <b>${vi.nah} %</b> deiner Duelle, der Schnitt liegt bei ${zahl(vs.nah)} %.`:'';
+  const vgPlus=[nahPlus,ueber('kpr')?`Du machst deutlich mehr Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
     kopfOk&&ueber('kopfquote')?`Starke Kopfschuss-Quote: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %).`:''];
-  const vgMinus=[unter('kpr')?`Du machst deutlich weniger Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
+  const vgMinus=[nahMinus,unter('kpr')?`Du machst deutlich weniger Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
     kopfOk&&unter('kopfquote')?`Wenig Kopfschüsse: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %). Kopf zielen spart Treffer.`:''];
-  const vgTabelle=vg.ich&&vg.spieler>=2?`<h5>Vergleich mit allen Spielern ${statistikInfo('Schnitt über alle Spieler mit mindestens 3 gewerteten Runden (Kopfschuss-Quote ab 10 Kills). In die Stärken und Schwächen fließt ein Wert ab 25 % Abstand zum Schnitt ein.')}</h5>
-    <div class="scroll"><table><tr><th>Wert</th><th>Du</th><th>Schnitt (${vg.spieler} Spieler)</th></tr>
-    ${[['K/D','kd',''],['Kills pro Runde','kpr',''],['Punkte pro Runde','ppr',''],['Siegquote','siegquote',' %'],['Kopfschuss-Kills','kopfquote',' %']]
-      .map(([t,k,e])=>`<tr><td>${t}</td><td><b>${vi[k]==null?'–':zahl(vi[k])+e}</b></td><td>${vs[k]==null?'–':zahl(vs[k])+e}</td></tr>`).join('')}</table></div>`:'';
+  const vglZeilen=[['K/D','kd','',2],['Kills pro Runde','kpr','',0],['Punkte pro Runde','ppr','',0],['Siegquote','siegquote',' %',100],['Kopfschuss-Kills','kopfquote',' %',0],['Duelle unter 25 m gewonnen','nah',' %',100]]
+    .filter(([,k])=>vi[k]!=null||vs[k]!=null);
+  const vgTabelle=vg.ich&&vg.spieler>=2&&vglZeilen.length?`<h5>Vergleich mit allen Spielern ${statistikInfo('Schnitt über alle Spieler mit mindestens 3 gewerteten Runden (Kopfschuss-Quote ab 10 Kills, Nahdistanz ab 20 Duellen). Ab 25 % Abstand zum Schnitt (Nahdistanz ab 8 Prozentpunkten) fließt ein Wert in Stärken und Schwächen ein.')}</h5>
+    <div class="vgl">${vglZeilen.map(([t,k,e,max])=>{const du=vi[k],sn=vs[k],skala=max||Math.max(du||0,sn||0)*1.25||1;
+      const w=x=>Math.max(0,Math.min(100,100*(x||0)/skala));
+      return `<div class="vgl-z"><span>${t}</span><div class="vgl-b" aria-hidden="true"><i style="width:${w(du)}%"></i>${sn!=null?`<s style="left:calc(${w(sn)}% - 1px)"></s>`:''}</div>
+        <span class="vgl-w"><b>${du==null?'–':zahl(du)+e}</b> · Schnitt ${sn==null?'–':zahl(sn)+e}</span></div>`}).join('')}</div>
+    <div class="bil-legende"><span style="color:var(--acc2)">▮ Du</span><span class="s">Schnitt (${vg.spieler} Spieler)</span></div>`:'';
   const ursacheTxt=genug&&verlust&&verlust[1]>=3&&verlust[1]*10>=todeSumme
     ?`Am häufigsten erwischt dich <b>${esc(verlust[0])}</b> (${verlust[1]}× von ${todeSumme} erfassten Toden).`:'';
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
@@ -1600,11 +1641,13 @@ function dmPerformance(m){
     return `${esc(staerke.name)} ist deine stärkste Distanz.${fall(staerke)}${bewegung}`;
   })():'';
   const bilanzZeile=(titel,werte,leer='')=>werte.some(x=>x.k||x.t)
-    ?`<h5>${titel}</h5>${waffenKennzahlen(werte.map(x=>[x.name,x.k+' Kills / '+x.t+' Tode']))}`
+    ?`<h5>${titel}</h5><div class="bil">${werte.map(x=>{const n=x.k+x.t,q=n?Math.round(100*x.k/n):0,kl=istStark(x)?'stark':istSchwach(x)?'schwach':'';
+      return `<div class="bil-z ${kl}"><span>${esc(x.name)}</span><div class="bil-b" aria-hidden="true">${n?`<i class="k" style="width:${100*x.k/n}%"></i><i class="t" style="width:${100*x.t/n}%"></i>`:''}</div>
+        <span class="bil-w">${n?`<b>${q} %</b> · ${x.k} / ${x.t}`:'–'}</span></div>`}).join('')}</div><div class="bil-legende"><span class="k">Kills</span><span class="t">Tode</span></div>`
     :leer?`<h5>${titel}</h5><p class="mut">${leer}</p>`:'';
   const distanz=bilanzZeile('Killbilanz nach Distanz',dist);
   const hoehenZeile=bilanzZeile('Killbilanz nach Höhenlage',hoehe,'Für die gewerteten Runden liegen noch keine zuordenbaren Höhenwerte vor.');
-  const punkte=(titel,zeichen,klasse,texte)=>`<div><b>${titel}</b><ul class="performance-liste">
+  const punkte=(titel,zeichen,klasse,texte)=>`<div class="perf-karte ${klasse}"><b>${titel}</b><ul class="performance-liste">
     ${texte.some(Boolean)?texte.filter(Boolean).map(t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`).join(''):'<li class="mut">Noch kein klares Muster.</li>'}</ul></div>`;
   const netto=kills-tode;
   const farbe=spiele.length<3?'':netto>0?'performance-positiv':netto<0?'performance-negativ':'';
@@ -1612,7 +1655,7 @@ function dmPerformance(m){
     <div class="performance-kopf"><strong class="${farbe}">${st}</strong>
       ${spiele.length?waffenKennzahlen([['Runden',spiele.length],['Kills',kills],['Tode',tode],['Bilanz',netto>0?'+'+netto:netto]]):'<span class="mut">Noch keine Runden mit Kill-/Todesdaten.</span>'}
       ${trend}</div>
-    <div class="waffen-gruppen">
+    <div class="perf-karten">
     ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst klar mehr Kills als Tode, wenn du ${esc(besteHoehe.lage)} stehst.${fall(besteHoehe)}`:'',positionsStaerke,
       besteKarte?`${esc(besteKarte.name)} liegt dir.${rundenTxt(besteKarte)}`:'',besterModus?`Im Modus ${esc(besterModus.name)} bist du stark.${rundenTxt(besterModus)}`:'',
       besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du die beste Bilanz.${fall(besterGegner)}`:'',...vgPlus])}
@@ -1621,7 +1664,7 @@ function dmPerformance(m){
       schwersterGegner?`${GT(schwersterGegner.name,'dm')} ist dein schwerster Gegner.${fall(schwersterGegner)}`:'',ursacheTxt,...vgMinus])}
     </div>${vgTabelle}${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer.</small><br>
-    <small class="mut">Stärken und Schwächen gibt es ab 3 gewerteten Runden und nur bei klarem Abstand: mindestens 60 % Kills (bzw. Tode) bei mindestens 5 Duellen, bei Karten und Modi ab 2 Runden oder 10 Duellen. Der Trend vergleicht die K/D der letzten Runden mit den Runden davor (ab 0,1 Unterschied).</small><br>
+    <small class="mut">Stärken und Schwächen gibt es ab 3 gewerteten Runden und nur bei klarem Abstand: mindestens 60 % Kills (bzw. Tode) bei mindestens 5 Duellen oder 55 % bei mindestens 30 Duellen, bei Karten und Modi ab 2 Runden oder 10 Duellen. Der Trend vergleicht die K/D der letzten Runden mit den Runden davor (ab 0,1 Unterschied).</small><br>
     ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}<br><small class="mut">Distanz, Höhe und Bewegung beziehen sich auf die erfassten Duelle aus gewerteten Runden.</small></section>`;
 }
 let infoNummer=0;
