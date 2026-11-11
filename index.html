@@ -1540,8 +1540,8 @@ function dmPerformance(m){
   const fall=x=>` <span class="mut">(${x.k} Kills / ${x.t} Tode)</span>`;
   const istStark=(x,min=5)=>genug&&x.k+x.t>=min&&quote(x)>=0.6;
   const istSchwach=(x,min=5)=>genug&&x.k+x.t>=min&&quote(x)<=0.4;
-  const besteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>(quote(b)-quote(a))||((b.k-b.t)-(a.k-a.t)))[0];
-  const schlechtesteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>(quote(a)-quote(b))||((a.k-a.t)-(b.k-b.t)))[0];
+  const besteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>((b.k-b.t)-(a.k-a.t))||(quote(b)-quote(a)))[0];
+  const schlechtesteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>((a.k-a.t)-(b.k-b.t))||(quote(a)-quote(b)))[0];
   const top=(m.waffen||[]).find(x=>x[1]>0);
   const verlust=(m.tode_waffen||[]).find(x=>x[1]>0);
   const fein=distanz4(m.distanzbilanz,m.nah_fein);
