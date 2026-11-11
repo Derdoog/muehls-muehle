@@ -1319,8 +1319,9 @@ function podestKartenRivalen(m){
   const spezial=(m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)
     ?`<p class="mut">${m.kopfgeld_kills||0} Kopfgelder · ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0} Juggernauts erlegt</p>`:'';
   const saison=(m.saisons||[]).map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)} · Platz ${s[1]}</span>`).join(' ');
+  const erreicht=[...(m.haupt||[]),...(m.stil||[])].filter(e=>e.stufe);
   return `<section class="panel stat-podest-panel"><div class="stat-podest">${[['Podest',0,3,' stat-platz'],['Karte & Modus',3,5,' stat-karte'],['Rivalen',5,8,'']].map(([titel,von,bis,klasse])=>
-    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}${saison?`<div class="stat-saison"><h5>Saisonplatzierungen</h5>${saison}</div>`:''}</section>`;
+    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}${saison?`<div class="stat-saison"><h5>Saisonplatzierungen</h5>${saison}</div>`:''}${erreicht.length?`<div class="stat-saison"><h5>Erreichte Erfolge</h5><div class="bgs">${erreicht.map(e=>badgeKarte(e,'dm')).join('')}</div></div>`:''}</section>`;
 }
 document.addEventListener('click',e=>{
   const spieler=e.target.closest('[data-stat-rivale]');
