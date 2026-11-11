@@ -131,6 +131,18 @@
   .serverleiste .status{justify-content:center;margin:0;text-align:center}
   .serverleiste #sStatus[hidden],#dMatchAktion:empty{display:none}
   #dMatchAktion button{width:100%;height:100%;color:var(--acc2);cursor:pointer}
+  .dm-wertung{container-type:inline-size}
+  .dm-kompakt{display:none}
+  .dm-spieler{padding:8px 0;border-bottom:1px solid var(--line);overflow-wrap:anywhere}
+  .dm-spieler-kopf{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:baseline}
+  .dm-spieler-werte{display:flex;flex-wrap:wrap;gap:3px 12px;margin-top:4px}
+  .dm-spieler .lvbar{margin-top:6px;max-width:100%}
+  @container (max-width:560px){
+    .dm-wertung .dm-tabelle{display:none}
+    .dm-kompakt{display:block}
+    .dm-wertung .rh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px}
+    .dm-wertung .rh>span:first-child{grid-column:1/-1}
+  }
   #dr-wertung table{table-layout:fixed}
   #dr-wertung :is(th,td){white-space:normal;overflow-wrap:anywhere}
   #dElo :is(th,td):first-child{width:34%}
@@ -335,7 +347,7 @@ nav button{min-width:0}
     <div class="dr" id="dr-live">
     <div class="zwei">
       <div class="panel"><h3>🎯 Killfeed</h3><div id="dKf" class="kf"></div></div>
-      <div class="panel scroll"><h3>Stand dieser Runde</h3><table id="dStand"></table></div>
+      <div class="panel dm-wertung"><h3>Stand dieser Runde</h3><div id="dStand"></div></div>
     </div>
     <div id="dRunde"></div>
     <div class="panel" id="dVote" hidden></div>
@@ -343,11 +355,11 @@ nav button{min-width:0}
     </div>
     <div class="dr" id="dr-matches" hidden>      <div class="panel"><h3>📜 Letzte Runden</h3><div id="dRunden"></div><div class="mut" style="margin-top:6px">Auf eine Runde tippen für Top 10, weitesten Kill und längste Leben.</div></div></div>
     <div class="dr" id="dr-wertung" hidden>
-      <div class="panel scroll"><h3>🏆 Elo-Wertung über alle Runden</h3><table id="dElo"></table>
+      <div class="panel dm-wertung"><h3>🏆 Elo-Wertung über alle Runden</h3><div id="dElo"></div>
         <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil. Gewertet werden nur Runden mit mindestens 2 Spielern.</div></div>
-      <div class="panel"><h3>🏛 Ruhmeshalle Deathmatch</h3><div id="dRuhm"></div></div>
-    <div class="panel scroll"><h3>⭐ Deathmatch-Level</h3><div id="dLevel"></div></div>
-    <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
+      <div class="panel dm-wertung"><h3>🏛 Ruhmeshalle Deathmatch</h3><div id="dRuhm"></div></div>
+    <div class="panel dm-wertung"><h3>⭐ Deathmatch-Level</h3><div id="dLevel"></div></div>
+    <div class="panel dm-wertung"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
     </div>
     <div class="dr" id="dr-waffen" hidden>    <div class="panel scroll"><h3>🔫 Waffen-Rangliste (alle Spieler)</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div></div>
     <div class="dr" id="dr-karten" hidden>      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div></div>
@@ -466,6 +478,10 @@ const STAND_KOPF='<tr><th>Spieler</th><th>Punkte</th><th>Kills</th><th>Tode</th>
 const standZeile=(s,i,m)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0],'dm')}</span>${TT(s[0])}${m.kopfgeld===s[0]?' 💰':''}${(m.juggernaut||[]).includes(s[0])?' 🛡️':''}</td><td><b>${s[3]??s[1]}</b></td><td>${s[1]}</td><td>${s[2]}</td></tr>`;
 const ELO_KOPF='<tr><th>Spieler</th><th>Elo</th><th>Kills</th><th>Tode</th><th title="Kills geteilt durch Tode"><span class="lang">Kills pro Tod</span><span class="kurz">K/D</span></th><th class="nm">Siege</th><th class="nm">Beste Serie</th></tr>';
 const eloZeile=(s,i)=>`<tr><td><b class="name" data-dm="${esc(s.name)}">${i+1}. ${GT(s.name,'dm')}</b>${TT(s.name)}</td><td><b>${s.elo}</b></td><td>${s.kills}</td><td>${s.tode}</td><td>${s.kd}</td><td class="nm">${s.siege}</td><td class="nm">${s.beste_serie}</td></tr>`;
+const dmSpieler=(name,i,wert,details,extras='',fortschritt='')=>
+  `<div class="dm-spieler"><div class="dm-spieler-kopf"><div><b class="name" data-dm="${esc(name)}">${i+1}. ${GT(name,'dm')}</b>${extras}</div><strong>${wert}</strong></div>
+  ${fortschritt}<div class="dm-spieler-werte mut">${details.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`;
+const dmWertung=(tabelle,kompakt)=>`<div class="dm-tabelle">${tabelle}</div><div class="dm-kompakt">${kompakt}</div>`;
 const SIEGER=gt=>`<div class="sieger">🏆 ${GT(gt,'dm')} 🏆</div>`;
 const prKopf=(n,unter,w)=>`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px">${RB(w||'dm',n)}${KS(n)&&KS(n).sym?esc(KS(n).sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${TT(n)}</h2><div class="mut">${unter}</div></div>`;
 function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
@@ -518,8 +534,16 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   try{cmPanel(m.custom)}catch(e){console.error(e)}
   $('#dKf').innerHTML=!m.laeuft?'<div class="mut">Keine Runde aktiv.</div>':(!m.killfeed_an?'<div class="mut">Killfeed ist gerade aus.</div>':
     (m.kills.map(kfZeile).join('')||'<div class="mut">Noch keine Kills in dieser Runde.</div>'));
-  $('#dStand').innerHTML=m.stand.length?STAND_KOPF+m.stand.map((s,i)=>standZeile(s,i,m)).join(''):'<tr><td class="mut">–</td></tr>';
-  $('#dElo').innerHTML=m.elo.length?ELO_KOPF+m.elo.map(eloZeile).join(''):'<tr><td class="mut">Noch keine gewertete Runde.</td></tr>';
+  $('#dStand').innerHTML=m.stand.length?dmWertung(
+    '<table>'+STAND_KOPF+m.stand.map((s,i)=>standZeile(s,i,m)).join('')+'</table>',
+    m.stand.map((s,i)=>dmSpieler(s[0],i,(s[3]??s[1])+' P.',[s[1]+' Kills',s[2]+' Tode'],
+      TT(s[0])+(m.kopfgeld===s[0]?' 💰':'')+((m.juggernaut||[]).includes(s[0])?' 🛡️':''))).join('')
+  ):'<div class="mut">Noch keine Punkte in dieser Runde.</div>';
+  $('#dElo').innerHTML=m.elo.length?dmWertung(
+    '<table>'+ELO_KOPF+m.elo.map(eloZeile).join('')+'</table>',
+    m.elo.map((s,i)=>dmSpieler(s.name,i,s.elo+' Elo',[s.kills+' Kills',s.tode+' Tode','K/D '+s.kd,
+      s.siege+' Siege','Serie '+s.beste_serie],TT(s.name))).join('')
+  ):'<div class="mut">Noch keine gewertete Runde.</div>';
   $('#dRunden').innerHTML=m.runden.map((r,ri)=>`<details class="rd" ${OFFEN.has(r.start||r.ende)?'open':''} data-rd="${r.start||r.ende}"><summary><div class="mitte"><b>${esc(r.karte)} · ${esc(r.modus)}</b><span class="mut">${uhr(r.start||r.ende)} · ${Math.round((r.ende-(r.start||r.ende))/60)} min · ${r.spieler} Spieler · ${r.kills} Kills</span>
     <span class="mut" style="display:block">${r.stand.slice(0,3).map((s,i)=>['🥇','🥈','🥉'][i]+' '+esc(s[0])+' '+(r.punkte&&s[0] in r.punkte?r.punkte[s[0]]+' P · ':'')+s[1]+'/'+s[2]).join('  ')}</span>${(r.erfolge||[]).length?`<span class="mut rerf">🏅 ${r.erfolge.slice(0,3).map(x=>esc(x[0])+': '+esc(x[3])).join(' · ')}${r.erfolge.length>3?' · +'+(r.erfolge.length-3)+' weitere':''}</span>`:''}</div></summary>
     <div class="rdin">${r.bild?`<img class="arena klein" src="${esc(r.bild)}" alt="" loading="lazy">`:''}<div class="scroll"><table><tr><th>Platz</th><th>Punkte</th><th>Kills</th><th>Tode</th></tr>${r.stand.map((s,i)=>`<tr><td>${i+1}. <span class="name" data-dm="${esc(s[0])}">${GT(s[0],'dm')}</span></td><td>${r.punkte&&s[0] in r.punkte?r.punkte[s[0]]:s[1]}</td><td>${s[1]}</td><td>${s[2]}</td></tr>`).join('')}</table></div>
@@ -891,7 +915,9 @@ function levelPanels(d){const L=d.level||{};
   const sb=d.siegerbanner;if(sb&&sb.gt)$('#banner').insertAdjacentHTML('beforeend',SIEGER(sb.gt));
   const tab=(rows,w)=>rows.length?`<table><tr><th>#</th><th>Spieler</th><th>Level</th><th>Rang</th><th class="nm">XP</th>${w==='pve'?'<th class="nm">Bestes Leben</th>':'<th class="nm">Runden</th>'}</tr>${rows.slice(0,25).map((x,i)=>`<tr><td>${i+1}</td><td><b class="name" ${w==='pve'?'data-n':'data-dm'}="${esc(x.name)}">${GT(x.name,w)}</b></td><td><b>${x.level}</b>${x.prestige?' ⭐×'+x.prestige:''}<div class="lvbar" style="width:60px"><i style="width:${x.prozent||0}%"></i></div></td><td>${esc(RGL(w)[RGI(w,x.level)][1])}</td><td class="nm">${x.xp}</td><td class="nm">${w==='pve'?'Level '+(x.best||0):(x.runden||0)}</td></tr>`).join('')}</table>`:'<div class="mut">Noch niemand.</div>';
   const pl=$('#pLevel');if(pl)pl.innerHTML=tab(L.pve||[],'pve')+'<div class="mut" style="margin-top:6px">XP fürs Überleben, Laufen, Bauen, Zombie-Treffer und Schätze. Beim Tod geht es zurück auf Level 0. Je Level-Aufstieg 0,50 ₽, je Charakter nur einmal: nach dem Tod erst wieder ab dem bisher höchsten Level.</div>';
-  const dl=$('#dLevel');if(dl)dl.innerHTML=tab(L.dm||[],'dm')+'<div class="mut" style="margin-top:6px">XP aus gewerteten Runden: Punkte, Kopfschüsse, Teilnahme, Podest und Erfolge. Das Level bleibt. Je Level-Aufstieg 0,50 ₽.</div>'}
+  const dl=$('#dLevel');if(dl)dl.innerHTML=((L.dm||[]).length?dmWertung(tab(L.dm,'dm'),L.dm.slice(0,25).map((x,i)=>
+    dmSpieler(x.name,i,'Level '+x.level+(x.prestige?' ⭐×'+x.prestige:''),[RGL('dm')[RGI('dm',x.level)][1],x.xp+' XP',(x.runden||0)+' Runden'],'',
+      `<div class="lvbar" style="width:100px"><i style="width:${x.prozent||0}%"></i></div>`)).join('')):tab([],'dm'))+'<div class="mut" style="margin-top:6px">XP aus gewerteten Runden: Punkte, Kopfschüsse, Teilnahme, Podest und Erfolge. Das Level bleibt. Je Level-Aufstieg 0,50 ₽.</div>'}
 function levelZeichnen(d){const el=$('#mr-level');if(!el)return;const s=d.shop||{},L=s.level;
   if(!L){el.innerHTML='<div class="panel"><h3>⭐ Level</h3><div class="mut">Gerade nicht verfügbar.</div></div>';return}
   const R=(L.raenge||[]).map((r,i,a)=>`<span class="chip">${r[0]}${i<a.length-1?'–'+(a[i+1][0]-1):'+'}: ${esc(r[1])}</span>`).join(' ');
