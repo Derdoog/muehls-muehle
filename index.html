@@ -175,6 +175,10 @@
   .stat-podest-kachel small{color:var(--acc2)}
   .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
   @media(max-width:950px){.stat-podest{grid-template-columns:minmax(0,1fr);gap:8px}}
+  .waffen-basis .schaden-vergleich{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline}
+  .schaden-vergleich meter{grid-column:1/-1;width:100%;height:9px;accent-color:var(--acc2)}
+  .schaden-vergleich meter::-webkit-meter-bar{background:var(--line2);border:0}
+  .schaden-vergleich meter::-webkit-meter-optimum-value{background:var(--acc2)}
   .bewegung-kontext{margin:12px 0}
   .bewegung-raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,270px),1fr));gap:8px;align-items:start}
   .bewegung-karte{min-width:0;padding:10px 12px;background:var(--panel2);border:1px solid var(--line2)}
@@ -782,13 +786,23 @@ const WOBO_WAFFEN={
 function woboWaffendaten(waffe, nummer){
   const daten=WOBO_WAFFEN[waffe.toLowerCase()];
   if(!daten)return '';
-  return `<section class="waffen-gruppe"><h4>DayZ-Waffendaten</h4>${daten.map(([munition,rate,health,schock,reichweite,url])=>`
+  const bild=WB?.[waffe.toLowerCase()];
+  const kategorie=Object.entries(WAFFEN_KATEGORIEN).find(([,bilder])=>bilder.includes(bild));
+  const vergleich=kategorie?Object.entries(WOBO_WAFFEN)
+    .filter(([name])=>kategorie[1].includes(WB?.[name])).flatMap(([,werte])=>werte):[];
+  const maximum=[3,4].map(i=>Math.max(0,...vergleich.map(werte=>werte[i]??0)));
+  const schaden=(titel,wert,max)=>{
+    const prozent=wert!=null&&max>0?100*wert/max:null;
+    return `<div class="schaden-vergleich"><dt>${titel}</dt><dd>${wert==null?'–':nummer(wert)+' pro Schuss'}${prozent==null?'':' · '+nummer(prozent)+' %'}</dd>
+      ${prozent==null?'':`<meter min="0" max="100" value="${prozent}" aria-label="${titel} im Vergleich zur Kategorie"></meter>`}</div>`;
+  };
+  return `<section class="waffen-gruppe"><h4>DayZ-Waffendaten</h4>${kategorie?`<p class="mut">${esc(kategorie[0])} · 100 % = höchster hinterlegter Basisschaden je Schadensart.</p>`: ''}${daten.map(([munition,rate,health,schock,reichweite,url])=>`
     <details class="wobo-munition" ${daten.length===1?'open':''}>
       <summary><strong>${esc(munition)}</strong></summary>
       <dl class="waffen-basis">
         <div><dt>Feuerrate</dt><dd>${rate===null?'–':nummer(rate)+' Schuss/min'}</dd></div>
-        <div><dt>Health-Basisschaden</dt><dd>${health===null?'–':nummer(health)+' pro Schuss'}</dd></div>
-        <div><dt>Schock-Basisschaden</dt><dd>${schock===null?'–':nummer(schock)+' pro Schuss'}</dd></div>
+        ${schaden('Health-Basisschaden',health,maximum[0])}
+        ${schaden('Schock-Basisschaden',schock,maximum[1])}
         <div><dt>Geschätzte Reichweite</dt><dd>${reichweite===null?'–':'ca. '+nummer(reichweite)+' m ohne Aufsätze'}</dd></div>
       </dl><a href="${esc(url)}">Quelle: WOBO</a>
     </details>`).join('')}</section>`;
