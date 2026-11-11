@@ -1276,12 +1276,13 @@ function duelBilanz(titel,werte,namen,leer){
     ?waffenKennzahlen(werte.map(([k,t],i)=>[namen[i],k+' K / '+t+' T']))
     :`<p class="mut">${leer}</p>`}</section>`;
 }
+const positionsAnteil=(zahl,gesamt)=>gesamt?Math.round(100*zahl/gesamt)+' %':'–';
 function gehaltenePosition(werte){
   if(!werte?.some(([,gesamt])=>gesamt))return '<p class="mut">Für die Auswertung gehaltener Positionen fehlen zeitlich verteilte Positionspunkte.</p>';
   const [[k,kg],[t,tg]]=werte;
   return `<h5>Gehaltene Positionen ${statistikInfo('Mindestens drei Messzeitpunkte in den 30 Sekunden bis zum Kill, über mindestens 20 Sekunden verteilt. Höchstens 5 m gemessene Bewegung zählen als gehaltene Position.')}</h5>
-    ${waffenKennzahlen([['Eigene Kills aus gehaltener Position',kg?k+' von '+kg:'–'],['Tode gegen Gegner in gehaltener Position',tg?t+' von '+tg:'–']])}
-    <small class="mut">Anteile beziehen sich auf auswertbare Kills bzw. Tode.</small>`;
+    ${waffenKennzahlen([['Eigene Kills aus gehaltener Position',positionsAnteil(k,kg)],['Tode gegen Gegner in gehaltener Position',positionsAnteil(t,tg)]])}
+    <small class="mut">Anteile beziehen sich auf auswertbare Kills bzw. Tode. In der Gesamtbewertung erscheint ein Hinweis ab fünf auswertbaren Fällen, wenn mindestens die Hälfte auf gehaltene Positionen entfällt.</small>`;
 }
 function zeigeMatch(index,liste){
   if(!matchDialog){
@@ -1344,6 +1345,11 @@ function dmPerformance(m){
   const hoehe=(m.hoehenbilanz||[]).map(([k,t],i)=>({name:hoehenNamen[i],k,t}));
   const besteHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
   const schwacheHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
+  const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
+  const positionsStaerke=messbareKills>=5&&gehaltenKills>=Math.ceil(messbareKills/2)
+    ?`Aus gehaltener Position: ${positionsAnteil(gehaltenKills,messbareKills)} der auswertbaren Kills. `:'';
+  const positionsTipp=messbareTode>=5&&gehaltenTode>=Math.ceil(messbareTode/2)
+    ?`Bei ${positionsAnteil(gehaltenTode,messbareTode)} der auswertbaren Tode hielt der Gegner seine Position. Beim Vorrücken erst aus Deckung die naheliegenden Winkel prüfen. `:'';
   const hoehenText=x=>`${esc(x.name)}: ${x.k} Kills, ${x.t} Tode.`;
   const bilanzZeile=(titel,werte,leer='')=>werte.some(x=>x.k||x.t)
     ?`<h5>${titel}</h5>${waffenKennzahlen(werte.map(x=>[x.name,x.k+' Kills / '+x.t+' Tode']))}`
@@ -1353,8 +1359,8 @@ function dmPerformance(m){
   return `<section class="waffen-gruppe"><h4>Performance</h4><strong>${st}</strong>
     <p class="mut">${spiele.length?`Letzte ${spiele.length} Runden mit Kill-/Todesdaten · ${kills} Kills · ${tode} Tode`:'Noch keine Runden mit Kill-/Todesdaten.'}</p>${trend}
     <div class="waffen-gruppen">
-    <div><b>Stärken</b><p>${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?esc(staerke.name)+': positive Bilanz. ':''}${top?`Meiste Kills mit ${esc(top[0])} (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Weitester Kill: ${m.weitester} m.`:''}</p></div>
-    <div><b>Verbesserungspotenzial</b><p>${schwacheHoehe?hoehenText(schwacheHoehe)+' ':''}${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
+    <div><b>Stärken</b><p>${positionsStaerke}${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?esc(staerke.name)+': positive Bilanz. ':''}${top?`Meiste Kills mit ${esc(top[0])} (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Weitester Kill: ${m.weitester} m.`:''}</p></div>
+    <div><b>Verbesserungspotenzial</b><p>${positionsTipp}${schwacheHoehe?hoehenText(schwacheHoehe)+' ':''}${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
     </div>${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
     ${gehaltenePosition(m.position_gehalten)}<br><small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
