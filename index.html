@@ -205,6 +205,7 @@
   .performance-liste li{display:grid;grid-template-columns:1em minmax(0,1fr);gap:6px}
   .performance-liste .plus{color:#8fd16a}
   .performance-liste .minus{color:#e8775f}
+  .pve-mitspieler{grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr))}
   .stat-uebersicht{display:grid;gap:12px;min-width:0}
   .stat-uebersicht>.panel{margin:0;padding:clamp(12px,2vw,20px)}
   .stat-uebersicht>.panel h4{margin:0 0 10px;color:var(--acc2)}
@@ -1466,6 +1467,26 @@ function statistikInfo(text){
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v2"/></svg></button>
     <span id="${id}" class="stat-info-text" role="tooltip">${esc(text)}</span></span>`;
 }
+function pveUebersichtExtras(v,d){
+  const meilen=(v?.erfolge||[]).filter(e=>e.erreicht);
+  const stil=(v?.stil||[]).filter(e=>Number(e.stufe)>0||Number(e.n)>0);
+  const eigene=new Set([v?.name,...(v?.zusammen||[]),...(d.pve_gamertags||[])].filter(Boolean).map(n=>String(n).toLowerCase()));
+  const spieler=[...(D?.pve?.spieler||[])].filter(x=>!eigene.has(x.name.toLowerCase()))
+    .sort((a,b)=>Number(!!b.online)-Number(!!a.online)||a.name.localeCompare(b.name,'de'));
+  const erfolge=v?uebersichtPanel('Das hast du erreicht',
+    meilen.length||stil.length?`<div class="bgs">${meilen.map(meilenKarte).join('')}${stil.map(e=>badgeKarte(e,'pve')).join('')}</div>`
+      :'<p class="mut">Für diese Charakterauswahl sind noch keine PvE-Erfolge erfasst.</p>'):'';
+  const mitspieler=uebersichtPanel('Andere PvE-Spieler',spieler.length
+    ?`<div class="stat-podest pve-mitspieler">${spieler.map(x=>`<div class="stat-podest-kachel">
+      <button type="button" class="name" data-stat-pve="${esc(x.name)}">${GT(x.name,'pve')}</button>
+      <span class="mut">${x.online?'Online · ':''}${dauer(x.spielzeit||0)} Spielzeit</span></div>`).join('')}</div>`
+    :'<p class="mut">Noch keine weiteren PvE-Spieler erfasst.</p>');
+  return erfolge+mitspieler;
+}
+document.addEventListener('click',e=>{
+  const spieler=e.target.closest('[data-stat-pve]');
+  if(spieler&&D)profil(spieler.dataset.statPve);
+});
 function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gold und Platin werden zunehmend schwieriger. Platin kann mehrfach erreicht werden.');
   const keinDm=`<div class="mut">Dir ist noch kein Deathmatch-Gamertag zugeordnet${d.dm_gamertag?' bzw. er hat noch keine gewertete Runde':''}.</div>`;
   const keinPve=`<div class="mut">${(d.pve_gamertags||[]).length?'Für diese Auswahl gibt es noch keine PvE-Daten.':'Dir ist noch kein PvE-Gamertag zugeordnet.'}</div>`;
@@ -1496,8 +1517,9 @@ function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gol
       +statistikBlock('🎯 Deine Opfer',balken(v.opfer))
       +statistikBlock('☠️ Erwischt von',balken(v.getoetet_von))
       +'</div></section>'
+      +pveUebersichtExtras(v,d)
       +(v.tage.length?`<section class="panel"><h4>📆 Letzte Tage</h4><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${v.tage.slice(0,14).map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div></section>`:'')+'</div>'
-    :`<div class="panel">${keinPve}</div>`;
+    :`<div class="stat-uebersicht"><div class="panel">${keinPve}</div>${pveUebersichtExtras(null,d)}</div>`;
   $$('#mr-uebersicht [data-statistik]').forEach(x=>{x.open=offeneStatistik.has(x.dataset.statistik)});
   // Waffen
   const waffenOffen=new Set($$('#mr-waffen details[data-eigene-waffe][open]').map(x=>x.dataset.eigeneWaffe));
