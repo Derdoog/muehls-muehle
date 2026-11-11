@@ -170,6 +170,11 @@
   .waffen-zonen meter{width:100%;accent-color:#c84d3e}
   .waffen-zonen meter::-webkit-meter-optimum-value{background:linear-gradient(90deg,#76251e,#e05d47)}
   .waffen-zonen meter::-webkit-meter-bar{background:#262720;border:0}
+  #waffenDialog[open]{display:block}
+  #waffenDialog:not([open]){display:none}
+  #waffenDialog{width:min(980px,calc(100% - 24px));padding:0;max-height:90vh}
+  #waffenDialog .waffen-modal-leiste{position:sticky;top:0;z-index:1;display:flex;gap:8px;justify-content:flex-end;padding:8px;background:var(--panel2)}
+  #waffenDialog .waffen-modal-leiste button{min-width:42px}
   .waffen-kategorie{margin-top:16px}
   .waffen-kategorie>h4{margin:0 0 6px;color:var(--acc2)}
   .waffen-detail{border-top:1px solid var(--line2);padding:clamp(10px,2vw,22px)}
@@ -802,6 +807,42 @@ const WAFFEN_KATEGORIEN={
   "Nahkampf": [],
   "Sonstige": []
 };
+let waffenDialog;
+function waffenModal(kachel){
+  const liste=kachel.closest('.waffen-liste');
+  const kacheln=[...liste.querySelectorAll('.waffen-raster>details')];
+  let index=kacheln.indexOf(kachel);
+  if(!waffenDialog){
+    waffenDialog=document.createElement('dialog');
+    waffenDialog.id='waffenDialog';
+    waffenDialog.setAttribute('aria-label','Waffendetails');
+    waffenDialog.className='waffen-raster';
+    document.body.append(waffenDialog);
+    waffenDialog.addEventListener('click',e=>{if(e.target===waffenDialog)waffenDialog.close()});
+  }
+  function zeichne(){
+    waffenDialog.innerHTML=`<div class="waffen-modal-leiste">
+      <button class="login" type="button" data-richtung="-1" aria-label="Vorherige Waffe">←</button>
+      <button class="login" type="button" data-richtung="1" aria-label="Nächste Waffe">→</button>
+      <button class="login" type="button" data-schliessen aria-label="Waffendetails schließen">✕</button>
+    </div><div class="waffen-modal-inhalt"></div>`;
+    waffenDialog.querySelector('.waffen-modal-inhalt').append(kacheln[index].querySelector('.waffen-detail').cloneNode(true));
+    waffenDialog.scrollTop=0;
+    waffenDialog.querySelector('[data-schliessen]').onclick=()=>waffenDialog.close();
+    waffenDialog.querySelectorAll('[data-richtung]').forEach(b=>{
+      const richtung=Number(b.dataset.richtung);
+      b.disabled=index+richtung<0||index+richtung>=kacheln.length;
+      b.onclick=()=>{index+=richtung;zeichne();waffenDialog.querySelector(`[data-richtung="${richtung}"]:not(:disabled)`)?.focus()};
+    });
+    waffenDialog.querySelectorAll('[data-dm]').forEach(b=>b.onclick=()=>{waffenDialog.close();dmProfil(b.dataset.dm)});
+  }
+  zeichne();
+  if(!waffenDialog.open)waffenDialog.showModal();
+}
+document.addEventListener('click',e=>{
+  const titel=e.target.closest('.waffen-raster>details>summary');
+  if(titel){e.preventDefault();waffenModal(titel.parentElement)}
+});
 function waffenGruppen(liste,treffer,zeile){
   const gruppen=new Map(Object.keys(WAFFEN_KATEGORIEN).map(k=>[k,[]]));
   for(const w of liste){
