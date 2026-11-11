@@ -166,6 +166,36 @@
   .ks-name-feuer{color:#ffd36b;text-shadow:0 0 4px #ff8a00,0 -2px 6px #ff4500,0 -4px 10px #c21800;animation:feuer 1.2s ease-in-out infinite alternate}
   @keyframes feuer{0%{text-shadow:0 0 4px #ff8a00,0 -2px 6px #ff4500,0 -4px 10px #c21800;color:#ffd36b}50%{text-shadow:0 0 6px #ffb000,0 -3px 9px #ff5a00,0 -6px 14px #e02000;color:#fff0b0}100%{text-shadow:0 0 3px #ff7000,0 -1px 5px #ff3000,0 -3px 8px #a01000;color:#ffc04a}}
   @media(prefers-reduced-motion:reduce){.ks-name-feuer{animation:none}}
+  /* Update 6: animierte Hintergruende, Namensfarben, Rahmen, Effekte, Clan-Tag, Abzeichen, Level */
+  .ks-hg-feuerasche{background:linear-gradient(0deg,#5a1200,#2a0800 45%,#120604);background-size:100% 220%;color:#ffe2b0;padding:1px 7px;text-shadow:0 0 4px #ff6a00;animation:u6asche 2.6s ease-in-out infinite alternate}
+  @keyframes u6asche{0%{background-position:0 0;box-shadow:inset 0 -5px 9px -4px #ff5a00}100%{background-position:0 100%;box-shadow:inset 0 -10px 14px -4px #ffa000}}
+  .ks-hg-cyber{background:linear-gradient(90deg,#0b0f2a,#3a0b4a,#0b3a4a,#0b0f2a);background-size:300% 100%;color:#9ff;padding:1px 7px;text-shadow:1px 0 #f0f,-1px 0 #0ff;animation:u6cyber 4s linear infinite}
+  @keyframes u6cyber{0%{background-position:0 0}100%{background-position:300% 0}}
+  .ks-hg-nebel{background:linear-gradient(110deg,#3e474f,#8a959c 30%,#4f5a62 55%,#9aa4aa 80%,#3e474f);background-size:250% 100%;color:#0d151c;padding:1px 7px;animation:u6nebel 9s ease-in-out infinite alternate}
+  @keyframes u6nebel{0%{background-position:0 0}100%{background-position:100% 0}}
+  .ks-name-rot{color:#ff6150}.ks-name-gruen{color:#7dff5a}.ks-name-blau{color:#7fd0ff}.ks-name-gold{color:#f2c84e}.ks-name-lila{color:#c49bff}
+  .ks-name-vl-sonne,.ks-name-vl-gift,.ks-name-vl-eis{-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent}
+  .ks-name-vl-sonne{background-image:linear-gradient(90deg,#ffcf5a,#ff7a3a,#e8406a)}.ks-name-vl-gift{background-image:linear-gradient(90deg,#d8ff5a,#4fe070,#1fb0a0)}.ks-name-vl-eis{background-image:linear-gradient(90deg,#ffffff,#9fe4ff,#4f9cf0)}
+  .ks-rahmen-bronze{box-shadow:0 0 0 2px #cd7f32}.ks-rahmen-silber{box-shadow:0 0 0 2px #c0c8d0}.ks-rahmen-tarn{box-shadow:0 0 0 2px #4d5a33,0 0 0 4px #2c3520}
+  .ks-rahmen-gold{box-shadow:0 0 0 2px #f2c84e,0 0 8px 1px rgba(242,200,78,.55)}
+  .prkopf.ks-rahmen-bronze,.prkopf.ks-rahmen-silber,.prkopf.ks-rahmen-tarn,.prkopf.ks-rahmen-gold{padding:8px 10px}
+  .ks-fx-glitch{animation:u6glitch 2.4s infinite steps(1)}
+  @keyframes u6glitch{0%,84%,100%{text-shadow:none;transform:none}86%{text-shadow:2px 0 #f0f,-2px 0 #0ff;transform:translateX(1px) skewX(-8deg)}89%{text-shadow:-2px 0 #f0f,2px 0 #0ff;transform:translateX(-1px)}92%{text-shadow:1px 1px #0f0,-1px -1px #f00;transform:skewX(6deg)}95%{text-shadow:none;transform:none}}
+  .ks-fx-glut{animation:u6glut 1.8s ease-in-out infinite alternate}
+  @keyframes u6glut{0%{box-shadow:0 0 2px 0 rgba(255,110,0,.4)}100%{box-shadow:0 0 10px 2px rgba(255,90,0,.75)}}
+  .ks-fx-frost{text-shadow:0 0 4px #bff,0 0 8px #6cf;box-shadow:inset 0 0 6px rgba(190,240,255,.55)}
+  .ks-fx-blitz{animation:u6blitz 3.2s infinite}
+  @keyframes u6blitz{0%,90%,100%{filter:none}92%{filter:brightness(2.2) drop-shadow(0 0 4px #9cf)}94%{filter:none}96%{filter:brightness(1.8) drop-shadow(0 0 3px #9cf)}}
+  @media(prefers-reduced-motion:reduce){.ks-hg-feuerasche,.ks-hg-cyber,.ks-hg-nebel,.ks-fx-glitch,.ks-fx-glut,.ks-fx-blitz{animation:none}}
+  .plak{display:inline-block;font:700 10px var(--kopf);letter-spacing:.06em;border:1px solid;padding:0 4px;margin-left:5px;vertical-align:middle;white-space:nowrap}
+  .abz{display:inline-block;font-size:10px;margin-left:5px;padding:0 4px;border:1px dashed var(--line2);vertical-align:middle;white-space:nowrap}
+  .lvbox{display:flex;gap:12px;align-items:center;margin:4px 0 10px;padding:8px 10px;background:var(--panel2);border:1px solid var(--line)}
+  .lvz{font:700 26px var(--kopf);color:var(--acc2);min-width:44px;text-align:center}
+  .lvbox>div{flex:1;min-width:0}.lvbar{height:7px;background:var(--bg2);border:1px solid var(--line2);margin:4px 0}.lvbar i{display:block;height:100%;background:linear-gradient(90deg,var(--acc),var(--acc2))}
+  .lvl{display:inline-block;font:700 10px var(--kopf);color:#141414;background:var(--acc2);padding:0 4px;margin-left:5px;vertical-align:middle}
+  .sieger{margin-bottom:12px;padding:10px 14px;text-align:center;font:700 16px var(--kopf);letter-spacing:.05em;border:1px solid var(--acc);background:linear-gradient(90deg,rgba(217,171,46,.08),rgba(217,171,46,.25),rgba(217,171,46,.08))}
+  .farben{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0}.farben label{display:inline-flex;align-items:center;gap:4px;cursor:pointer;font-size:12px}
+  .farben i{display:inline-block;width:16px;height:16px;border:1px solid var(--line2)}
   @media(max-width:760px){.buch{grid-template-columns:auto 1fr auto}.buch .saldo{display:none}.rubel{font-size:24px}}
   #mr-shop .login:disabled{opacity:.4;cursor:default}
   @media(max-width:420px){.ware{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.ware>div{padding:7px 8px}.ware .zeile{flex-wrap:wrap}.ware input{width:52px}.buch{grid-template-columns:1fr auto}.buch .dat{grid-column:1 / -1;font-size:11px;margin-top:4px}}
@@ -242,6 +272,7 @@ nav button{min-width:0}
     <div class="panel scroll"><h3>🏆 Rangliste</h3><div class="seg" id="pZeit"></div><table id="pRang"></table>
       <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil mit Erfolgen. K/D = Kills geteilt durch Tode durch Spieler.</div></div>
     <div class="panel"><h3>🏛 Ruhmeshalle PvE</h3><div id="pRuhm"></div></div>
+    <div class="panel scroll"><h3>⭐ PvE-Level <span class="mut">(gilt nur für das aktuelle Leben)</span></h3><div id="pLevel"></div></div>
     <div class="panel"><h3>📅 Termine</h3><div id="pKal"></div><div class="mut" style="margin-top:6px" id="pKalIcs"></div></div>
   </section>
   <section class="tab" id="t-dm">
@@ -261,6 +292,7 @@ nav button{min-width:0}
       <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div>
       <div class="panel"><h3>🏛 Ruhmeshalle Deathmatch</h3><div id="dRuhm"></div></div>
     </div>
+    <div class="panel scroll"><h3>⭐ Deathmatch-Level</h3><div id="dLevel"></div></div>
     <div class="panel"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
     <div class="panel scroll"><h3>🔫 Waffen-Rangliste (alle Spieler)</h3><table id="dWaffen"></table><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div>
   </section>
@@ -271,7 +303,7 @@ nav button{min-width:0}
       <div class="mr" id="mr-uebersicht"></div><div class="mr" id="mr-dm"></div><div class="mr" id="mr-pve"></div><div class="mr" id="mr-waffen"></div>
       <div class="mr" id="mr-erfolge"></div>
       <div class="mr" id="mr-karte"><div class="panel"><h3>🗺 Meine Karte (PvE Chernarus)</h3><div id="mKarte"></div><div class="mut" id="mr-karte-text" style="margin-top:8px"></div><div id="mr-heat" style="margin-top:12px"></div></div></div>
-      <div class="mr" id="mr-titel"></div><div class="mr" id="mr-shop"></div>
+      <div class="mr" id="mr-titel"></div><div class="mr" id="mr-shop"></div><div class="mr" id="mr-level"></div>
     </div>
   </section>
 </main>
@@ -286,10 +318,15 @@ const uhr=t=>{const d=new Date(t*1000),h=new Date(),hm=d.toLocaleTimeString('de-
 const vor=t=>{if(!t)return '–';const s=Date.now()/1000-t;return s<120?'gerade eben':s<3600?`vor ${Math.round(s/60)} min`:s<86400?`vor ${Math.round(s/3600)} h`:`vor ${Math.round(s/86400)} T.`};
 const ICON={kill:'🎯',tod:'✝️',verbindung:'🔌',bewusstlos:'😵',erfolg:'🏅',kampflog:'⚠️'};
 const MN=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
-const TT=n=>{const t=D&&D.titel&&D.titel[n];return t?`<span class="titel">${esc(t)}</span>`:''};
+const TT=n=>{const t=(D&&D.titel&&D.titel[n])||((D&&D.kosmetik&&D.kosmetik[n])||{}).titel_text;return t?`<span class="titel">${esc(t)}</span>`:''};
 // Update 5: Kosmetik (gekaufte Hintergründe / brennender Gamertag), Rubel-Anzeige
-const KSK=n=>{const k=D&&D.kosmetik&&D.kosmetik[n];return k?(k.hg?' ks-'+String(k.hg).replace(/_/g,'-'):'')+(k.name?' ks-'+String(k.name).replace(/_/g,'-'):''):''};
-const GT=n=>{const c=KSK(n);return c?`<span class="gt${c}">${esc(n)}</span>`:esc(n)};
+const KS=n=>(D&&D.kosmetik&&D.kosmetik[n])||null,KC=v=>v?' ks-'+String(v).replace(/_/g,'-'):'';
+const KSK=n=>{const k=KS(n);return k?KC(k.hg)+KC(k.rahmen)+KC(k.effekt):''};   // Update 6: aussen Hintergrund/Rahmen/Effekt, innen die Namensfarbe
+const KSN=n=>{const k=KS(n);return k?KC(k.name).trim():''};
+const PLK=n=>{const k=KS(n);if(!k)return '';const p=k.plakette;return (p&&/^#[0-9a-f]{6}$/i.test(p.f)?`<span class="plak" style="color:${p.f};border-color:${p.f}">${esc(p.t)}</span>`:'')+(k.abz_text?`<span class="abz">${esc(k.abz_text)}</span>`:'')};
+const GT=n=>{const k=KS(n);if(!k)return esc(n);return `<span class="gt${KSK(n)}">${k.sym?esc(k.sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span></span>${PLK(n)}`};
+const LV=(w,n)=>((D&&D.level&&D.level[w])||[]).find(x=>x.name===n);
+const LVB=(w,n,x)=>{x=x||LV(w,n);if(!x)return '';return `<div class="lvbox"><span class="lvz">${x.level}</span><div><b>${esc(x.rang)}</b> · ${w==='dm'?'Deathmatch':'PvE'}-Level ${x.level}${x.prestige?' · Prestige ⭐×'+x.prestige:''}<div class="lvbar"><i style="width:${Math.max(0,Math.min(100,x.prozent||0))}%"></i></div><span class="mut">${x.im_level} / ${x.bis} XP bis Level ${Math.min(50,x.level+1)}${w==='pve'?' · gilt nur für dieses Leben'+(x.best?', bestes Leben: Level '+x.best:''):''}</span></div></div>`};
 const RUB=k=>{k=Math.round(+k||0);return (k<0?'-':'')+Math.floor(Math.abs(k)/100)+','+String(Math.abs(k)%100).padStart(2,'0')+' ₽'};
 // Update 4: Waffenbilder (lokal vom eigenen Server)
 let WB=null;const wbild=w=>{const f=WB&&WB[String(w||'').toLowerCase()];return f?`<img class="wimg" src="/zuschauer/waffe/${encodeURIComponent(f)}" alt="" loading="lazy" onerror="this.onerror=null;this.removeAttribute('src');this.className='wimg leer'">`:'<span class="wimg leer" title="kein Bild"></span>'};
@@ -324,6 +361,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   statusZeichnen();
   $('#banner').innerHTML=d.banner&&d.banner.text?`<div class="hinweis" style="margin-bottom:12px">${d.banner.art==='wartung'?'🛠':'ℹ️'} ${esc(d.banner.text)}</div>`:'';
   schatzZeichnen(d);
+  try{levelPanels(d)}catch(e){console.error(e)}
   const kal=d.kalender||[],AR={dm:'⚔️',pve:'🌲',schatz:'🗝️',wartung:'🛠️',event:'🎉',neustart:'🔄'};
   $('#pKal').innerHTML=kal.map(t=>`<div class="spl"><span>${AR[t.art]||'•'}</span><div class="mitte"><b>${esc(t.titel)}</b><span class="mut">${new Date(t.start*1000).toLocaleString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}${t.text?' · '+esc(t.text):''}</span></div></div>`).join('')||'<div class="mut">Gerade keine Termine.</div>';
   $('#pKalIcs').innerHTML=DIREKT?'📆 <a href="/zuschauer/kalender.ics" style="color:inherit">Kalender abonnieren (.ics)</a>':'';
@@ -468,7 +506,7 @@ function rasterZeichnen(){if(!MK)return;MR.clearLayers();if(!MEBENE.raster)retur
 function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)return;const z=MK.getZoom();
   ORTE.forEach(o=>{const gross=['Capital','City'].includes(o[3]);if(!gross&&!(o[3]==='Village'&&z>=-3)&&!(['Camp','Local','LocalOffice','RailroadStation'].includes(o[3])&&z>=-1.5))return;
     L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
-const MREITER=[['uebersicht','📋 Übersicht'],['dm','⚔️ Deathmatch'],['pve','🌲 PvE'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['shop','🛒 Rubel-Shop']];
+const MREITER=[['uebersicht','📋 Übersicht'],['dm','⚔️ Deathmatch'],['pve','🌲 PvE'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level'],['shop','🛒 Rubel-Shop']];
 let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
 try{MREIT=localStorage.getItem('meine_reiter')||MREIT;MWAHL=localStorage.getItem('meine_char')||MWAHL}catch(e){}
 (function(){const h=decodeURIComponent(location.hash||'');const m=h.match(/^#meine(?:\/([a-z]+))?(?:\/(.+))?$/);if(m){if(m[1])MREIT=m[1];if(m[2])MWAHL=m[2]}})();
@@ -494,6 +532,7 @@ async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encod
     :d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem PvE-Server gesehen</span></div></div>`
     :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('');
   try{const ss=JSON.stringify(d.shop||null);if($('#mr-shop').dataset.sig!==ss){shopZeichnen(d);$('#mr-shop').dataset.sig=ss}}catch(e){console.error(e)}
+  try{levelZeichnen(d)}catch(e){console.error(e)}
   if(MREIT==='karte')karteZeichnen(d)}
 async function karteZeichnen(d){if(!d)return;
   if(!window.L){const c=document.createElement('link');c.rel='stylesheet';c.href='/zuschauer/leaflet.css';document.head.appendChild(c);try{await skript('/zuschauer/leaflet.js')}catch(e){$('#mKarte').innerHTML='<div class="mut" style="padding:16px">Karte konnte nicht geladen werden.</div>';return}}
@@ -655,8 +694,8 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
     <span class="mut">${esc(b.summe_text)} · ${esc(b.weg_text)}${b.ziel&&b.ziel.text?' ('+esc(b.ziel.text)+')':''} · <b style="color:var(--acc2)">${esc(b.status_text)}</b>${b.hinweis?' · '+esc(b.hinweis):''}${b.grund?' · '+esc(b.grund):''}</span>
     ${b.status==='offen'?`<button class="login" data-storno="${esc(b.id)}">Stornieren</button>`:''}</div>`).join('')):'<div class="mut">Noch keine Bestellung.</div>'}</div>
   <div class="panel"><h3>✨ Kosmetik für dein Profil</h3><div class="mut" style="margin-bottom:8px">Sichtbar in den Ranglisten, im Killfeed und in deinem Profil. Gekauft ist gekauft, wechseln kostet nichts.</div>
-    <div class="ware">${(s.kosmetik||[]).map(k=>{const hab=mk.besitz.includes(k.id),an=mk.aktiv[k.platz]===k.id;return `<div><span><span class="gt ks-${k.id.replace(/_/g,'-')}">${esc(s.gt)}</span></span><b>${esc(k.name)}</b>
-      <div class="zeile"><span class="preis">${hab?'gekauft':esc(k.preis_text)}</span>${hab?`<button class="login" data-kw="${esc(k.id)}" data-pl="${k.platz}" data-an="${an?1:0}">${an?'Ablegen':'Tragen'}</button>`:`<button class="login" data-kk="${esc(k.id)}" ${k.preis>s.stand||!s.an?'disabled':''}>Kaufen</button>`}</div></div>`}).join('')}</div></div>
+    ${kosmetikTeil(s,mk)}
+    </div>${clanTeil(s,mk)}${diensteTeil(s,mk)}
   <div class="panel"><h3>📒 Kontoauszug</h3>${(s.auszug||[]).length?`<div class="buch">${s.auszug.slice(0,60).map(x=>`<span class="mut dat">${datumB(x.t)}</span><span>${esc(x.text)}</span><span class="${x.betrag<0?'minus':'plus'}">${x.betrag>0?'+':''}${esc(x.betrag_text)}</span><span class="mut saldo">${esc(x.saldo_text||'')}</span>`).join('')}</div>`:'<div class="mut">Noch keine Buchung. Spiel eine gewertete Deathmatch-Runde!</div>'}</div>`;
   $$('#sKat [data-k]').forEach(b=>b.onclick=()=>{SKAT=b.dataset.k;shopZeichnen(d)});
   $$('#sWeg [data-w]').forEach(b=>b.onclick=()=>{SWEG=b.dataset.w;SZIEL=null;shopZeichnen(d)});
@@ -668,7 +707,54 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
     if(j){KORB={};alert('Bestellung #'+j.bestellung.id+' ist eingegangen und wartet auf die Freigabe.'+(j.bestellung.hinweis?'\n'+j.bestellung.hinweis:''));shopNeu()}};
   $$('#mr-shop [data-storno]').forEach(b=>b.onclick=async()=>{if(!confirm('Bestellung #'+b.dataset.storno+' stornieren? Du bekommst die Rubel zurück.'))return;if(await shopPost('/zuschauer/shop/stornieren',{id:b.dataset.storno}))shopNeu()});
   $$('#mr-shop [data-kk]').forEach(b=>b.onclick=async()=>{if(!confirm('Kaufen?'))return;if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'kaufen',id:b.dataset.kk})){shopNeu();laden()}});
-  $$('#mr-shop [data-kw]').forEach(b=>b.onclick=async()=>{if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'waehlen',platz:b.dataset.pl,id:b.dataset.an==='1'?'':b.dataset.kw})){shopNeu();laden()}})}
+  $$('#mr-shop [data-kw]').forEach(b=>b.onclick=async()=>{if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'waehlen',platz:b.dataset.pl,id:b.dataset.an==='1'?'':b.dataset.kw})){shopNeu();laden()}});shopExtraBinden(d)}
+// Update 6: Level-Ranglisten (DM bleibt, PvE je Leben) und Siegerbanner
+function levelPanels(d){const L=d.level||{};
+  const sb=d.siegerbanner;if(sb&&sb.gt)$('#banner').insertAdjacentHTML('beforeend',`<div class="sieger">🏆 ${GT(sb.gt)} 🏆</div>`);
+  const tab=(rows,w)=>rows.length?`<table><tr><th>#</th><th>Spieler</th><th>Level</th><th>Rang</th><th class="nm">XP</th>${w==='pve'?'<th class="nm">Bestes Leben</th>':'<th class="nm">Runden</th>'}</tr>${rows.slice(0,25).map((x,i)=>`<tr><td>${i+1}</td><td><b class="name" ${w==='pve'?'data-n':'data-dm'}="${esc(x.name)}">${GT(x.name)}</b></td><td><b>${x.level}</b>${x.prestige?' ⭐×'+x.prestige:''}<div class="lvbar" style="width:60px"><i style="width:${x.prozent||0}%"></i></div></td><td>${esc(x.rang)}</td><td class="nm">${x.xp}</td><td class="nm">${w==='pve'?'Level '+(x.best||0):(x.runden||0)}</td></tr>`).join('')}</table>`:'<div class="mut">Noch niemand.</div>';
+  const pl=$('#pLevel');if(pl)pl.innerHTML=tab(L.pve||[],'pve')+'<div class="mut" style="margin-top:6px">XP fürs Überleben, Laufen, Bauen, Zombie-Treffer und Schätze. Beim Tod geht es zurück auf Level 0. Je Level-Aufstieg 0,50 ₽, je Charakter nur einmal: nach dem Tod erst wieder ab dem bisher höchsten Level.</div>';
+  const dl=$('#dLevel');if(dl)dl.innerHTML=tab(L.dm||[],'dm')+'<div class="mut" style="margin-top:6px">XP aus gewerteten Runden: Punkte, Kopfschüsse, Teilnahme, Podest und Erfolge. Das Level bleibt. Je Level-Aufstieg 0,50 ₽.</div>'}
+function levelZeichnen(d){const el=$('#mr-level');if(!el)return;const s=d.shop||{},L=s.level;
+  if(!L){el.innerHTML='<div class="panel"><h3>⭐ Level</h3><div class="mut">Gerade nicht verfügbar.</div></div>';return}
+  const R=(L.raenge||[]).map((r,i,a)=>`<span class="chip">${r[0]}${i<a.length-1?'–'+(a[i+1][0]-1):'+'}: ${esc(r[1])}</span>`).join(' ');
+  const xd=L.xp_dm||{},xp=L.xp_pve||{};
+  el.innerHTML=`<div class="panel"><h3>⭐ Deathmatch-Level${s.gt?' · '+esc(s.gt):''}</h3>${L.dm?LVB('dm','',L.dm):'<div class="mut">Noch keine gewertete Runde.</div>'}
+    <div class="mut">XP je gewertete Runde: ${xd.punkt} je Punkt, +${xd.kopf} je Kopfschuss, +${xd.runde} fürs Mitspielen, Platz 1/2/3 +${(xd.platz||[]).join('/')}, +${xd.erfolg} je Erfolg. Deckel ${xd.max_runde} je Runde, ${xd.max_tag} je Tag.</div></div>
+  <div class="panel"><h3>⭐ PvE-Level (je Leben)</h3>${(L.pve||[]).length?L.pve.map(x=>`<h4>${esc(x.name)}</h4>${LVB('pve','',x)}<div class="mut">Bezahlt bis Level ${x.bezahlt_bis||0}: Rubel gibt es erst wieder ab Level ${(x.bezahlt_bis||0)+1}.</div>`).join(''):'<div class="mut">Für deine PvE-Charaktere gibt es noch keine Level-Daten.</div>'}
+    <div class="mut" style="margin-top:6px">XP: ${xp.liste} je 5 Minuten in Bewegung, ${xp.km} je km (höchstens ${xp.km_max_tag} km am Tag), Überleben 1/3/6/12/24 h = ${(xp.meilensteine||[]).map(m=>m[1]).join('/')}, Bauen ${xp.bau}, Platzieren ${xp.platz}, Zombie-Treffer ${xp.zombie} (höchstens ${xp.zombie_max_tag} am Tag), wieder wach ${xp.wach}, erster Login am Tag ${xp.login}, Schatz ${xp.schatz}. Beim Tod zurück auf 0.</div></div>
+  <div class="panel"><h3>🎖️ Ränge</h3><div>${R}</div><div class="mut" style="margin-top:6px">Kurve: Level n kostet 100 + 25×(n−1) XP, höchstens Level 50, danach Prestige-Sterne. Je Level-Aufstieg ${RUB(L.auszahlung||50)} (PvE je Charakter nur einmal je Level).</div></div>`}
+const KPL={hg:'🎨 Hintergrund',name:'🖋️ Namensfarbe',rahmen:'🖼️ Profilrahmen',effekt:'✨ Effekt',symbol:'💀 Killfeed-Symbol',abzeichen:'🏷️ Saison-Abzeichen',titel:'📜 Wunschtitel'};
+function kosmVorschau(k,gt){const c=' ks-'+k.id.replace(/_/g,'-');
+  if(k.platz==='name')return `<span class="gt"><span class="${c.trim()}">${esc(gt)}</span></span>`;
+  if(k.platz==='symbol')return `<span class="gt">${esc(k.symbol||'')} ${esc(gt)}</span>`;
+  if(k.platz==='titel')return `<span class="gt">${esc(gt)}</span><span class="titel">${esc(k.titel||'')}</span>`;
+  if(k.platz==='abzeichen')return `<span class="gt">${esc(gt)}</span><span class="abz">${esc(k.name.replace(/^Abzeichen /,''))}</span>`;
+  return `<span class="gt${c}"><span>${esc(gt)}</span></span>`}
+function kosmetikTeil(s,mk){const pl=[...new Set((s.kosmetik||[]).map(k=>k.platz))];
+  return pl.map(p=>`<h4>${KPL[p]||esc(p)}</h4><div class="ware">${s.kosmetik.filter(k=>k.platz===p).map(k=>{const hab=mk.besitz.includes(k.id),an=mk.aktiv[k.platz]===k.id,zu=k.kaufbar===false;
+    return `<div><span>${kosmVorschau(k,s.gt)}</span><b>${esc(k.name)}</b>${k.von?`<span class="mut">kaufbar ${esc(k.von.slice(8)+'.'+k.von.slice(5,7))}.–${esc(k.bis.slice(8)+'.'+k.bis.slice(5,7))}.</span>`:''}
+      <div class="zeile"><span class="preis">${hab?'gekauft':esc(k.preis_text)}</span>${hab?`<button class="login" data-kw="${esc(k.id)}" data-pl="${k.platz}" data-an="${an?1:0}">${an?'Ablegen':'Tragen'}</button>`:`<button class="login" data-kk="${esc(k.id)}" ${k.preis>s.stand||!s.an||zu?'disabled':''}>${zu?'Nicht jetzt':'Kaufen'}</button>`}</div></div>`}).join('')}</div>`).join('')}
+let PFARBE='gelb',RFARBE='gelb';
+function farbWahl(F,akt,name){return `<div class="farben">${Object.entries(F||{}).map(([k,h])=>`<label><input type="radio" name="${name}" value="${k}" ${k===akt?'checked':''}><i style="background:${h}"></i>${esc(k)}</label>`).join('')}</div>`}
+function clanTeil(s,mk){const p=mk.plakette,of=(mk.antraege||[]).find(a=>a.art==='plakette'),F=s.plakette_farben||{};
+  return `<div class="panel"><h3>🏷️ Clan-Tag</h3><div class="mut">Ein kurzer Tag neben deinem Namen, z. B. <span class="plak" style="color:#f2d24e;border-color:#f2d24e">[MM]</span>. 1 bis 12 Zeichen (A–Z, 0–9, Leerzeichen, [ ] - _), 8 Farben. Der Admin schaut jeden Tag an; wird er abgelehnt, bekommst du die Rubel zurück. Erstes Mal ${RUB((s.plakette_preis||[1500])[0])}, ändern ${RUB((s.plakette_preis||[0,500])[1])}.</div>
+    ${p?`<div style="margin:6px 0">Dein Clan-Tag: <span class="plak" style="color:${esc(F[p.farbe]||'#e8e8e8')};border-color:${esc(F[p.farbe]||'#e8e8e8')}">${esc(p.text)}</span> <button class="login" data-pz="${p.sichtbar===false?1:0}">${p.sichtbar===false?'Wieder zeigen':'Ausblenden'}</button></div>`:''}
+    ${of?`<div class="hinweis">⏳ „${esc(of.text)}“ wartet auf die Freigabe.</div>`:`<div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px"><input id="pkText" maxlength="12" placeholder="Clan-Tag" style="width:140px;font:inherit;padding:5px;background:var(--bg2);color:var(--text);border:1px solid var(--line2)">
+      <button class="knopf" id="pkSenden" ${!s.an||s.stand<(mk.plakette_preis||1500)?'disabled':''}>Beantragen · ${RUB(mk.plakette_preis||1500)}</button></div>${farbWahl(F,PFARBE,'pkFarbe')}`}</div>`}
+function diensteTeil(s,mk){const D_=s.dienste||{},ds=mk.doppelstimme,F=s.plakette_farben||{},heute=new Date().toLocaleDateString('sv-SE',{timeZone:'Europe/Berlin'});
+  const st={doppelstimme:ds?(ds.runde?(ds.tag===heute?'Heute schon benutzt.':''):'✅ Bereit: deine nächste Stimme auf der Webseite zählt doppelt.'):'',
+    siegerbanner:(mk.banner||[]).map(b=>'🏆 '+datumB(b.ab)+' bis '+datumB(b.bis)).join('<br>'),
+    discord_rolle:mk.rolle&&mk.rolle.bis?'Aktiv bis '+datumB(mk.rolle.bis):((mk.antraege||[]).some(a=>a.art==='rolle')?'⏳ wartet auf den Admin':'')};
+  return `<div class="panel"><h3>🛠️ Dienste</h3><div class="ware">${Object.entries(D_).map(([id,v])=>`<div><b>${esc(v[0])}</b>${st[id]?`<span class="mut">${st[id]}</span>`:''}
+    ${id==='discord_rolle'?farbWahl(F,RFARBE,'rlFarbe'):''}<div class="zeile"><span class="preis">${RUB(v[1])}</span><button class="login" data-dn="${id}" ${v[1]>s.stand||!s.an?'disabled':''}>Kaufen</button></div></div>`).join('')}</div>
+    <div class="mut">Doppelte Stimme: einmal am Tag, gilt für die nächste Abstimmung, nur angemeldet auf der Webseite (nicht über Discord). Siegerbanner: 24 Stunden dein Name oben auf der Seite, Warteschlange bis 6. Discord-Rolle: der Admin vergibt sie von Hand für 30 Tage.</div></div>`}
+function shopExtraBinden(d){
+  $$('#mr-shop input[name=pkFarbe]').forEach(i=>i.onchange=()=>PFARBE=i.value);$$('#mr-shop input[name=rlFarbe]').forEach(i=>i.onchange=()=>RFARBE=i.value);
+  const pk=$('#pkSenden');if(pk)pk.onclick=async()=>{const t=($('#pkText').value||'').trim();if(!t)return alert('Bitte einen Clan-Tag eingeben');
+    if(!confirm('Clan-Tag „'+t+'“ beantragen? Die Rubel werden reserviert, bei Ablehnung bekommst du sie zurück.'))return;
+    if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'plakette',text:t,farbe:PFARBE})){alert('Eingegangen. Der Admin gibt ihn frei.');shopNeu()}};
+  $$('#mr-shop [data-pz]').forEach(b=>b.onclick=async()=>{if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'plakette_zeigen',an:b.dataset.pz==='1'})){shopNeu();laden()}});
+  $$('#mr-shop [data-dn]').forEach(b=>b.onclick=async()=>{if(!confirm('Kaufen?'))return;if(await shopPost('/zuschauer/shop/kosmetik',{aktion:'dienst',id:b.dataset.dn,farbe:RFARBE})){shopNeu();laden()}})}
 function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R.punkte,E=R.elo,S=R.shop||{},g=P.distanz_grenzen,dp=P.distanz_punkte;
   const zeile=(a,b)=>`<tr><td>${a}</td><td><b>${b}</b></td></tr>`;
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 8px">❓ Regeln &amp; Punkte</h2>
@@ -707,7 +793,7 @@ function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile
     if(pr.karte_fav)z.push(['🗺 Lieblingskarte',pr.karte_fav[0]+' ('+pr.karte_fav[1]+'×)']);if(pr.modus_fav)z.push(['🎲 Lieblingsmodus',pr.modus_fav[0]+' ('+pr.modus_fav[1]+'×)']);
     if(pr.nemesis)z.push(['😈 Nemesis',pr.nemesis[0]+' ('+pr.nemesis[1]+'× erwischt)']);if(pr.opfer)z.push(['🎯 Lieblingsopfer',pr.opfer[0]+' ('+pr.opfer[1]+'×)']);if(pr.rivale)z.push(['⚔️ Rivale',pr.rivale[0]+' · '+pr.rivale[1]+' : '+pr.rivale[2]])}
   const ED=D.dm.erfolge_def||{},hab={};(pr.erfolge||[]).forEach(e=>hab[e[0]]=e[1]);const fs=pr.fortschritt||{};
-  const ueb=`${s?kach([[s.elo,'Elo'],[s.kd,'Kills pro Tod'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']]):''}${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}
+  const ueb=`${LVB('dm',n)}${s?kach([[s.elo,'Elo'],[s.kd,'Kills pro Tod'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.siege+' / '+s.runden,'Siege / Runden']]):''}${z.map(([a,b])=>`<div class="rh"><span>${a}</span><b>${esc(b)}</b></div>`).join('')}
     ${(pr.elo_verlauf||[]).length>1?`<h4>📈 Elo-Verlauf</h4>${eloBild(pr.elo_verlauf.map((x,i)=>[i,x]))}`:''}
     ${(pr.saisons||[]).length?`<h4>👑 Saisons</h4>${pr.saisons.map(x=>`<span class="chip">${MN[+x[0].slice(5)-1]} ${x[0].slice(0,4)}: Platz ${x[1]}</span>`).join('')}`:''}`;
   const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table></div>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
@@ -715,19 +801,19 @@ function dmProfil(n){const s=(D.dm.elo||[]).find(x=>x.name===n),pr=(D.dm.profile
   const erf=`<h4>🏅 DM-Haupterfolge (${HP.filter(x=>x.stufe).length} von ${HP.length})</h4><div class="bgs">${HP.map(x=>badgeKarte(x,'dm')).join('')}</div>
     <h4>🎖 DM-Stil-Erfolge</h4><div class="bgs">${stilOeff(D.dm.stil_def,s&&s.stil).map(x=>badgeKarte(x,'dm')).join('')}</div>`;
   const run=rn.length?rn.map(({r,i})=>`<div class="mut">${uhr(r.start||r.ende)} · ${esc(r.karte)} · ${esc(r.modus)}: <b style="color:var(--text)">Platz ${i+1}</b> von ${r.spieler}, ${r.stand[i][1]} Kills / ${r.stand[i][2]} Tode · <a href="/zuschauer/runde/${r.id}" style="color:inherit">ansehen</a></div>`).join(''):'<div class="mut">Keine Runde in der letzten Zeit.</div>';
-  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px"><span class="${KSK(n).includes('ks-name')?'ks-name-feuer':''}">${esc(n)}</span>${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div></div>`,
+  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px">${KS(n)&&KS(n).sym?esc(KS(n).sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${TT(n)}</h2><div class="mut">Deathmatch-Profil${D.pve.spieler.some(x=>x.name===n)?` · <span class="name" id="zuPve">PvE-Profil ansehen</span>`:''}</div></div>`,
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf],['📜 Runden',run+'<div class="mut" style="margin-top:10px">Gewertet werden nur Runden mit mindestens 2 Spielern.</div>']]);
   const zp=$('#zuPve');if(zp)zp.onclick=()=>profil(n)}
 function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n];if(!s||!pr)return;
   const WT=['Mo','Di','Mi','Do','Fr','Sa','So'],mx=Math.max(1,...(pr.wochentag||[0])),zt=pr.erfolge_zeit||{},fs=pr.fortschritt||{};
-  const ueb=kach([[dauer(s.spielzeit),'Spielzeit'],[dauer(pr.ueberlebt),'am Leben seit'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.strecke+' km','gelaufen']])
+  const ueb=LVB('pve',n)+kach([[dauer(s.spielzeit),'Spielzeit'],[dauer(pr.ueberlebt),'am Leben seit'],[s.kills+' / '+s.tode,'Kills / Tode'],[s.strecke+' km','gelaufen']])
     +kach([[s.kd,'Kills pro Tod'],[s.weitester?s.weitester+' m':'–','weitester Kill'],[s.kopf,'Kopfschüsse'],[s.sitzungen,'Mal eingeloggt']])
     +`<h4>Wann spielt ${esc(n)}?</h4>${(pr.wochentag||[]).map((x,i)=>`<div class="wbar"><span style="width:24px">${WT[i]}</span><i style="width:${Math.round(x/mx*70)}%"></i><span class="mut">${x?dauer(x):''}</span></div>`).join('')}
     ${pr.tage.length?`<h4>Letzte Tage</h4><div class="scroll"><table><tr><th>Tag</th><th>Spielzeit</th><th>Kills</th><th>Tode</th><th>Strecke</th></tr>${pr.tage.map(t=>`<tr><td>${new Date(t[0]).toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})}</td><td>${dauer(t[1])}</td><td>${t[2]}</td><td>${t[3]}</td><td>${t[4]} km</td></tr>`).join('')}</table></div>`:''}`;
   const waf=`${summeText(pr.treffer)}${(pr.waffen||[]).length?`<h4>🔫 Lieblingswaffen</h4><div class="scroll"><table class="wt"><tr><th>Waffe</th><th>Kills</th><th>Treffer</th></tr>${pr.waffen.map(w=>`<tr><td>${wbild(w[0])}${esc(w[0])}</td><td>${w[1]}</td><td>${w[2]||0}</td></tr>`).join('')}</table></div>`:'<div class="mut">Noch keine Waffen gezählt.</div>'}<div class="mut" style="margin-top:6px">${esc(D.waffen_hinweis||'')}</div>`;
   const erf=`<h4>🏅 PvE-Erfolge (${pr.erfolge.length} von ${p.erfolge_alle.length})</h4><div class="bgs">${p.erfolge_alle.map(e=>meilenKarte({icon:e[1],titel:e[2],text:e[3],erreicht:e[0] in zt,t:zt[e[0]],stufe:'gold',wert:(fs[e[0]]||[0])[0],schwelle:(fs[e[0]]||[0,1])[1],einheit:''})).join('')}</div>
     <h4>🎖 PvE-Stil-Erfolge</h4><div class="bgs">${stilOeff(p.stil_def,pr.stil).map(x=>badgeKarte(x,'pve')).join('')}</div>`;
-  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px"><span class="${KSK(n).includes('ks-name')?'ks-name-feuer':''}">${esc(n)}</span>${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div></div>`,
+  profilDialog(`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 style="margin:0 0 2px">${KS(n)&&KS(n).sym?esc(KS(n).sym)+' ':''}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${TT(n)}</h2><div class="mut">${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}</div></div>`,
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf]]);
   const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n)}
 const _tab=tab;tab=t=>{_tab(t);if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
