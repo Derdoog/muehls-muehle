@@ -176,6 +176,7 @@
   .stat-podest-kachel button{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:center;cursor:pointer}
   @media(max-width:950px){.stat-podest{grid-template-columns:minmax(0,1fr);gap:8px}}
   .waffen-basis .schaden-vergleich{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:baseline}
+  .schaden-vergleich .schaden-referenz{grid-column:1/-1;color:var(--mut);font-size:11px;overflow-wrap:anywhere}
   .schaden-vergleich meter{grid-column:1/-1;width:100%;height:9px;accent-color:var(--acc2)}
   .schaden-vergleich meter::-webkit-meter-bar{background:var(--line2);border:0}
   .schaden-vergleich meter::-webkit-meter-optimum-value{background:var(--acc2)}
@@ -793,7 +794,7 @@ function woboWaffendaten(waffe, nummer){
     const prozent=wert!=null&&max>0?100*wert/max:null;
     const basis=referenz[index];
     return `<div class="schaden-vergleich"><dt>${titel}</dt><dd>${wert==null?'–':nummer(wert)+' '+einheit}${prozent==null?'':' · '+Math.round(prozent)+' %'}</dd>
-      ${prozent==null?'':`<meter min="0" max="100" value="${Math.min(100,prozent)}" aria-label="${titel}: ${Math.round(prozent)} % der Referenz" title="100 %: ${esc(basis.name.toUpperCase())} · ${nummer(max)} ${einheit}"></meter>`}</div>`;
+      ${prozent==null?'':`<meter min="0" max="100" value="${Math.min(100,prozent)}" aria-label="${titel}: ${Math.round(prozent)} % der Referenz" ></meter><small class="schaden-referenz">100 %: ${esc(basis.name.toUpperCase())} · ${nummer(max)} ${einheit}</small>`}</div>`;
   };
   return `<section class="waffen-gruppe"><h4>DayZ-Waffendaten ${statistikInfo('100 % entspricht je Wert der stärksten regulären Schusswaffe im Katalog. Schrotflinten, Werfer, Signalwaffen und Armbrüste zählen nicht zur Referenz. Werte über 100 % werden als Zahl angezeigt.')}</h4>${daten.map(([munition,rate,health,schock,reichweite,url])=>`
     <details class="wobo-munition" ${daten.length===1?'open':''}>
@@ -1420,7 +1421,7 @@ function dmPerformance(m){
   const dist=(m.distanzbilanz||[]).map(([k,t],i)=>({name:namen[i],k,t}));
   const staerke=dist.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
   const schwaeche=dist.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
-  const hoehe=(m.hoehenbilanz||[]).map(([k,t],i)=>({name:hoehenNamen[i],k,t}));
+  const hoehe=(m.hoehenbilanz||[]).map(([k,t],i)=>({name:hoehenNamen[i],lage:['tiefer als der Gegner','auf ähnlicher Höhe wie der Gegner','höher als der Gegner'][i],k,t}));
   const besteHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
   const schwacheHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
@@ -1452,8 +1453,8 @@ function dmPerformance(m){
       ${spiele.length?waffenKennzahlen([['Runden',spiele.length],['Kills',kills],['Tode',tode],['Bilanz',netto>0?'+'+netto:netto]]):'<span class="mut">Noch keine Runden mit Kill-/Todesdaten.</span>'}
       ${trend}</div>
     <div class="waffen-gruppen">
-    ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst mehr Kills als Tode, wenn du ${esc(besteHoehe.name.toLowerCase())} stehst.`:'',positionsStaerke])}
-    ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name.toLowerCase())} hast du mehr Tode als Kills.`:'',schwacheHoehe?`Du stirbst häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.name.toLowerCase())} stehst.`:'',positionsTipp])}
+    ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst mehr Kills als Tode, wenn du ${esc(besteHoehe.lage)} stehst.`:'',positionsStaerke])}
+    ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name)} hast du mehr Tode als Kills.`:'',schwacheHoehe?`Du stirbst häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.lage)} stehst.`:'',positionsTipp])}
     </div>${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
     ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}<br><small class="mut">Distanz, Höhe und Bewegung beziehen sich auf die erfassten Duelle aus gewerteten Runden.</small></section>`;
