@@ -1257,10 +1257,17 @@ function eigeneTrefferzonen(z){
     ${Object.entries(ZN).map(([k,label])=>`<div><dt><span class="zonen-symbol" aria-hidden="true">${symbole[k]}</span>${label}</dt><dd>${z[k]||0} %</dd></div>`).join('')}
   </dl>`;
 }
-function eigeneWaffen(liste,bereich,offen){
+function eigeneWaffen(liste,bereich,offen,rekorde={}){
   if(!liste?.length)return '<div class="mut">Noch keine Treffer oder Kills gezählt.</div>';
   const nummer=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:2});
-  const distanz=n=>n==null?'–':nummer(n)+' m';
+  const distanzFelder=[['kill_distanz_max','Weitester Kill'],['treffer_distanz_max','Weitester Treffer'],['distanz_mittel','Mittlere Entfernung']];
+  const distanzZeile=(w,[key,titel])=>{
+    const wert=w[key],best=rekorde[w.waffe]?.[key],vorhanden=Number.isFinite(wert)&&(key==='distanz_mittel'||wert>0);
+    const anteil=vorhanden&&best?.wert>0?100*wert/best.wert:null;
+    return `<div class="schaden-vergleich"><dt>${titel}</dt><dd>${vorhanden?nummer(wert)+' m':'–'}${anteil===null?'':' · '+Math.round(anteil)+' %'}</dd>
+      ${anteil===null?'':`<meter min="0" max="100" value="${Math.min(100,anteil)}" aria-label="${titel} im Vergleich zum Serverrekord mit dieser Waffe"></meter>
+      <small class="schaden-referenz">100 %: ${esc(best.namen.join(", "))} · ${nummer(best.wert)} m</small>`}</div>`;
+  };
   return `<div class="waffen-liste">${waffenGruppen(liste,w=>w.treffer,w=>{
     const id=bereich+':'+w.waffe;
     const werte=[
@@ -1279,9 +1286,7 @@ function eigeneWaffen(liste,bereich,offen){
             ${werte.slice(4).map(([label,wert])=>`<div><dt>${label}</dt><dd>${typeof wert==='number'?nummer(wert):esc(wert??'–')}</dd></div>`).join('')}
           </dl>${eigeneTrefferzonen(w.zonen)}</section>
           <section class="waffen-gruppe"><h4>Meine Trefferentfernungen</h4><dl class="waffen-basis">
-            <div><dt>Weitester Kill</dt><dd>${distanz(w.kill_distanz_max||null)}</dd></div>
-            <div><dt>Weitester Treffer</dt><dd>${distanz(w.treffer_distanz_max||null)}</dd></div>
-            <div><dt>Mittlere Entfernung</dt><dd>${distanz(w.distanz_mittel)}</dd></div>
+            ${distanzFelder.map(feld=>distanzZeile(w,feld)).join('')}
           </dl></section>
           ${woboWaffendaten(w.waffe,nummer)}
         </div>
@@ -1535,8 +1540,8 @@ function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gol
   // Waffen
   const waffenOffen=new Set($$('#mr-waffen details[data-eigene-waffe][open]').map(x=>x.dataset.eigeneWaffe));
   $('#mr-waffen').innerHTML=`<div class="panel"><h3>Waffenstatistik ${statistikInfo(d.waffen_hinweis||'')}</h3>
-    <section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe,m.waffen_detail)+eigeneWaffen(m.waffen_detail,'dm',waffenOffen):keinDm}
-    </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe,v.waffen_detail)+eigeneWaffen(v.waffen_detail,'pve',waffenOffen):keinPve}</section>
+    <section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe,m.waffen_detail)+eigeneWaffen(m.waffen_detail,'dm',waffenOffen,m.waffen_distanzrekorde):keinDm}
+    </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe,v.waffen_detail)+eigeneWaffen(v.waffen_detail,'pve',waffenOffen,v.waffen_distanzrekorde):keinPve}</section>
     <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).${d.schrot_hinweis?' '+esc(d.schrot_hinweis):''}</div></div>`;
   // Erfolge
   $('#mr-erfolge').innerHTML=`<div class="panel"><section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Haupterfolge ${ST}</h4><div class="bgs">${(m.haupt||[]).map(x=>badgeKarte(x,'dm')).join('')}</div><h4>🎖 Stil-Erfolge</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
