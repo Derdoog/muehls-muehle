@@ -148,12 +148,26 @@
   .zonen-symbol{display:block;font-size:18px}
   @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
-  .stat-podest{display:grid;grid-template-columns:4fr 2fr 3fr;gap:10px;align-items:stretch}
+  .stat-podest{display:grid;grid-template-columns:3fr 2fr 3fr;gap:10px;align-items:stretch}
   .stat-podest-gruppe{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto minmax(94px,1fr);gap:1px;min-width:0;border:1px solid var(--line2);background:var(--line2)}
-  .stat-podest-gruppe.stat-platz{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .stat-podest-gruppe.stat-platz{grid-template-columns:repeat(3,minmax(0,1fr))}
   .stat-podest-gruppe.stat-karte{grid-template-columns:repeat(2,minmax(0,1fr))}
   .stat-podest-gruppe h5{grid-column:1/-1;margin:0;padding:6px;text-align:center;background:var(--bg2);color:var(--acc2);line-height:1.25}
   .stat-podest-kachel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-width:0;padding:6px;text-align:center;background:var(--panel2);overflow-wrap:anywhere}
+  .stat-info{position:relative;display:inline-flex;vertical-align:middle;margin-left:5px}
+  .stat-info button{display:grid;place-items:center;width:25px;height:25px;padding:3px;border:1px solid var(--line2);background:var(--panel2);color:var(--acc2);cursor:help}
+  .stat-info svg{width:17px;height:17px}
+  .stat-info-text{display:none;position:absolute;z-index:6;top:100%;left:0;width:min(280px,60vw);padding:9px;background:var(--bg2);border:1px solid var(--line2);color:var(--text);font:normal 12px/1.45 sans-serif;text-transform:none;letter-spacing:normal;box-shadow:0 4px 12px #0009}
+  .stat-info:hover .stat-info-text,.stat-info:focus-within .stat-info-text{display:block}
+  .stat-podest-panel{border-color:#716447;background:linear-gradient(#181b17,#10120e)}
+  .stat-podest-panel .stat-podest-gruppe{border:2px ridge #777a70}
+  .stat-podest-panel .stat-podest-gruppe h5{background:linear-gradient(#424744,#242825);color:#f0d18b}
+  .stat-podest-panel .stat-podest-kachel{background:linear-gradient(150deg,#272921,#151713);box-shadow:inset 0 2px #806631}
+  .stat-podest-panel .stat-podest-gruppe:last-child .stat-podest-kachel{box-shadow:inset 0 2px #963c32}
+  .stat-podest-panel .stat-platz .stat-podest-kachel>b{font-size:24px;color:#e9c477}
+  .stat-saison{margin-top:10px}
+  .stat-saison h5{margin:0 0 4px;color:#d2b582}
+  .stat-saison .chip{background:#32291a;color:#f1d497;border-color:#8e733e}
   .stat-podest-kachel img{display:block;width:min(100%,90px);height:30px;object-fit:cover;margin:4px auto 0;border:1px solid var(--line)}
   .stat-podest-kachel .stat-symbol{width:24px;height:24px;flex:none}
   .stat-podest-kachel .stat-kachel-titel{display:grid;grid-template-columns:24px minmax(0,1fr);align-items:center;gap:6px;width:100%;min-height:30px;text-align:left}
@@ -465,7 +479,7 @@ nav button{min-width:0}
     <div class="panel dm-wertung"><h3>⭐ Deathmatch-Level</h3><div id="dLevel"></div></div>
     <div class="panel dm-wertung"><h3>👑 Saisons</h3><div id="dSaison"></div><div class="mut" style="margin-top:6px">Monats-Saison: Meister ist, wer die meisten Runden gewinnt (dann Kills).</div></div>
     </div>
-    <div class="dr" id="dr-waffen" hidden>    <div class="panel"><h3>🔫 Waffenkatalog</h3><div id="dWaffen" class="waffen-liste"></div><div class="mut" style="margin-top:6px">Kills und Treffer je Waffe über <b>alle Spieler</b>, rückwirkend aus allen vorhandenen Server-Logs nachgetragen. Deine eigenen Werte je Waffe: <b>Meine Statistik → 🔫 Waffen</b> (nach dem Login). <span id="dSchrot"></span> Schüsse daneben stehen nicht im Server-Log, darum gibt es keine echte Trefferquote.</div></div></div>
+    <div class="dr" id="dr-waffen" hidden>    <div class="panel"><h3>🔫 Waffenkatalog <span id="dSchrot"></span></h3><div id="dWaffen" class="waffen-liste"></div></div></div>
     <div class="dr" id="dr-karten" hidden>      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div></div>
   </section>
   <section class="tab" id="t-meine">
@@ -660,7 +674,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     ${DIREKT&&r.id?`<div style="margin-top:6px"><a href="/zuschauer/runde/${+r.id}" style="color:var(--gold,#e0b44c)">🔗 Eigene Seite dieser Runde (zum Teilen)</a></div>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
   $('#dSaison').innerHTML=(m.saisons||[]).slice(0,6).map(s=>`<div class="rh"><span>${MN[+s.monat.slice(5)-1]} ${s.monat.slice(0,4)}</span><b class="name" data-dm="${esc(s.meister||'')}">${s.meister?'👑 '+esc(s.meister):'–'}</b><span class="mut">${s.runden} Runden${s.top&&s.top[0]?' · '+s.top[0][1]+' Siege · '+s.top[0][2]+' Kills':''}</span></div>`).join('')||'<div class="mut">Noch keine Saison.</div>';
   waffenKatalog(m);
-  $('#dSchrot').textContent=d.schrot_hinweis||'';
+  $('#dSchrot').innerHTML=statistikInfo(['Der Katalog zeigt Kills und Treffer aller Spieler. Schüsse daneben stehen nicht im Server-Log. Deine Werte findest du unter Meine Statistik → Waffen.',d.schrot_hinweis].filter(Boolean).join(' '));
   $$('#dRunden details').forEach(x=>x.ontoggle=()=>{const k=+x.dataset.rd;if(x.open)OFFEN.add(k);else OFFEN.delete(k)});
   $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b><span class="mut">${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt</span>
     <span class="mut" style="display:block">${Object.entries(k.modi).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,z])=>esc(n)+' '+z+'×').join(' · ')}</span></div></div>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
@@ -1247,9 +1261,8 @@ function podestKartenRivalen(m){
   const spezial=(m.kopfgeld_kills||m.jugg_runden||m.jugg_kills)
     ?`<p class="mut">${m.kopfgeld_kills||0} Kopfgelder · ${m.jugg_runden||0}× Juggernaut · ${m.jugg_kills||0} Juggernauts erlegt</p>`:'';
   const saison=(m.saisons||[]).map(s=>`<span class="chip">${MN[+s[0].slice(5)-1]} ${s[0].slice(0,4)} · Platz ${s[1]}</span>`).join(' ');
-  kacheln.splice(3,0,kachel(symbol('pokal','Saisonplatzierungen'),saison||'–'));
-  return `<section class="panel"><div class="stat-podest">${[['Podest',0,4,' stat-platz'],['Karte & Modus',4,6,' stat-karte'],['Rivalen',6,9,'']].map(([titel,von,bis,klasse])=>
-    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}</section>`;
+  return `<section class="panel stat-podest-panel"><div class="stat-podest">${[['Podest',0,3,' stat-platz'],['Karte & Modus',3,5,' stat-karte'],['Rivalen',5,8,'']].map(([titel,von,bis,klasse])=>
+    `<section class="stat-podest-gruppe${klasse}"><h5>${titel}</h5>${kacheln.slice(von,bis).join('')}</section>`).join('')}</div>${spezial}${saison?`<div class="stat-saison"><h5>Saisonplatzierungen</h5>${saison}</div>`:''}</section>`;
 }
 document.addEventListener('click',e=>{
   const spieler=e.target.closest('[data-stat-rivale]');
@@ -1321,19 +1334,30 @@ function dmPerformance(m){
   const dist=(m.distanzbilanz||[]).map(([k,t],i)=>({name:namen[i],k,t}));
   const staerke=dist.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
   const schwaeche=dist.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
+  const hoehe=(m.hoehenbilanz||[]).map(([k,t],i)=>({name:hoehenNamen[i],k,t}));
+  const besteHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.k>x.t).sort((a,b)=>(b.k-b.t)-(a.k-a.t))[0];
+  const schwacheHoehe=hoehe.filter(x=>x.k+x.t>=5&&x.t>x.k).sort((a,b)=>(b.t-b.k)-(a.t-a.k))[0];
+  const hoehenText=x=>`${esc(x.name)}: ${x.k} Kills, ${x.t} Tode.`;
   const distanz=dist.some(x=>x.k||x.t)?`<h5>Killbilanz nach Distanz</h5>
     ${waffenKennzahlen(dist.map(x=>[x.name,x.k+' Kills / '+x.t+' Tode']))}
     <small class="mut">Gewertete Runden mit protokollierten Spielerduellen und bekannter Distanz. Ab fünf Duellen je Bereich fließt die Bilanz in die Bewertung ein.</small>`:'';
   return `<section class="waffen-gruppe"><h4>Performance</h4><strong>${st}</strong>
     <p class="mut">${spiele.length?`Letzte ${spiele.length} Runden mit Kill-/Todesdaten · ${kills} Kills · ${tode} Tode`:'Noch keine Runden mit Kill-/Todesdaten.'}</p>${trend}
     <div class="waffen-gruppen">
-    <div><b>Stärken</b><p>${staerke?esc(staerke.name)+': positive Bilanz. ':''}${top?`Meiste Kills mit ${esc(top[0])} (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Weitester Kill: ${m.weitester} m.`:''}</p></div>
-    <div><b>Verbesserungspotenzial</b><p>${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
-    </div>${distanz}${duelBilanz('Killbilanz nach Höhenlage',m.hoehenbilanz,hoehenNamen,'Höhenwerte werden für neue Runden mit vollständigen Kill-Koordinaten erfasst.')}
-    <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer.</small><br>
+    <div><b>Stärken</b><p>${besteHoehe?hoehenText(besteHoehe)+' ':''}${staerke?esc(staerke.name)+': positive Bilanz. ':''}${top?`Meiste Kills mit ${esc(top[0])} (${top[1]}). `:'Noch keine Waffenstärke erkennbar.'}${m.weitester?`Weitester Kill: ${m.weitester} m.`:''}</p></div>
+    <div><b>Verbesserungspotenzial</b><p>${schwacheHoehe?hoehenText(schwacheHoehe)+' ':''}${schwaeche?esc(schwaeche.name)+': mehr Tode als Kills. Nach einem Kill kurz Deckung und Winkel prüfen. ':''}${spiele.length>=3&&tode>kills?'Zuletzt mehr Tode als Kills. ':''}${verlust?`Häufigste protokollierte Todeswaffe: ${esc(verlust[0])} (${verlust[1]} Tode).`:'Für ein Muster bei den Todeswaffen fehlen Daten.'}</p></div>
+    </div>${distanz}${duelBilanz('Killbilanz nach Höhenlage',m.hoehenbilanz,hoehenNamen,'Für die gewerteten Runden liegen noch keine zuordenbaren Höhenwerte vor.')}
+    <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer. Ab fünf erfassten Duellen je Höhenlage fließt sie in die Bewertung ein.</small><br>
     <small class="mut">Waffenwerte und Distanzrekord beziehen sich auf die gesamte erfasste Spielzeit.</small></section>`;
 }
-function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze → 🥈 Silber → 🥇 Gold → 💎 Platin, jede Stufe schwerer; Platin immer wieder holbar: 2×, 3× Platin …)</span>';
+let infoNummer=0;
+function statistikInfo(text){
+  const id='stat-info-'+(++infoNummer);
+  return `<span class="stat-info"><button type="button" aria-label="Statistik-Hinweis" aria-describedby="${id}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v2"/></svg></button>
+    <span id="${id}" class="stat-info-text" role="tooltip">${esc(text)}</span></span>`;
+}
+function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gold und Platin werden zunehmend schwieriger. Platin kann mehrfach erreicht werden.');
   const keinDm=`<div class="mut">Dir ist noch kein Deathmatch-Gamertag zugeordnet${d.dm_gamertag?' bzw. er hat noch keine gewertete Runde':''}.</div>`;
   const keinPve=`<div class="mut">${(d.pve_gamertags||[]).length?'Für diese Auswahl gibt es noch keine PvE-Daten.':'Dir ist noch kein PvE-Gamertag zugeordnet.'}</div>`;
   const wahlTxt=v?(v.zusammen&&v.zusammen.length>1?'Alle zusammen: '+v.zusammen.map(esc).join(', '):esc(v.name)):'';
@@ -1368,7 +1392,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST='<span class="mut">(🥉 Bronze �
   $$('#mr-uebersicht [data-statistik]').forEach(x=>{x.open=offeneStatistik.has(x.dataset.statistik)});
   // Waffen
   const waffenOffen=new Set($$('#mr-waffen details[data-eigene-waffe][open]').map(x=>x.dataset.eigeneWaffe));
-  $('#mr-waffen').innerHTML=`<div class="panel"><div class="hinweis">ℹ️ ${esc(d.waffen_hinweis||'')}</div>
+  $('#mr-waffen').innerHTML=`<div class="panel"><h3>Waffenstatistik ${statistikInfo(d.waffen_hinweis||'')}</h3>
     <section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe,m.waffen_detail)+eigeneWaffen(m.waffen_detail,'dm',waffenOffen):keinDm}
     </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe,v.waffen_detail)+eigeneWaffen(v.waffen_detail,'pve',waffenOffen):keinPve}</section>
     <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).${d.schrot_hinweis?' '+esc(d.schrot_hinweis):''}</div></div>`;
