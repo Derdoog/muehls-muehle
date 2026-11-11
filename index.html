@@ -293,16 +293,16 @@
     .dm-wertung .rh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px}
     .dm-wertung .rh>span:first-child{grid-column:1/-1}
   }
-  #dr-wertung table{table-layout:fixed}
-  #dr-wertung :is(th,td){white-space:normal;overflow-wrap:anywhere}
+  :is(#dr-wertung,.pve-level-panel) table{table-layout:fixed}
+  :is(#dr-wertung,.pve-level-panel) :is(th,td){white-space:normal;overflow-wrap:anywhere}
   #dElo :is(th,td):first-child{width:34%}
-  #dLevel :is(th,td):first-child{width:8%}
-  #dLevel :is(th,td):nth-child(2){width:31%}
-  #dLevel .dm-tabelle :is(th,td):nth-child(3){text-align:center}
-  #dLevel .dm-tabelle .lvbar{max-width:100%;margin:4px auto 0}
+  :is(#dLevel,#pLevel) :is(th,td):first-child{width:8%}
+  :is(#dLevel,#pLevel) :is(th,td):nth-child(2){width:31%}
+  :is(#dLevel,#pLevel) .dm-tabelle :is(th,td):nth-child(3){text-align:center}
+  :is(#dLevel,#pLevel) .dm-tabelle .lvbar{max-width:100%;margin:4px auto 0}
   #dr-wertung .rh > *{min-width:0;overflow-wrap:anywhere}
-  @media(max-width:760px){#dr-wertung :is(th,td){padding:5px 4px;font-size:12px}}
-  #dLevel th:nth-child(2),#dLevel td:nth-child(2){text-align:left}
+  @media(max-width:760px){:is(#dr-wertung,.pve-level-panel) :is(th,td){padding:5px 4px;font-size:12px}}
+  :is(#dLevel,#pLevel) :is(th,td):nth-child(2){text-align:left}
   #t-meine[data-modus="dm"] .m-nur-pve,#t-meine[data-modus="pve"] .m-nur-dm{display:none}
   #mKonto>summary{cursor:pointer;color:var(--acc2);padding:4px 0}
   .mr{display:none}.mr.an{display:block;animation:rein .2s ease-out}
@@ -463,6 +463,12 @@ nav button{min-width:0}
 @media (max-width:700px){.cmr>span:first-child{min-width:100%}.cmk{grid-template-columns:repeat(2,1fr)}.cmq{flex-wrap:wrap}.cmq img{width:48px;height:32px}.cmq>div{flex-basis:calc(100% - 90px)}.cmq>button{flex-basis:100%}}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
+<style>
+.recht-links{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+.recht-dialog{width:min(620px,calc(100% - 24px));max-height:85vh;overflow:auto}
+.recht-dialog h2{margin-top:0}.recht-dialog p,.recht-dialog li{line-height:1.55}
+.recht-dialog form{display:flex;justify-content:flex-end}
+</style>
 </head>
 <body>
 <header>
@@ -486,7 +492,7 @@ nav button{min-width:0}
     <div class="panel scroll"><h3>🏆 Rangliste</h3><div class="seg" id="pZeit"></div><table id="pRang"></table>
       <div class="mut" style="margin-top:8px">Auf einen Namen tippen für das Profil mit Erfolgen. K/D = Kills geteilt durch Tode durch Spieler.</div></div>
     <div class="panel"><h3>🏛 Ruhmeshalle PvE</h3><div id="pRuhm"></div></div>
-    <div class="panel scroll"><h3>⭐ PvE-Level <span class="mut">(gilt nur für das aktuelle Leben)</span></h3><div id="pLevel"></div></div>
+    <div class="panel dm-wertung pve-level-panel"><h3>⭐ PvE-Level <span class="mut">(gilt nur für das aktuelle Leben)</span></h3><div id="pLevel"></div></div>
     <div class="panel"><h3>📅 Termine</h3><div id="pKal"></div><div class="mut" style="margin-top:6px" id="pKalIcs"></div></div>
   </section>
   <section class="tab" id="t-dm">
@@ -531,7 +537,38 @@ nav button{min-width:0}
     </div>
   </section>
 </main>
-<footer><span id="takt">Aktualisiert sich alle 10 Sekunden von selbst.</span> Positionen und Basen werden hier nur dem jeweiligen Spieler nach dem Login gezeigt.<small class="game-icon-credit">Icons: Badges, Carl Olsen, Delapouite, Lorc, Skoll · <a href="https://game-icons.net/">Game-icons.net</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></small></footer>
+<footer><span id="takt">Aktualisiert sich alle 10 Sekunden von selbst.</span> Positionen und Basen werden hier nur dem jeweiligen Spieler nach dem Login gezeigt.<small class="game-icon-credit">Icons: Badges, Carl Olsen, Delapouite, Lorc, Skoll · <a href="https://game-icons.net/">Game-icons.net</a> · <a href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</a></small><div class="recht-links" aria-label="Rechtliche Informationen">
+  <button type="button" class="login" data-recht="impressum">Impressum</button>
+  <button type="button" class="login" data-recht="datenschutz">Datenschutz</button>
+</div></footer>
+<dialog class="recht-dialog" id="recht-impressum" aria-labelledby="recht-impressum-titel">
+  <form method="dialog"><button class="login" aria-label="Impressum schließen">✕</button></form>
+  <h2 id="recht-impressum-titel">Impressum</h2>
+  <p><strong>Mühls Mühle · DayZ-Community</strong></p>
+  <p>Tom van Thiel<br>Langenkamp 2<br>49082 Osnabrück<br>Deutschland</p>
+  <p>Privates, nicht gewerbliches Community-Angebot.</p>
+  <p>Kontakt: <a href="mailto:tomvanthiel@hotmail.de">tomvanthiel@hotmail.de</a></p>
+</dialog>
+<dialog class="recht-dialog" id="recht-datenschutz" aria-labelledby="recht-datenschutz-titel">
+  <form method="dialog"><button class="login" aria-label="Datenschutzhinweise schließen">✕</button></form>
+  <h2 id="recht-datenschutz-titel">Datenschutzhinweise</h2>
+  <h3>Verantwortlich</h3><p>Tom van Thiel<br>Langenkamp 2<br>49082 Osnabrück<br>Deutschland<br><a href="mailto:tomvanthiel@hotmail.de">tomvanthiel@hotmail.de</a></p>
+  <h3>Besuch der Website und Anmeldung</h3>
+  <p>Die Seite ruft den Serverstatus und die öffentlichen Statistiken regelmäßig ab. Der Webserver verarbeitet dabei technische Zugriffsdaten wie die IP-Adresse. Ein Spieler- oder Admin-Login verwendet ein Sitzungscookie. Die Seite merkt sich die zuletzt verwendeten Reiter sowie deine Charakter- und Kartenauswahl im lokalen Speicher deines Browsers.</p>
+  <h3>Spielerdaten und Ranglisten</h3>
+  <p>Die Anwendung wertet die ADM-Protokolle des DayZ-Servers aus. Öffentliche Übersichten zeigen Gamertags, Spielaktivität, Ranglisten, Kills, Tode und Erfolge. Mit deinem Spieler-Konto kannst du auf die zugeordneten persönlichen Statistiken und Karteninformationen zugreifen. Die App verarbeitet Positionen auch intern, etwa zur Berechnung von Distanz und Bewegung.</p>
+  <h3>Empfänger und Speicherdauer</h3>
+  <p>Die Zuschauerseite läuft auf einer separaten Steuerzentrale. Nitrado betreibt den DayZ-Spielserver und stellt dessen ADM-Protokolle bereit. Zugriff auf interne Daten haben die für Betrieb und Administration zuständigen Personen. Bei aktivierter Discord-Anbindung können Gamertags und Spielereignisse, etwa Kills oder Erfolge, in den verbundenen Community-Kanal übertragen werden. Für externe Seiten wie Discord und WOBO gelten deren eigene Datenschutzhinweise.
+  </p><p>Die Spielersitzung läuft spätestens nach 60 Tagen ab. Gespeicherte Ansichtseinstellungen bleiben im Browser, bis du die Website-Daten löschst. Spielerkonten und zugehörige Daten werden zur Bereitstellung der persönlichen Funktionen gespeichert. Für ADM-Archive und die daraus erstellten Langzeitstatistiken ist in der Anwendung keine automatische Löschfrist hinterlegt. Maßgeblich ist, wie lange die Daten für Betrieb, Auswertung oder die Klärung konkreter Vorfälle erforderlich sind.</p>
+  <h3>Rechtsgrundlagen und deine Rechte</h3>
+  <p>Für den technischen Betrieb, die Absicherung der Seite und den Betrieb der Community-Statistiken stützen wir die Verarbeitung auf Art. 6 Abs. 1 Buchst. f DSGVO. Unsere berechtigten Interessen sind ein sicherer Betrieb, die Fehleranalyse und nachvollziehbare Spielstatistiken. Soweit du ein Spielerkonto und die damit verbundenen Funktionen nutzt, verarbeiten wir die dafür erforderlichen Daten zur Bereitstellung dieser Funktionen nach Art. 6 Abs. 1 Buchst. b DSGVO. Du kannst dich wegen Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit oder Widerspruch an den Verantwortlichen wenden, soweit die gesetzlichen Voraussetzungen vorliegen. Du hast außerdem das Recht, dich bei einer Datenschutzaufsichtsbehörde zu beschweren.</p>
+</dialog>
+<script>
+document.querySelectorAll('[data-recht]').forEach(button=>{
+  button.onclick=()=>document.getElementById('recht-'+button.dataset.recht).showModal();
+});
+</script>
+
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
 <script>
 const REPO='Derdoog/muehls-muehle';
@@ -1619,7 +1656,12 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
 function levelPanels(d){const L=d.level||{};
   const sb=d.siegerbanner;if(sb&&sb.gt)$('#banner').insertAdjacentHTML('beforeend',SIEGER(sb.gt));
   const tab=(rows,w)=>rows.length?`<table><tr><th>#</th><th>Spieler</th><th>Level</th><th>Rang</th><th class="nm">XP</th>${w==='pve'?'<th class="nm">Bestes Leben</th>':'<th class="nm">Runden</th>'}</tr>${rows.slice(0,25).map((x,i)=>`<tr><td>${i+1}</td><td><b class="name" ${w==='pve'?'data-n':'data-dm'}="${esc(x.name)}">${GT(x.name,w)}</b></td><td><b>${x.level}</b>${x.prestige?' ⭐×'+x.prestige:''}<div class="lvbar" style="width:60px"><i style="width:${x.prozent||0}%"></i></div></td><td>${esc(RGL(w)[RGI(w,x.level)][1])}</td><td class="nm">${x.xp}</td><td class="nm">${w==='pve'?'Level '+(x.best||0):(x.runden||0)}</td></tr>`).join('')}</table>`:'<div class="mut">Noch niemand.</div>';
-  const pl=$('#pLevel');if(pl)pl.innerHTML=tab(L.pve||[],'pve')+'<div class="mut" style="margin-top:6px">XP fürs Überleben, Laufen, Bauen, Zombie-Treffer und Schätze. Beim Tod geht es zurück auf Level 0. Je Level-Aufstieg 0,50 ₽, je Charakter nur einmal: nach dem Tod erst wieder ab dem bisher höchsten Level.</div>';
+  const pveRows=L.pve||[];
+  const pveTabelle=pveRows.length?dmWertung(tab(pveRows,'pve'),pveRows.slice(0,25).map((x,i)=>
+    `<div class="dm-spieler"><div class="dm-spieler-kopf"><b class="name" data-n="${esc(x.name)}">${i+1}. ${GT(x.name,'pve')}</b><strong>Level ${x.level}</strong></div>
+      <div class="lvbar" style="width:100px"><i style="width:${x.prozent||0}%"></i></div>
+      <div class="dm-spieler-werte mut"><span>${esc(RGL('pve')[RGI('pve',x.level)][1])}</span><span>${x.xp} XP</span><span>Bestes Leben: Level ${x.best||0}</span></div></div>`).join('')):tab([],'pve');
+  const pl=$('#pLevel');if(pl)pl.innerHTML=pveTabelle+'<div class="mut" style="margin-top:6px">XP fürs Überleben, Laufen, Bauen, Zombie-Treffer und Schätze. Beim Tod geht es zurück auf Level 0. Je Level-Aufstieg 0,50 ₽, je Charakter nur einmal: nach dem Tod erst wieder ab dem bisher höchsten Level.</div>';
   const dl=$('#dLevel');if(dl)dl.innerHTML=((L.dm||[]).length?dmWertung(tab(L.dm,'dm'),L.dm.slice(0,25).map((x,i)=>
     dmSpieler(x.name,i,'Level '+x.level+(x.prestige?' ⭐×'+x.prestige:''),[RGL('dm')[RGI('dm',x.level)][1],x.xp+' XP',(x.runden||0)+' Runden'],'',
       `<div class="lvbar" style="width:100px"><i style="width:${x.prozent||0}%"></i></div>`)).join('')):tab([],'dm'))+'<div class="mut" style="margin-top:6px">XP aus gewerteten Runden: Punkte, Kopfschüsse, Teilnahme, Podest und Erfolge. Das Level bleibt. Je Level-Aufstieg 0,50 ₽.</div>'}
