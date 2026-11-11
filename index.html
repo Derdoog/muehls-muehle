@@ -137,8 +137,34 @@
   .waffen-detail{padding:12px;background:var(--bg2)}
   .waffen-detail .wimg{display:block;width:min(100%,440px);height:clamp(100px,26vw,220px);object-fit:contain;margin:0 auto 12px}
   .waffen-rekorde,.waffen-werte{display:flex;flex-wrap:wrap;gap:6px 16px}
+  .zonen-raster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .zonen-raster>div{display:grid;justify-items:center;gap:3px;padding:6px 2px;background:var(--panel2);border:1px solid var(--line)}
+  .zonen-raster dt{text-align:center;color:var(--mut);font-size:12px}
+  .zonen-raster dd{margin:0;font-weight:700}
+  .zonen-symbol{display:block;font-size:18px}
+  @media(max-width:340px){.zonen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  .waffen-raster{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+  .waffen-raster>details{min-width:0;border:1px solid var(--line);background:var(--panel2)}
+  .waffen-raster>details[open]{grid-column:1/-1}
+  .waffen-liste .waffen-raster>details>summary{display:flex;flex-direction:column;align-items:stretch;gap:4px;padding:8px;border:0}
+  .waffen-raster>details>summary .wimg{display:block;width:100%;height:56px;object-fit:contain;margin:0}
+  .waffen-raster>details[open]>summary .wimg{display:none}
+  .waffen-raster>details>summary small{line-height:1.25}
+  @media(max-width:640px){.waffen-raster{grid-template-columns:repeat(2,minmax(0,1fr))}}
+  @media(max-width:340px){.waffen-raster{grid-template-columns:minmax(0,1fr)}}
   .waffen-kategorie{margin-top:16px}
   .waffen-kategorie>h4{margin:0 0 6px;color:var(--acc2)}
+  .waffen-detail{border-top:1px solid var(--line2);padding:clamp(10px,2vw,22px)}
+  .waffen-detail-kopf{padding:12px;border:1px solid var(--line2);background:radial-gradient(ellipse at center,var(--panel2),var(--bg2))}
+  .waffen-detail-kopf .wimg{margin:0 auto}
+  .waffen-detail-kopf .wimg.leer{display:none}
+  .waffen-detail-kopf h4{margin:0 0 8px}
+  .waffen-kennzahlen{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,86px),1fr));gap:6px}
+  .waffen-kennzahlen>div{display:grid;gap:3px;padding:7px;background:var(--panel2);border:1px solid var(--line)}
+  .waffen-kennzahlen strong{font-size:18px;color:var(--acc2)}
+  .waffen-kennzahlen span{font-size:12px;color:var(--mut)}
+  .waffen-gruppe h4{padding-bottom:7px;border-bottom:1px solid var(--line2)}
+  .waffen-rekorde>div{padding:6px 8px;border-left:2px solid var(--acc2);background:var(--panel2)}
   .waffen-gruppen{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px;margin:12px 0}
   .waffen-gruppe{padding:12px;border:1px solid var(--line);min-width:0;overflow-wrap:anywhere}
   .waffen-gruppe h4{margin:0 0 8px}
@@ -763,7 +789,11 @@ function waffenGruppen(liste,treffer,zeile){
   }
   return [...gruppen].filter(([,werte])=>werte.length).map(([k,werte])=>
     `<section class="waffen-kategorie"><h4>${esc(k)} <small class="mut">(${werte.length})</small></h4>
-    ${werte.sort((a,b)=>b.kills-a.kills||treffer(b)-treffer(a)||a.waffe.localeCompare(b.waffe,'de')).map(zeile).join('')}</section>`).join('');
+    <div class="waffen-raster">${werte.sort((a,b)=>b.kills-a.kills||treffer(b)-treffer(a)||a.waffe.localeCompare(b.waffe,'de')).map(zeile).join('')}</div></section>`).join('');
+}
+function waffenKennzahlen(werte){
+  return `<div class="waffen-kennzahlen">${werte.map(([label,wert])=>
+    `<div><strong>${esc(String(wert))}</strong><span>${esc(label)}</span></div>`).join('')}</div>`;
 }
 function waffenKatalog(m){
   const el=$('#dWaffen'), katalog=m.waffenkatalog||[];
@@ -780,13 +810,12 @@ function waffenKatalog(m){
     const technik=woboWaffendaten(w.waffe,nummer);
     const titel=w.waffe.replace(/^./,c=>c.toUpperCase());
     return `<details data-waffe="${esc(w.waffe)}" ${offen.has(w.waffe)?'open':''}><summary>
-      <b>${wbild(w.waffe)} ${esc(titel)}</b><strong>${nummer(w.kills)} Kills</strong>
+      <b>${esc(titel)}</b>${wbild(w.waffe)}<strong>${nummer(w.kills)} Kills</strong>
       <small>Meiste Kills: ${beste.length?beste.map(x=>esc(x[0])).join(', ')+' · '+nummer(beste[0][1]):'–'}</small></summary>
-      <div class="waffen-detail">${wbild(w.waffe)}<h4>${esc(titel)}</h4>
+      <div class="waffen-detail"><div class="waffen-detail-kopf"><h4>${esc(titel)}</h4>${wbild(w.waffe)}</div>
       <div class="waffen-gruppen">
-        <section class="waffen-gruppe"><h4>Deathmatch gesamt</h4><div class="waffen-werte">
-          <span>${nummer(w.kills)} Kills</span><span>${sum(3)} Treffer</span><span>${sum(2)} Kopf-Kills</span><span>${sum(4)} Kopftreffer</span><span>${sum(5)} protokollierter Schaden</span>
-        </div>${trefferzonen(w.zonen)}</section>
+        <section class="waffen-gruppe"><h4>Deathmatch gesamt</h4>
+          ${waffenKennzahlen([['Kills',nummer(w.kills)],['Treffer',sum(3)],['Kopf-Kills',sum(2)],['Kopftreffer',sum(4)],['Schaden',sum(5)]])}${trefferzonen(w.zonen)}</section>
         <section class="waffen-gruppe"><h4>Distanzrekorde</h4><div class="waffen-rekorde">
           ${rekord(6,'Weitester Kill')}${rekord(7,'Weitester Treffer')}
         </div></section>
@@ -1033,6 +1062,13 @@ function trefferzonen(z){
     <dl class="waffen-basis">${Object.entries(ZN).map(([k,label])=>`<div><dt>${label}</dt><dd>${z[k]||0} %</dd></div>`).join('')}</dl>`
     :'<p class="mut">Für diese Auswahl sind keine Körperzonen erfasst.</p>'}`;
 }
+function eigeneTrefferzonen(z){
+  const symbole={kopf:'👤',torso:'👕',arme:'💪',beine:'🦵'};
+  if(!z)return '<p class="mut">Keine Körperzonen erfasst.</p>';
+  return `<p class="mut">Anteil an Treffern mit bekannter Körperzone</p><dl class="zonen-raster">
+    ${Object.entries(ZN).map(([k,label])=>`<div><dt><span class="zonen-symbol" aria-hidden="true">${symbole[k]}</span>${label}</dt><dd>${z[k]||0} %</dd></div>`).join('')}
+  </dl>`;
+}
 function eigeneWaffen(liste,bereich,offen){
   if(!liste?.length)return '<div class="mut">Noch keine Treffer oder Kills gezählt.</div>';
   const nummer=n=>Number(n).toLocaleString('de-DE',{maximumFractionDigits:2});
@@ -1046,24 +1082,26 @@ function eigeneWaffen(liste,bereich,offen){
       ['Schaden gesamt',w.schaden],['Ø Schaden pro Treffer',w.schaden_pro_treffer]
     ];
     return `<details data-eigene-waffe="${esc(id)}" ${offen.has(id)?'open':''}><summary>
-      <b>${wbild(w.waffe)} ${esc(w.waffe)}</b><strong>${nummer(w.kills)} Kills</strong>
+      <b>${esc(w.waffe)}</b>${wbild(w.waffe)}<strong>${nummer(w.kills)} Kills</strong>
       <small>${nummer(w.treffer)} Treffer</small></summary>
-      <div class="waffen-detail">${wbild(w.waffe)}
+      <div class="waffen-detail"><div class="waffen-detail-kopf"><h4>${esc(w.waffe)}</h4>${wbild(w.waffe)}</div>
         <div class="waffen-gruppen">
-          <section class="waffen-gruppe"><h4>Meine Treffer und Kills</h4><dl class="waffen-basis">
-            ${werte.map(([label,wert])=>`<div><dt>${label}</dt><dd>${typeof wert==='number'?nummer(wert):esc(wert??'–')}</dd></div>`).join('')}
-          </dl></section>
+          <section class="waffen-gruppe"><h4>Gesamtperformance</h4>
+          ${waffenKennzahlen(werte.slice(0,4).map(([label,wert])=>[label,wert==null?'–':nummer(wert)]))}
+          <dl class="waffen-basis">
+            ${werte.slice(4).map(([label,wert])=>`<div><dt>${label}</dt><dd>${typeof wert==='number'?nummer(wert):esc(wert??'–')}</dd></div>`).join('')}
+          </dl>${eigeneTrefferzonen(w.zonen)}</section>
           <section class="waffen-gruppe"><h4>Meine Trefferentfernungen</h4><dl class="waffen-basis">
             <div><dt>Weitester Kill</dt><dd>${distanz(w.kill_distanz_max||null)}</dd></div>
             <div><dt>Weitester Treffer</dt><dd>${distanz(w.treffer_distanz_max||null)}</dd></div>
             <div><dt>Mittlere Entfernung</dt><dd>${distanz(w.distanz_mittel)}</dd></div>
-          </dl>${trefferzonen(w.zonen)}</section>
+          </dl></section>
           ${modell?woboWaffendaten(modell,nummer):''}
         </div>
       </div></details>`;
   })}</div>`;
 }
-function summeText(s){if(!s||!s.treffer)return '';return kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+`${trefferzonen(s.zonen)}`}
+function summeText(s){if(!s||!s.treffer)return '';return '<h4>Gesamtperformance</h4>'+kach([[s.treffer,'Treffer gesamt'],[s.treffer_pro_kill??'–','Treffer pro Kill'],[(s.kopfquote??0)+' %','Kopftreffer-Anteil'],[s.schaden,'Schaden gesamt']])+eigeneTrefferzonen(s.zonen)}
 function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).map(x=>[bereich+':'+x.id,(bereich==='dm'?'⚔️ ':'🌲 ')+x.titel+' ('+(STN[x.stufe]||'')+')']);
   const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
   return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
