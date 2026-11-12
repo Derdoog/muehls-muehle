@@ -447,7 +447,7 @@ nav button{min-width:0}
 @media(max-width:330px){nav button{white-space:normal;line-height:1.2}}
 /* Update 7: Kosmetik-Vorschau (Meine -> Rubel-Shop) */
 .vs{border-color:var(--acc)}
-.vs-marke{display:inline-block;font:700 10px var(--kopf);letter-spacing:.08em;text-transform:uppercase;color:#1a1205;background:var(--acc2);padding:1px 6px;margin-left:6px;vertical-align:middle}
+.vs-marke{display:inline-block;font:700 12px/1.35 system-ui,sans-serif;letter-spacing:normal;color:#f9e8b3;background:#171b18;border:1px solid #8d7743;border-radius:3px;padding:3px 7px;margin:0 0 6px;vertical-align:middle;text-shadow:none;white-space:normal}
 .vs-raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;margin-top:8px}
 .vs-raster>div{background:var(--panel2);border:1px solid var(--line);padding:8px 10px;min-width:0}
 .vs-raster h4{margin:0 0 6px}
@@ -2591,7 +2591,7 @@ function vsDemo(n){const ST=['gold','silber','bronze','platin',null];
 const vsOhneKlick=h=>h.replace(/ data-(?:dm|n)="[^"]*"/g,'');   // Beispiel-Namen nicht anklickbar
 function vorschauHtml(s,n,akt,pl,kopf){const k=ksAus(s,akt,pl),X=vsDemo(n);
   return mitVorschau(n,k,()=>vsOhneKlick(`<div class="vs-raster">
-    <div><h4>🪪 Profil</h4>${prKopf(n,'Deathmatch-Profil · <span class="vs-marke">Vorschau – Beispielwerte</span>')}<button class="login" data-vsprofil="1" style="margin-top:6px">Ganzes Profil mit Beispielwerten öffnen</button></div>
+    <div><h4>🪪 Profil</h4><div class="vs-marke">Vorschau · Beispielwerte</div>${prKopf(n,'Deathmatch-Profil')}<button class="login" data-vsprofil="1" style="margin-top:6px">Ganzes Profil mit Beispielwerten öffnen</button></div>
     <div><h4>🏆 Siegerbanner</h4>${SIEGER(n)}<div class="mut" style="margin-top:6px">So steht dein Name 24 Stunden oben auf der Seite, wenn du das Siegerbanner kaufst.</div></div>
     <div><h4>🎯 Killfeed</h4><div class="kf">${X.kills.map(kfZeile).join('')}</div></div>
     <div class="scroll" style="grid-column:1/-1"><h4>📊 Stand dieser Runde</h4><table>${STAND_KOPF}${X.stand.map((r,i)=>standZeile(r,i,{kopfgeld:n,juggernaut:[]})).join('')}</table></div>
@@ -2608,8 +2608,8 @@ function vsZeichnen(d){const s=d&&d.shop,el=$('#vsBox');if(!s||!s.gt||!el)return
   $$('#vsBox [data-vs0]').forEach(b=>b.onclick=()=>{PROBE={};PPLAK=null;vsZeichnen(d)});
   $$('#vsBox [data-vsprofil]').forEach(b=>b.onclick=()=>vsProfil(s,n,v))}
 function vsProfil(s,n,v){const X=vsDemo(n),k=ksAus(s,v.akt,v.pl);
-  mitVorschau(n,k,()=>{const T=dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil · <span class="vs-marke">Vorschau – Beispielwerte</span> · nichts davon ist echt gespeichert');
-    T[1]=T[1].map(r=>[r[0],vsOhneKlick(r[1])]);profilDialog(vsOhneKlick(T[0]),T[1])},X.lvs)}
+  mitVorschau(n,k,()=>{const T=dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil · nichts davon ist echt gespeichert');
+    T[1]=T[1].map(r=>[r[0],vsOhneKlick(r[1])]);profilDialog(`<div class="vs-marke">Vorschau · Beispielwerte</div>${vsOhneKlick(T[0])}`,T[1])},X.lvs)}
 function vsBinden(d){$$('#mr-shop [data-kv]').forEach(b=>b.onclick=()=>{const p=b.dataset.pl,id=b.dataset.kv;
     if(PROBE[p]===id)delete PROBE[p];else PROBE[p]=id;vsZeichnen(d);const x=$('#shopVorschau');if(x){x.open=true;x.scrollIntoView({block:'nearest'})}});
   $$('#mr-shop [data-kvleer]').forEach(b=>b.onclick=()=>{const p=b.dataset.kvleer;if(p in PROBE&&!PROBE[p])delete PROBE[p];else PROBE[p]='';vsZeichnen(d);$('#shopVorschau').open=true});
@@ -2618,7 +2618,7 @@ function vsBinden(d){$$('#mr-shop [data-kv]').forEach(b=>b.onclick=()=>{const p=
   vsZeichnen(d)}
 // Testkonto: komplettes Demo-Profil mit der getragenen Ausstattung direkt auf "Meine -> Übersicht"
 function vsTestkonto(d){const s=d.shop;if(!s||!s.test||!s.gt)return '';const n=s.gt,mk=s.meine_kosmetik||{aktiv:{}},X=vsDemo(n),k=ksAus(s,mk.aktiv,mk.plakette);
-  const T=mitVorschau(n,k,()=>dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil · <span class="vs-marke">Vorschau – Beispielwerte</span>'),X.lvs);
+  const T=mitVorschau(n,k,()=>dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil'),X.lvs);
   return `<div class="panel vs"><h3>🧪 Testkonto · Demo-Profil <span class="vs-marke">Beispielwerte</span></h3>
     <div class="hinweis">Das ist ein Testkonto: es spielt nicht mit, steht in keiner Rangliste und bekommt keine Rubel aus Runden oder Level. Damit du trotzdem alles siehst, steht hier ein komplettes Profil mit <b>Beispielwerten</b> und deiner getragenen Ausstattung. Ausstattung wechseln und einzelne Teile anprobieren: Reiter „🛒 Rubel-Shop“.</div>
     ${vorschauHtml(s,n,mk.aktiv,mk.plakette)}
