@@ -533,6 +533,10 @@ nav button{min-width:0}
   #granModal{border:2px solid #e8775f;max-width:min(520px,calc(100vw - 24px));padding:18px 20px;background:var(--bg);color:var(--text)}
   #granModal::backdrop{background:rgba(0,0,0,.75)}
   #granModal h3{margin:0 0 10px;color:#f39886} #granModal .gu-opt{margin-top:10px} #granModal .gu-erg{margin-top:10px}
+#shopVorrat[hidden],#shopKosmetik[hidden]{display:none}
+#shopVorschau summary{cursor:pointer;font-weight:700;color:var(--acc2)}
+#shopVorschau[open] summary{margin-bottom:12px}
+#shopKosmetik .seg{flex-wrap:wrap}
 #t-evakuierung button:disabled{opacity:.45;cursor:not-allowed}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
@@ -1942,7 +1946,8 @@ function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gol
 const SHOP_OFFEN=['offen','freigegeben','hochgeladen'];let KORB={},SWEG=null,SZIEL=null,SKAT=null;
 async function shopPost(u,b){let r,j={};try{r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});j=await r.json().catch(()=>({}))}catch(e){alert('Keine Verbindung');return null}if(!r.ok||!j.ok){alert(j.meldung||'Ging nicht');return null}return j}
 function shopNeu(){delete $('#mr-shop').dataset.sig;meineLaden()}
-function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
+let SHOPREITER='vorrat',SHOPKOSMETIK=null;
+function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');const vorschauOffen=$('#shopVorschau')?.open;
   if(!s){el.innerHTML='<div class="panel"><h3>🛒 Rubel-Shop</h3><div class="mut">Der Shop ist gerade nicht verfügbar.</div></div>';return}
   if(!s.gt){el.innerHTML='<div class="panel"><h3>🛒 Rubel-Shop</h3><div class="hinweis">Dir ist noch kein Deathmatch-Gamertag zugeordnet. Rubel verdienst du in gewerteten Deathmatch-Runden mit deinem DM-Gamertag.</div></div>';return}
   const v=s.verdienst||{},K=s.katalog||[],kats=[...new Set(K.map(a=>a.kategorie))],H=s.heute||{bestellungen:0,max:3,max_klasse:2,klassen:{}},LK=s.limit_kat||[];
@@ -1965,6 +1970,10 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
     <div class="skopf"><div><div class="mut">Dein Guthaben</div><div class="rubel">${esc(s.stand_text)}</div></div>
     <div class="mut">So verdienst du Rubel (nur gewertete Deathmatch-Runden ab ${v.min_spieler} Spielern): ${RUB(v.kurs_punkt)} je Rundenpunkt, ${RUB(v.teilnahme)} fürs Mitspielen, ${RUB(v.sieg)} für den Rundensieg.
       Höchstens ${v.farm_max} bezahlte Kills auf dasselbe Opfer je Runde, Deckel ${RUB(v.max_runde)} je Runde und ${RUB(v.max_tag)} je Tag.</div></div></div>
+  <div class="reiter" id="shopReiter" role="group" aria-label="Rubel-Shop">
+    ${[['vorrat','Vorräte'],['kosmetik','Kosmetik']].map(([id,label])=>`<button type="button" data-shopreiter="${id}" class="${SHOPREITER===id?'an':''}" aria-pressed="${SHOPREITER===id}">${label}</button>`).join('')}
+  </div>
+  <section id="shopVorrat" aria-label="Vorräte" ${SHOPREITER==='vorrat'?'':'hidden'}>
   <div class="panel"><h3>📦 Vorräte für den PvE-Server</h3>
     <div class="mut" style="margin-bottom:8px">Bestellen → der Admin gibt frei → Lieferung beim nächsten PvE-Neustart. Höchstens ${H.max} Bestellungen am Tag zu je ${s.max_teile} Teilen, Munition und Magazine höchstens ${H.max_klasse} je Sorte am Tag. Kein Handel: geliefert wird nur an deine eigenen PvE-Charaktere. Bei Ablehnung, Storno oder wenn nach 2 Neustarts nichts da ist, bekommst du alles zurück.</div>
     <div class="seg" id="sKat">${kats.map(k=>`<button data-k="${esc(k)}" class="${k===SKAT?'an':''}">${esc(k)}</button>`).join('')}</div>
@@ -1978,11 +1987,25 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');
   <div class="panel"><h3>🧾 Meine Bestellungen</h3>${(s.bestellungen||[]).length?(s.bestellungen.map(b=>`<div class="rh"><span>#${esc(b.id)} · ${datumB(b.t)}</span><b>${b.namen.map(x=>x[1]+'× '+esc(x[0])).join(', ')}</b>
     <span class="mut">${esc(b.summe_text)} · ${esc(b.weg_text)}${b.ziel&&b.ziel.text?' ('+esc(b.ziel.text)+')':''} · <b style="color:var(--acc2)">${esc(b.status_text)}</b>${b.hinweis?' · '+esc(b.hinweis):''}${b.grund?' · '+esc(b.grund):''}</span>
     ${b.status==='offen'?`<button class="login" data-storno="${esc(b.id)}">Stornieren</button>`:''}</div>`).join('')):'<div class="mut">Noch keine Bestellung.</div>'}</div>
-  <div id="vsBox"></div>
-  <div class="panel"><h3>✨ Kosmetik für dein Profil</h3><div class="mut" style="margin-bottom:8px">Sichtbar in den Ranglisten, im Killfeed und in deinem Profil. Gekauft ist gekauft, wechseln kostet nichts. Mit „👁 Vorschau“ probierst du jedes Teil an, auch ohne es zu kaufen (oben im Vorschau-Kasten).</div>
-    ${kosmetikTeil(s,mk)}
-    </div>${clanTeil(s,mk)}${diensteTeil(s,mk)}
+  </section>
+  <section id="shopKosmetik" aria-label="Kosmetik" ${SHOPREITER==='kosmetik'?'':'hidden'}>
+    <div class="panel"><h3>Profilkosmetik</h3>
+    ${kosmetikTeil(s,mk)}</div>
+    <details class="panel" id="shopVorschau" ${vorschauOffen?'open':''}><summary>Vorschau für Profil, Rangliste und Killfeed</summary><div id="vsBox"></div></details>
+    ${clanTeil(s,mk)}${diensteTeil(s,mk)}
+  </section>
   <div class="panel"><h3>📒 Kontoauszug</h3>${(s.auszug||[]).length?`<div class="buch">${s.auszug.slice(0,60).map(x=>`<span class="mut dat">${datumB(x.t)}</span><span>${esc(x.text)}</span><span class="${x.betrag<0?'minus':'plus'}">${x.betrag>0?'+':''}${esc(x.betrag_text)}</span><span class="mut saldo">${esc(x.saldo_text||'')}</span>`).join('')}</div>`:'<div class="mut">Noch keine Buchung. Spiel eine gewertete Deathmatch-Runde!</div>'}</div>`;
+  $$('#shopReiter [data-shopreiter]').forEach(b=>b.onclick=()=>{
+    SHOPREITER=b.dataset.shopreiter;
+    $('#shopVorrat').hidden=SHOPREITER!=='vorrat';
+    $('#shopKosmetik').hidden=SHOPREITER!=='kosmetik';
+    $$('#shopReiter button').forEach(x=>{x.classList.toggle('an',x===b);x.setAttribute('aria-pressed',String(x===b))});
+  });
+  $$('#mr-shop [data-shopkosmetik]').forEach(b=>b.onclick=()=>{
+    SHOPKOSMETIK=b.dataset.shopkosmetik;
+    shopZeichnen(d);
+    $$('#mr-shop [data-shopkosmetik]').find(x=>x.dataset.shopkosmetik===SHOPKOSMETIK)?.focus({preventScroll:true});
+  });
   $$('#sKat [data-k]').forEach(b=>b.onclick=()=>{SKAT=b.dataset.k;shopZeichnen(d)});
   $$('#sWeg [data-w]').forEach(b=>b.onclick=()=>{SWEG=b.dataset.w;SZIEL=null;shopZeichnen(d)});
   const zs=$('#sZiel');if(zs)zs.onchange=()=>{SZIEL=zs.value;shopZeichnen(d)};
@@ -2062,9 +2085,8 @@ function vsZeichnen(d){const s=d&&d.shop,el=$('#vsBox');if(!s||!s.gt||!el)return
   const v=vsSatz(s),pr=Object.entries(PROBE).map(([p,id])=>id?`<span class="chip">${esc(K[id]?K[id].name:id)}${mk.besitz.includes(id)?'':' · nicht gekauft'}</span>`:`<span class="chip">${esc(KPL[p]||p)}: ohne</span>`);
   if(PPLAK)pr.push(`<span class="chip">Clan-Tag ${esc(PPLAK.text)} · nicht beantragt</span>`);
   const maske=D&&D.titel&&D.titel[n]&&v.akt.titel?`<div class="hinweis">Hinweis: Du hast einen Erfolgs-Titel gewählt („${esc(D.titel[n])}“). Er steht statt des Wunschtitels neben deinem Namen. Unter „Titel“ kannst du ihn abwählen.</div>`:'';
-  el.innerHTML=`<div class="panel vs"><h3>👁 Vorschau <span class="vs-marke">Beispielwerte</span></h3>
-    <div class="mut">So sieht <b>${esc(n)}</b> an den wichtigsten Stellen der Seite aus. Zu sehen ist deine getragene Ausstattung${pr.length?' plus das, was du gerade anprobierst':''}. Alle Zahlen sind Beispielwerte, nichts davon kommt in eine Statistik oder Rangliste, und die anderen sehen nichts davon.</div>
-    <div class="vs-probe">${pr.length?'🧪 Anprobiert: '+pr.join(' ')+' <button class="login grau" data-vs0="1">Zurück zu meiner Ausstattung</button>':'<span class="mut">Tipp: Bei jedem Teil unten auf „👁 Vorschau“ tippen, um es ohne Kauf anzuprobieren. Mehrere Teile lassen sich kombinieren.</span>'}</div>
+  el.innerHTML=`<div class="vs"><h4>Vorschau <span class="vs-marke">Beispielwerte</span></h4>
+    <div class="vs-probe">${pr.length?pr.join(' ')+' <button class="login grau" data-vs0="1">Anprobe zurücksetzen</button>':'<span class="mut">Deine aktuelle Ausstattung</span>'}</div>
     ${maske}${vorschauHtml(s,n,v.akt,v.pl)}</div>`;
   $$('#mr-shop [data-kv]').forEach(b=>{const an=PROBE[b.dataset.pl]===b.dataset.kv;b.textContent=an?'✓ Anprobiert':'👁 Vorschau';b.closest('.ware>div')?.classList.toggle('vsan',an)});
   $$('#vsBox [data-vs0]').forEach(b=>b.onclick=()=>{PROBE={};PPLAK=null;vsZeichnen(d)});
@@ -2073,8 +2095,8 @@ function vsProfil(s,n,v){const X=vsDemo(n),k=ksAus(s,v.akt,v.pl);
   mitVorschau(n,k,()=>{const T=dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil · <span class="vs-marke">Vorschau – Beispielwerte</span> · nichts davon ist echt gespeichert');
     T[1]=T[1].map(r=>[r[0],vsOhneKlick(r[1])]);profilDialog(vsOhneKlick(T[0]),T[1])},X.lvs)}
 function vsBinden(d){$$('#mr-shop [data-kv]').forEach(b=>b.onclick=()=>{const p=b.dataset.pl,id=b.dataset.kv;
-    if(PROBE[p]===id)delete PROBE[p];else PROBE[p]=id;vsZeichnen(d);const x=$('#vsBox');if(x&&x.scrollIntoView)x.scrollIntoView({behavior:'smooth',block:'start'})});
-  $$('#mr-shop [data-kvleer]').forEach(b=>b.onclick=()=>{const p=b.dataset.kvleer;if(p in PROBE&&!PROBE[p])delete PROBE[p];else PROBE[p]='';vsZeichnen(d)});
+    if(PROBE[p]===id)delete PROBE[p];else PROBE[p]=id;vsZeichnen(d);const x=$('#shopVorschau');if(x){x.open=true;x.scrollIntoView({block:'nearest'})}});
+  $$('#mr-shop [data-kvleer]').forEach(b=>b.onclick=()=>{const p=b.dataset.kvleer;if(p in PROBE&&!PROBE[p])delete PROBE[p];else PROBE[p]='';vsZeichnen(d);$('#shopVorschau').open=true});
   const pt=$('#pkText'),probe=()=>{const x=(pt&&pt.value||'').trim();PPLAK=x?{text:x.slice(0,12),farbe:PFARBE,sichtbar:true}:null;vsZeichnen(d)};
   if(pt)pt.addEventListener('input',probe);$$('#mr-shop input[name=pkFarbe]').forEach(i=>i.addEventListener('change',()=>{if(PPLAK)probe()}));
   vsZeichnen(d)}
@@ -2093,7 +2115,10 @@ function kosmVorschau(k,gt){const c=' ks-'+k.id.replace(/_/g,'-');
   if(k.platz==='abzeichen')return `<span class="gt">${esc(gt)}</span><span class="abz">${esc(k.name.replace(/^Abzeichen /,''))}</span>`;
   return `<span class="gt${c}"><span>${esc(gt)}</span></span>`}
 function kosmetikTeil(s,mk){const pl=[...new Set((s.kosmetik||[]).map(k=>k.platz))];
-  return pl.map(p=>`<h4>${KPL[p]||esc(p)}</h4><div class="ware">${s.kosmetik.filter(k=>k.platz===p).map(k=>{const hab=mk.besitz.includes(k.id),an=mk.aktiv[k.platz]===k.id,zu=k.kaufbar===false;
+  if(!pl.length)return '<p class="mut">Aktuell gibt es keine Profilkosmetik.</p>';
+  if(!pl.includes(SHOPKOSMETIK))SHOPKOSMETIK=pl[0];
+  const kategorien=`<div class="seg" role="group" aria-label="Kosmetikkategorien">${pl.map(p=>`<button type="button" data-shopkosmetik="${esc(p)}" class="${p===SHOPKOSMETIK?'an':''}" aria-pressed="${p===SHOPKOSMETIK}">${KPL[p]||esc(p)}</button>`).join('')}</div>`;
+  return kategorien+[SHOPKOSMETIK].map(p=>`<div class="ware">${s.kosmetik.filter(k=>k.platz===p).map(k=>{const hab=mk.besitz.includes(k.id),an=mk.aktiv[k.platz]===k.id,zu=k.kaufbar===false;
     return `<div><span>${kosmVorschau(k,s.gt)}</span><b>${esc(k.name)}</b>${k.von?`<span class="mut">kaufbar ${esc(k.von.slice(8)+'.'+k.von.slice(5,7))}.–${esc(k.bis.slice(8)+'.'+k.bis.slice(5,7))}.</span>`:''}
       <div class="zeile"><span class="preis">${hab?'gekauft':esc(k.preis_text)}</span>${hab?`<button class="login" data-kw="${esc(k.id)}" data-pl="${k.platz}" data-an="${an?1:0}">${an?'Ablegen':'Tragen'}</button>`:`<button class="login" data-kk="${esc(k.id)}" ${k.preis>s.stand||!s.an||zu?'disabled':''}>${zu?'Nicht jetzt':'Kaufen'}</button>`}</div>
       <div class="zeile"><button class="login grau" data-kv="${esc(k.id)}" data-pl="${k.platz}">👁 Vorschau</button></div></div>`}).join('')}</div>${mk.aktiv[p]?`<div class="mut" style="margin:-6px 0 10px"><button class="login grau" data-kvleer="${p}">👁 Vorschau ohne ${esc((KPL[p]||p).replace(/^\S+ /,''))}</button></div>`:''}`).join('')}
