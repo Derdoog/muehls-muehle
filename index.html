@@ -1814,8 +1814,8 @@ function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
 const RK_ZU=new Set();   // Update 173: zugeklappte Kategorien bleiben bei jeder Aktualisierung zu
 function ruhmKat(R){   // Update 172/173: Ruhmeshalle DM als Tabelle je Kategorie, nur Platz 1
   const datum=t=>new Date(t*1000).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});
-  const zeile=x=>{const [n,w]=x.top[0],det=[x.info,x.seit?datum(x.seit):''].filter(Boolean).join(' · ');
-    return `<tr><td>${esc(x.t)}${x.h?' '+statistikInfo(x.h):''}</td><td><span class="name" data-dm="${esc(n)}">${GT(n,'dm')}</span></td><td><b>${esc(w)}</b>${det?`<small class="mut">${esc(det)}</small>`:''}</td></tr>`};
+  const zeile=x=>{const [,w]=x.top[0],sieger=x.id==='granaten_v'?x.top.filter(([,wert])=>wert===w):x.top.slice(0,1),det=[x.info,x.seit?datum(x.seit):''].filter(Boolean).join(' · ');
+    return `<tr><td>${esc(x.t)}${x.h?' '+statistikInfo(x.h):''}</td><td>${sieger.map(([n])=>`<span class="name" data-dm="${esc(n)}">${GT(n,'dm')}</span>`).join(' / ')}</td><td><b>${esc(w)}</b>${det?`<small class="mut">${esc(det)}</small>`:''}</td></tr>`};
   return (R.kat||[]).map(([k,t])=>{const es=R.rekorde.filter(x=>x.kat===k);
     return es.length?`<details class="rk-kat" data-rk="${esc(k)}" ${RK_ZU.has(k)?'':'open'}><summary>${esc(t)} <span class="mut">${es.length}</span></summary>
       <table class="rk-tab"><tr><th>Rekord</th><th>Spieler</th><th>Wert</th></tr>${es.map(zeile).join('')}</table></details>`:''}).join('')}
