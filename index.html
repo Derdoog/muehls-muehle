@@ -2184,7 +2184,7 @@ function summeText(s,waffen){
 }
 function titelSelect(gt,bereich,stil,akt){const opt=(stil||[]).filter(x=>x.n).map(x=>[bereich+':'+x.id,(bereich==='dm'?'⚔️ ':'🌲 ')+x.titel+' ('+(STN[x.stufe]||'')+')']);
   const a=akt&&akt.bereich===bereich?bereich+':'+akt.id:'';
-  return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Stil-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
+  return `<div class="zeile" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0"><b>${esc(gt)}</b><select class="wahl" data-titel="${esc(gt)}" data-bereich="${bereich}"><option value="">– kein Titel –</option>${opt.map(([v,t])=>`<option value="${esc(v)}" ${v===a?'selected':''}>${esc(t)}</option>`).join('')}</select>${opt.length?'':`<span class="mut">Hol dir einen ${bereich==='dm'?'DM':'PvE'}-Erfolg, dann kannst du ihn als Titel tragen.</span>`}</div>`}
 const uebersichtPanel=(titel,inhalt)=>`<section class="panel"><h4>${esc(titel)}</h4>${inhalt}</section>`;
 function podestKartenRivalen(m){
   const p=m.profil||{};
@@ -2550,7 +2550,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gol
   $('#mr-heat').innerHTML=(m&&Object.keys(m.heat||{}).length)?`<h4>🔥 Deine Deathmatch-Heatmap je Arena <span class="mut">(nur für dich, nach Rundenende)</span></h4><div class="bgs" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${Object.values(m.heat).map(h=>`<div><b>${esc(h.titel)}</b>${heatBild(h)}</div>`).join('')}</div><div class="mut">Brauner Rand = Arena-Mauer.</div>`:'<div class="mut">Noch keine Deathmatch-Heatmap.</div>';
   // Titel
   $('#mr-titel').innerHTML=`<div class="panel"><h3>🏷 Titel unter deinem Namen</h3><div class="mut">Deathmatch und PvE getrennt: ein DM-Titel nur für deinen DM-Gamertag, PvE-Titel je PvE-Charakter.</div>
-    <section class="m-nur-dm"><h4>⚔️ Deathmatch</h4>${m?titelSelect(m.name,'dm',m.stil,m.titel_wahl):keinDm}
+    <section class="m-nur-dm"><h4>⚔️ Deathmatch</h4>${m?titelSelect(m.name,'dm',[...(m.stil||[]),...(m.haupt||[]).filter(e=>e.id==='kopfsache')],m.titel_wahl):keinDm}
     </section><section class="m-nur-pve"><h4>🌲 PvE</h4>${(d.pve_einzeln||[]).length?d.pve_einzeln.map(x=>titelSelect(x.name,'pve',x.stil,x.titel_wahl)).join(''):keinPve}</section></div>`;
   $$('#mr-titel [data-titel]').forEach(s=>s.onchange=async()=>{const [b,id]=(s.value||(s.dataset.bereich+':')).split(':');
     const r=await fetch('/zuschauer/titel',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({gamertag:s.dataset.titel,bereich:b||s.dataset.bereich,id})});
