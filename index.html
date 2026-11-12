@@ -690,7 +690,7 @@ nav button{min-width:0}
   <div id="liveLeiste" hidden></div>
   <div class="serverleiste">
     <div class="serverstatus"><div class="status" id="sStatus" hidden></div><span class="mut" id="stand">lade …</span></div>
-    <div id="dMatchAktion"></div>
+    <div id="dMatchAktion"></div><button class="status" type="button" id="juggErneut" hidden>Juggernaut · Bereitschaft</button>
   </div>
   <div id="banner"></div>
   <section class="tab an" id="t-pve">
@@ -2934,6 +2934,9 @@ let juggLobby=null,juggGefragt=null,juggSendet=false;
 const juggDialog=$('#juggBereit');
 function juggZeichnen(lobby){
   juggLobby=lobby;
+  $('#juggErneut').hidden=!(lobby.offen&&lobby.kann_bereit);
+  $('#juggJa').disabled=!!lobby.ich_bereit;
+  $('#juggNein').textContent=lobby.ich_bereit?'Bereitmeldung zurücknehmen':'Noch warten';
   if(!lobby.offen||!lobby.kann_bereit){
     juggGefragt=null;
     if(juggDialog.open)juggDialog.close();
@@ -2968,6 +2971,7 @@ async function juggMelden(bereit){
 }
 $('#juggJa').onclick=()=>juggMelden(true);
 $('#juggNein').onclick=()=>juggMelden(false);
+$('#juggErneut').onclick=()=>{if(!juggDialog.open){$('#juggFehler').textContent='';juggDialog.showModal()}};
 if(DIREKT)setInterval(()=>{if(!document.hidden&&ICH?.benutzer)juggLaden()},5000);
 if(DIREKT){eLaden();setInterval(()=>{if(!document.hidden)eLaden()},5000)}
 if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an')||$('#t-shop').classList.contains('an'))meineLaden()},15000);
