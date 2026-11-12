@@ -296,7 +296,13 @@
 .rk-kat{border-top:1px solid var(--line);padding:4px 0}.rk-kat:first-child{border-top:0}
 .rk-kat>summary{cursor:pointer;font-weight:600;padding:6px 0;list-style:none}.rk-kat>summary::-webkit-details-marker{display:none}
 .rk-kat>summary::before{content:'▸ ';color:var(--mut)}.rk-kat[open]>summary::before{content:'▾ '}
-.rk .rk-mehr{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:2px 14px;font-size:12px;color:var(--mut)}.rk .rk-mehr i{font-style:normal}
+.rk-tab{width:100%;border-collapse:collapse;font-size:13px;margin:2px 0 6px}
+.rk-tab th{text-align:left;font-weight:500;color:var(--mut);font-size:12px;padding:3px 6px;border-bottom:1px solid var(--line2)}
+.rk-tab td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}.rk-tab tr:last-child td{border-bottom:0}
+.rk-tab{table-layout:fixed}.rk-tab th,.rk-tab td{text-align:left;white-space:normal;overflow-wrap:break-word;border-top:0}
+.rk-tab th:nth-child(1){width:38%}.rk-tab th:nth-child(2){width:28%}.rk-tab td:first-child{color:var(--mut)}
+.rk-tab td:last-child small{display:block;font-size:11px;margin-top:1px}
+@media (max-width:520px){.rk-tab{font-size:12px}.rk-tab th:nth-child(1){width:36%}.rk-tab th:nth-child(2){width:30%}.rk-tab td{padding:5px 4px}}
   }
   :is(#dr-wertung,.pve-level-panel) table{table-layout:fixed}
   :is(#dr-wertung,.pve-level-panel) :is(th,td){white-space:normal;overflow-wrap:anywhere}
@@ -904,6 +910,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     ['kopfgeld_kills','💰 Meiste Kopfgelder',v=>v],['jugg_kills','🛡️ Juggernaut-Jäger',v=>v]];
   $('#dRuhm').innerHTML=m.ruhm&&(m.ruhm.rekorde||[]).length?ruhmKat(m.ruhm):ruhm(m.elo,dmR,'data-dm')+(re.runde_kills?`<div class="rh"><span>🏅 Meiste Kills in einer Runde</span><b>${GT(re.runde_kills[0],'dm')}</b><span class="mut">${re.runde_kills[1]} Kills · ${esc(re.runde_kills[2])}</span></div>`:'')
     +(re.weitester?`<div class="rh"><span>📏 Weitester Schuss</span><b>${GT(re.weitester[0],'dm')}</b><span class="mut">${re.weitester[3]} m · ${esc(re.weitester[2]||'')} · ${esc(re.weitester[4])}</span></div>`:'')||'<div class="mut">Noch keine Rekorde.</div>';
+  ruhmKatMerken();
   $('#pRuhm').innerHTML=ruhm(p.spieler,[['kills','⚔️ Meiste Kills',v=>v],['weitester','🎯 Weitester Kill',v=>v+' m'],['kopf','💀 Meiste Kopfschüsse',v=>v],['spielzeit','⏳ Meiste Spielzeit',v=>dauer(v)],
     ['strecke','🥾 Weiteste Strecke',v=>v+' km'],['erfolge','🏅 Meiste Erfolge',v=>v],['sitzungen','🔁 Meiste Besuche',v=>v]],'data-n')
     +(()=>{const u=Object.entries(p.profile||{}).filter(([n,x])=>x.ueberlebt).sort((a,b)=>b[1].ueberlebt-a[1].ueberlebt)[0];return u?`<div class="rh"><span>🛡️ Lebt am längsten (aktuell)</span><b class="name" data-n="${esc(u[0])}">${esc(u[0])}</b><span class="mut">${dauer(u[1].ueberlebt)} Spielzeit ohne Tod</span></div>`:''})()||'<div class="mut">Noch keine Rekorde.</div>';
@@ -1187,13 +1194,15 @@ function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
       ${x.status==='abgelaufen'&&x.planquadrat?`<div class="mut">Lag in Planquadrat ${esc(x.planquadrat)}</div>`:''}</div></div>`).join('')}
     ${s.rang&&s.rang.length?`<div class="mut" style="margin-top:6px">🏴‍☠️ Rangliste: ${s.rang.slice(0,5).map((r,i)=>esc(r[0])+' '+r[1]).join(' · ')}</div>`:''}
     <div class="mut" style="margin-top:6px">Gefunden ist ein Schatz, wenn du direkt daneben stehst (Spielerliste alle 5 min) oder dort ein Emote machst.</div>`}
-function ruhmKat(R){   // Update 172: Ruhmeshalle DM in Kategorien, Platz 1 bis 3
+const RK_ZU=new Set();   // Update 173: zugeklappte Kategorien bleiben bei jeder Aktualisierung zu
+function ruhmKat(R){   // Update 172/173: Ruhmeshalle DM als Tabelle je Kategorie, nur Platz 1
   const datum=t=>new Date(t*1000).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});
-  const zeile=x=>{const [n,w]=x.top[0];
-    return `<div class="rh rk"><span>${esc(x.t)}${x.h?' '+statistikInfo(x.h):''}</span><b class="name" data-dm="${esc(n)}">${GT(n,'dm')}</b><span class="mut">${esc(w)}${x.info?' · '+esc(x.info):''}${x.seit?' · '+datum(x.seit):''}</span>${
-      x.top.length>1?`<span class="rk-mehr">${x.top.slice(1).map((y,i)=>`<span>${['🥈','🥉'][i]} <span class="name" data-dm="${esc(y[0])}">${esc(y[0])}</span> <i>${esc(y[1])}</i></span>`).join('')}</span>`:''}</div>`};
-  return (R.kat||[]).map(([k,t],i)=>{const es=R.rekorde.filter(x=>x.kat===k);
-    return es.length?`<details class="rk-kat" ${i<2?'open':''}><summary>${esc(t)} <span class="mut">${es.length}</span></summary>${es.map(zeile).join('')}</details>`:''}).join('')}
+  const zeile=x=>{const [n,w]=x.top[0],det=[x.info,x.seit?datum(x.seit):''].filter(Boolean).join(' · ');
+    return `<tr><td>${esc(x.t)}${x.h?' '+statistikInfo(x.h):''}</td><td><span class="name" data-dm="${esc(n)}">${GT(n,'dm')}</span></td><td><b>${esc(w)}</b>${det?`<small class="mut">${esc(det)}</small>`:''}</td></tr>`};
+  return (R.kat||[]).map(([k,t])=>{const es=R.rekorde.filter(x=>x.kat===k);
+    return es.length?`<details class="rk-kat" data-rk="${esc(k)}" ${RK_ZU.has(k)?'':'open'}><summary>${esc(t)} <span class="mut">${es.length}</span></summary>
+      <table class="rk-tab"><tr><th>Rekord</th><th>Spieler</th><th>Wert</th></tr>${es.map(zeile).join('')}</table></details>`:''}).join('')}
+function ruhmKatMerken(){$$('#dRuhm .rk-kat').forEach(x=>x.ontoggle=()=>{const k=x.dataset.rk;if(x.open)RK_ZU.delete(k);else RK_ZU.add(k)})}
 function ruhm(liste,felder,attr){return felder.map(([k,t,f])=>{const best=[...(liste||[])].filter(s=>(s[k]||0)>0).sort((a,b)=>b[k]-a[k])[0];
   return best?`<div class="rh"><span>${t}</span><b class="name" ${attr}="${esc(best.name)}">${GT(best.name,attr==='data-dm'?'dm':'pve')}</b><span class="mut">${f(best[k])}</span></div>`:''}).join('')}
 function countdown(bis){const s=Math.max(0,Math.round(bis-Date.now()/1000));return s<=0?'gleich':Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' min'}
