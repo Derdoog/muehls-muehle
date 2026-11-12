@@ -680,10 +680,33 @@ nav button{min-width:0}
 .serverstatus #stand{font-size:10px;white-space:nowrap;opacity:.75}
 @media(max-width:540px){.kopf{padding-top:10px}.kopf-aktionen{margin-top:8px}.serverstatus{gap:6px;padding:0 7px}.serverstatus #stand{font-size:9px}}
 </style>
+<style>
+/* Einheitliche Oberfläche und persönliche Ansicht */
+:root{--ui-radius:10px}
+header{background:linear-gradient(180deg,#1a211c,#111713);border-bottom:1px solid var(--line2)}
+.kopf{padding-top:14px;padding-bottom:8px}h1{font-size:20px;letter-spacing:.06em}
+.kopf-aktionen{gap:6px}.kopf-aktionen .login{border-radius:7px;min-height:34px;padding:7px 10px;letter-spacing:.025em}
+#ansichtBtn{color:var(--text)}
+nav{gap:6px;padding-top:4px}nav button{clip-path:none;border:1px solid transparent;border-bottom:0;border-radius:8px 8px 0 0;letter-spacing:.035em}
+nav button.an{border-color:var(--line2);background:var(--panel2)}nav button::after{height:2px;border-radius:2px}
+main{padding-top:20px}.panel{border-radius:var(--ui-radius);box-shadow:0 5px 20px rgba(0,0,0,.16);padding:18px;margin-bottom:16px}.panel::before,.panel::after{display:none}
+.panel h3{letter-spacing:.045em}.kachel{clip-path:none;border-radius:8px}.reiter button{clip-path:none;border-radius:7px}.reiter button.an{background:var(--acc);color:#171712}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.ansicht-dialog{width:min(600px,calc(100vw - 24px));max-height:min(85vh,800px);overflow:auto;padding:22px;background:var(--panel);color:var(--text);border:1px solid var(--line2);border-radius:14px}
+.ansicht-dialog::backdrop{background:rgba(0,0,0,.72)}.ansicht-kopf{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.ansicht-kopf h2{margin:1px 0 0;font-size:22px}.ansicht-kicker{font-size:10px;letter-spacing:.1em;color:var(--acc2);font-weight:700}
+.ansicht-raster{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.ansicht-raster label{display:grid;gap:5px;font-weight:600}.ansicht-raster select{width:100%;background:var(--bg2);color:var(--text);border:1px solid var(--line2);border-radius:6px;padding:9px;font:inherit}
+.ansicht-bereiche{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;border:1px solid var(--line);border-radius:8px;padding:12px;margin:18px 0}.ansicht-bereiche legend{font-weight:700}.ansicht-bereiche p{grid-column:1/-1;margin:0}.ansicht-bereiche label{display:flex;align-items:center;gap:8px}.ansicht-bereiche input{accent-color:var(--acc);width:18px;height:18px}
+.ansicht-fuss{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.ansicht-fuss .mut{flex:1 1 100%}.ansicht-fuss button{border-radius:6px}
+:root[data-dichte="kompakt"] main .panel{padding:10px 12px;margin-bottom:8px}:root[data-dichte="kompakt"] .kacheln{gap:6px;margin-bottom:8px}:root[data-dichte="kompakt"] .kachel{padding:8px 10px}
+:root[data-dichte="gross"] body{font-size:17px}:root[data-dichte="gross"] main .mut{font-size:15px}:root[data-dichte="gross"] main .panel h3{font-size:16px}:root[data-dichte="gross"] main table{font-size:16px}
+:root[data-bewegung="weniger"] *, :root[data-bewegung="weniger"] *::before, :root[data-bewegung="weniger"] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+:root[data-pve-ereignisse="aus"] #t-pve .panel:has(#pEv),:root[data-pve-rangliste="aus"] #pRangBox,:root[data-pve-ruhm="aus"] #t-pve .panel:has(#pRuhm),:root[data-pve-ruhm="aus"] #t-pve .panel:has(#pLevel),:root[data-pve-termine="aus"] #t-pve .panel:has(#pKal){display:none}
+@media(max-width:600px){header{position:relative}.kopf{padding:10px 10px 6px}.kopf-aktionen{display:grid;grid-template-columns:auto auto minmax(0,1fr) auto;gap:4px}.kopf-aktionen .login{min-height:34px;padding:6px 5px;font-size:10px}nav{padding:5px 8px 0;gap:5px}nav button{min-height:42px;border-radius:7px 7px 0 0}main{padding-top:12px}.panel{padding:14px;margin-bottom:12px}.ansicht-dialog{padding:16px}.ansicht-raster{grid-template-columns:1fr}}
+</style>
 </head>
 <body>
 <header>
-  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><button class="login" id="shopBtn" type="button">🛒 Shop</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="shopBtn" type="button">🛒 Shop</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
   <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">PvE Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button></nav>
 </header>
 <main>
@@ -1292,7 +1315,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
   <form method="dialog"><button class="login" aria-label="Cookie-Einstellungen schließen">✕</button></form>
   <h2 id="recht-speicher-titel">Cookie-Einstellungen</h2>
   <p>Beim Login hält ein notwendiges Sitzungscookie deine Anmeldung aufrecht. Du kannst die öffentliche Seite ohne Login nutzen.</p>
-  <p>Mit deiner Einwilligung speichert die Seite Reiter, Charakterauswahl und Kartenansicht auf diesem Gerät. Du kannst das jederzeit hier ändern und die gespeicherten Einstellungen löschen.</p>
+  <p>Mit deiner Einwilligung speichert die Seite deine Ansicht, Reiter, Charakterauswahl und Kartenansicht auf diesem Gerät. Du kannst das jederzeit hier ändern und die gespeicherten Einstellungen löschen.</p>
   <p id="speicher-status" role="status"></p>
   <div class="speicher-aktionen">
     <button type="button" class="login" data-speicher="nein">Nur notwendige Speicherung</button>
@@ -1301,7 +1324,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 </dialog>
 <script>
 const sichtSpeicher=(()=>{
-  const schluessel=['tab','meine_ebenen','meine_reiter','meine_char'];
+  const schluessel=['tab','meine_ebenen','meine_reiter','meine_char','ansicht_v2'];
   const entscheidung='dayz-ansicht-einwilligung-v1';
   function erlaubt(){try{return localStorage.getItem(entscheidung)==='ja'}catch(e){return false}}
   function loeschen(){try{schluessel.forEach(k=>localStorage.removeItem(k))}catch(e){}}
@@ -1329,8 +1352,39 @@ function rechtAusLink(){
 }
 window.addEventListener('hashchange',rechtAusLink);
 rechtAusLink();
+window.addEventListener('DOMContentLoaded',()=>{
+  const standard={dichte:'normal',bewegung:'system',bereiche:{ereignisse:true,rangliste:true,ruhm:true,termine:true}};
+  let prefs;try{const p=JSON.parse(sichtSpeicher.getItem('ansicht_v2')||'{}');prefs={...standard,...p,bereiche:{...standard.bereiche,...p.bereiche}}}catch(e){prefs={...standard,bereiche:{...standard.bereiche}}}
+  const dialog=document.getElementById('ansichtDialog'),dichte=document.getElementById('ansichtDichte'),bewegung=document.getElementById('ansichtBewegung');
+  function zeichnen(){const root=document.documentElement;root.dataset.dichte=prefs.dichte;root.dataset.bewegung=prefs.bewegung;dichte.value=prefs.dichte;bewegung.value=prefs.bewegung;
+    dialog.querySelectorAll('[data-ansicht-bereich]').forEach(el=>{const k=el.dataset.ansichtBereich;el.checked=!!prefs.bereiche[k];root.setAttribute('data-pve-'+k,el.checked?'an':'aus')});
+    document.getElementById('ansichtSpeicher').textContent=sichtSpeicher.erlaubt()?'Deine Ansicht wird auf diesem Gerät gespeichert.':'Deine Ansicht gilt bis zum Schließen der Seite.';
+  }
+  function speichern(){sichtSpeicher.setItem('ansicht_v2',JSON.stringify(prefs));zeichnen()}
+  dichte.onchange=()=>{prefs.dichte=dichte.value;speichern()};bewegung.onchange=()=>{prefs.bewegung=bewegung.value;speichern()};
+  dialog.querySelectorAll('[data-ansicht-bereich]').forEach(el=>el.onchange=()=>{prefs.bereiche[el.dataset.ansichtBereich]=el.checked;speichern()});
+  document.getElementById('ansichtBtn').onclick=()=>{zeichnen();dialog.showModal()};document.getElementById('ansichtZu').onclick=()=>dialog.close();
+  document.getElementById('ansichtReset').onclick=()=>{prefs={...standard,bereiche:{...standard.bereiche}};speichern()};
+  document.getElementById('ansichtSpeicherBtn').onclick=()=>{dialog.close();document.querySelector('[data-recht="speicher"]').click()};
+  document.querySelectorAll('[data-speicher]').forEach(el=>el.addEventListener('click',()=>{speichern()}));zeichnen();
+});
 </script>
 
+<dialog id="ansichtDialog" class="ansicht-dialog" aria-labelledby="ansichtTitel">
+  <div class="ansicht-kopf"><div><span class="ansicht-kicker">DEINE SEITE</span><h2 id="ansichtTitel">Ansicht anpassen</h2></div><button type="button" class="login" id="ansichtZu" aria-label="Ansicht schließen">✕</button></div>
+  <p class="mut">Wähle, wie du die Seite auf diesem Gerät sehen möchtest. Änderungen gelten sofort.</p>
+  <div class="ansicht-raster">
+    <label>Darstellung<select id="ansichtDichte"><option value="normal">Übersichtlich</option><option value="kompakt">Kompakt</option><option value="gross">Größere Schrift</option></select></label>
+    <label>Bewegung<select id="ansichtBewegung"><option value="system">Wie Geräteeinstellung</option><option value="weniger">Weniger Animation</option></select></label>
+  </div>
+  <fieldset class="ansicht-bereiche"><legend>PvE-Übersicht</legend><p class="mut">Blende Bereiche aus, die du gerade nicht brauchst.</p>
+    <label><input type="checkbox" data-ansicht-bereich="ereignisse"> Ereignisse</label>
+    <label><input type="checkbox" data-ansicht-bereich="rangliste"> Rangliste</label>
+    <label><input type="checkbox" data-ansicht-bereich="ruhm"> Ruhmeshalle und Level</label>
+    <label><input type="checkbox" data-ansicht-bereich="termine"> Termine</label>
+  </fieldset>
+  <div class="ansicht-fuss"><span id="ansichtSpeicher" class="mut" role="status"></span><button type="button" class="login" id="ansichtSpeicherBtn">Speicherung einstellen</button><button type="button" class="login" id="ansichtReset">Zurücksetzen</button></div>
+</dialog>
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
 <script>
 const REPO='Derdoog/muehls-muehle';
