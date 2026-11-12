@@ -1730,13 +1730,16 @@ function dmPerformance(m){
   const ueber=(key,f=1.25)=>vgOk&&vs[key]>0&&vi[key]!=null&&vi[key]>=vs[key]*f;
   const unter=(key,f=0.75)=>vgOk&&vs[key]>0&&vi[key]!=null&&vi[key]<=vs[key]*f;
   const kopfOk=(vi.kills||0)>=10;
-  const nahPlus=vgOk&&vi.nah!=null&&vs.nah!=null&&vi.nah>=vs.nah+8?`Auf kurze Distanz (unter 25 m) gewinnst du <b>${vi.nah} %</b> deiner Duelle, der Schnitt liegt bei ${zahl(vs.nah)} %.`:'';
-  const nahMinus=vgOk&&vi.nah!=null&&vs.nah!=null&&vi.nah<=vs.nah-8?`Auf kurze Distanz (unter 25 m) gewinnst du nur <b>${vi.nah} %</b> deiner Duelle, der Schnitt liegt bei ${zahl(vs.nah)} %.`:'';
-  const vgPlus=[nahPlus,ueber('kpr')?`Du machst deutlich mehr Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
-    kopfOk&&ueber('kopfquote')?`Starke Kopfschuss-Quote: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %).`:''];
-  const vgMinus=[nahMinus,unter('kpr')?`Du machst deutlich weniger Kills pro Runde als der Schnitt: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
-    kopfOk&&unter('kopfquote')?`Wenig Kopfschüsse: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %). Kopf zielen spart Treffer.`:''];
-  const vglZeilen=[['K/D','kd','',2],['Kills pro Runde','kpr','',0],['Punkte pro Runde','ppr','',0],['Siegquote','siegquote',' %',100],['Kopfschuss-Kills','kopfquote',' %',0],['Duelle unter 25 m gewonnen','nah',' %',100],['Knocks selbst erledigt','knockq',' %',100],['Assists pro Runde','apr','',0]]
+  // Update 170: klare Saetze, immer mit 'x zu y'
+  const bil=x=>`<b>${x.k} Kills zu ${x.t} Toden</b>`;
+  const pz=x=>Math.round(100*quote(x))+' %';
+  const nahPlus=vgOk&&vi.nah!=null&&vs.nah!=null&&vi.nah>=vs.nah+8?`Im Nahkampf unter 25 m bist du besser als der Rest: <b>${vi.nah} %</b> gewonnene Duelle (Schnitt ${zahl(vs.nah)} %).`:'';
+  const nahMinus=vgOk&&vi.nah!=null&&vs.nah!=null&&vi.nah<=vs.nah-8?`Im Nahkampf unter 25 m verlierst du öfter als die anderen: nur <b>${vi.nah} %</b> gewonnene Duelle (Schnitt ${zahl(vs.nah)} %).`:'';
+  const vgPlus=[nahPlus,ueber('kpr')?`Du machst viele Kills: <b>${zahl(vi.kpr)}</b> pro Runde (Schnitt ${zahl(vs.kpr)}).`:'',
+    kopfOk&&ueber('kopfquote')?`Gute Kopfschuss-Quote: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %).`:''];
+  const vgMinus=[nahMinus,unter('kpr')?`Wenig Kills pro Runde: <b>${zahl(vi.kpr)}</b> (Schnitt ${zahl(vs.kpr)}).`:'',
+    kopfOk&&unter('kopfquote')?`Wenig Kopfschüsse: <b>${vi.kopfquote} %</b> deiner Kills (Schnitt ${zahl(vs.kopfquote)} %). Auf den Kopf zielen spart Treffer.`:''];
+  const vglZeilen=[['K/D','kd','',2],['Kills pro Runde','kpr','',0],['Punkte pro Runde','ppr','',0],['Siegquote','siegquote',' %',100],['Kopfschuss-Kills','kopfquote',' %',0],['Duelle unter 25 m gewonnen','nah',' %',100],['Knocks selbst erledigt','knockq',' %',100],['Assists pro Runde','apr','',0],['Selbst geknockt pro Runde','gpr','',0]]
     .filter(([,k])=>vi[k]!=null||vs[k]!=null);
   const vgTabelle=vg.ich&&vg.spieler>=2&&vglZeilen.length?`<h5>Vergleich mit allen Spielern ${statistikInfo('Schnitt über alle Spieler mit mindestens 3 gewerteten Runden (Kopfschuss-Quote ab 10 Kills, Nahdistanz ab 20 Duellen). Ab 25 % Abstand zum Schnitt (Nahdistanz ab 8 Prozentpunkten) fließt ein Wert in Stärken und Schwächen ein.')}</h5>
     <div class="vgl">${vglZeilen.map(([t,k,e,max])=>{const du=vi[k],sn=vs[k],skala=max||Math.max(du||0,sn||0)*1.25||1;
@@ -1746,30 +1749,45 @@ function dmPerformance(m){
     <div class="bil-legende"><span style="color:var(--acc2)">▮ Du</span><span class="s">Schnitt (${vg.spieler} Spieler)</span></div>`:'';
   // Update 168: Knocks, Assists, Trades
   const kn=m.knock||{},knQ=kn.knocks>=10?Math.round(100*(kn.knock_ab||0)/kn.knocks):null;
-  const knPlus=[vgOk&&knQ!=null&&vs.knockq!=null&&knQ>=vs.knockq+10?`Du erledigst <b>${knQ} %</b> deiner Knocks selbst (Schnitt ${zahl(vs.knockq)} %).`:'',
-    vgOk&&ueber('apr')?`Viele Assists: <b>${zahl(vi.apr)}</b> pro Runde (Schnitt ${zahl(vs.apr)}).`:''];
-  const knMinus=[vgOk&&knQ!=null&&vs.knockq!=null&&knQ<=vs.knockq-10?`Du lässt viele Knocks laufen: nur <b>${knQ} %</b> selbst erledigt (Schnitt ${zahl(vs.knockq)} %), ${kn.knock_entk||0} entkommen. Nach dem Bewusstlos-Schuss nachsetzen.`:''];
+  const knGeklaut=Math.max(0,(kn.knocks||0)-(kn.knock_ab||0)-(kn.knock_entk||0));
+  const knPlus=[
+    knQ!=null&&(knQ>=65||(vgOk&&vs.knockq!=null&&knQ>=vs.knockq+10))?`Keine halben Sachen: Von <b>${kn.knocks}</b> Gegnern, die du bewusstlos geschossen hast, hast du <b>${kn.knock_ab}</b> auch selbst erledigt (${knQ} %${vgOk&&vs.knockq!=null?', Schnitt '+zahl(vs.knockq)+' %':''}).`:'',
+    (kn.assists||0)>=3&&(ueber('apr')||(kn.assists||0)>=5)?`Du bereitest viel vor: <b>${kn.assists} Assists</b>, bei denen du mindestens 85 % des Schadens gemacht hast.`:'',
+    (kn.geknockt||0)>=10&&(kn.knock_ueberlebt||0)*10>=(kn.geknockt||0)*3?`Zäh: <b>${kn.knock_ueberlebt} von ${kn.geknockt}</b> Mal bist du nach einem Bewusstlos-Treffer noch davongekommen.`:'',
+    (kn.knock_klau||0)>=5?`Du räumst ab: <b>${kn.knock_klau}</b> Gegner erledigt, die ein anderer schon bewusstlos geschossen hatte.`:'',
+    (kn.trades||0)>=2?`Du gehst nicht allein unter: <b>${kn.trades} Trades</b>, bei denen ihr euch gegenseitig erwischt habt.`:''];
+  const knMinus=[
+    (kn.knocks||0)>=10&&((kn.knock_entk||0)*4>=kn.knocks||(vgOk&&knQ!=null&&vs.knockq!=null&&knQ<=vs.knockq-10))?`Halbe Sachen: <b>${kn.knock_entk} von ${kn.knocks}</b> Gegnern, die du bewusstlos geschossen hast, sind wieder aufgestanden. Nach dem Bewusstlos-Treffer sofort nachsetzen.`:'',
+    knGeklaut>=5?`Bei <b>${knGeklaut}</b> deiner Bewusstlos-Treffer hat ein anderer den Kill geholt. Schneller selbst nachsetzen.`:'',
+    ueber('gpr')?`Du wirst oft bewusstlos geschossen: <b>${zahl(vi.gpr)}</b> Mal pro Runde (Schnitt ${zahl(vs.gpr)}). Weniger lange offen stehen bleiben.`:''];
   const knBlock=kn.knocks||kn.assists||kn.geknockt?`<h5>Bewusstlos, Assists und Trades ${statistikInfo('Knock = du hast ihn bewusstlos geschossen. Erledigt = du hast ihn innerhalb von 60 s selbst getötet. Assist = du hast mindestens 85 % des Schadens am Gegner gemacht, ein anderer hat ihn erledigt; Assists zählen in der K/D wie Kills. Trade = ihr habt euch innerhalb von 3 s gegenseitig erschossen.')}</h5>
     ${waffenKennzahlen([['Knocks',kn.knocks||0],['selbst erledigt',(kn.knock_ab||0)+(knQ!=null?' ('+knQ+' %)':'')],['entkommen',kn.knock_entk||0],['Assists',kn.assists||0],['Trittbrett-Kills',kn.knock_klau||0],['Trades',kn.trades||0],['selbst geknockt',kn.geknockt||0],['davon überlebt',kn.knock_ueberlebt||0]])}`:'';
   const granV=Number(m.granaten_v)||0;   // Update 163
   const granTxt=granV>=3?`Granatenwerfer: <b>${granV}</b> vermutliche Granatenkills ${statistikInfo('Das Server-Log nennt bei Granaten keinen Werfer. Vermutlich war es der nächste Gegner (höchstens 50 m, Position höchstens 30 s alt). Zählt 0,5 Punkte und Elo, aber nicht als Kill.')}`:'';
   const ursacheTxt=genug&&verlust&&verlust[1]>=3&&verlust[1]*10>=todeSumme
-    ?`Am häufigsten erwischt dich <b>${esc(verlust[0])}</b> (${verlust[1]}× von ${todeSumme} erfassten Toden).`:'';
+    ?`Häufigste Todesursache: <b>${esc(verlust[0])}</b> (${verlust[1]} von ${todeSumme} Toden).`:'';
   const [[gehaltenKills, messbareKills],[gehaltenTode, messbareTode]]=m.position_gehalten||[[0,0],[0,0]];
   const kontext=m.kill_kontext||{};
   const [mitSerie,mitPosition]=kontext.gegner_serie||[0,0];
   const positionsTipp=genug&&messbareTode>=5&&gehaltenTode*2>=messbareTode
-    ?`Bei ${positionsAnteil(gehaltenTode,messbareTode)} deiner auswertbaren Tode hielt der Gegner seine Position.${
-      mitPosition>=5&&mitSerie>0?` Bei ${positionsAnteil(mitSerie,mitPosition)} dieser Fälle hatte der Schütze in seinem laufenden Leben schon einen Kill.`:''
-    } Prüfe beim Vorrücken zuerst aus der Deckung die Winkel.`:'';
+    ?`Du läufst oft Gegnern vor die Flinte, die auf dich warten: <b>${gehaltenTode} von ${messbareTode}</b> messbaren Toden kamen von jemandem, der still in Stellung lag${
+      mitPosition>=5&&mitSerie>0?` (${mitSerie} davon hatten vorher schon jemanden erwischt)`:''}. Tipp: langsamer vorrücken und Ecken aus der Deckung prüfen.`:'';
   const positionsStaerke=genug&&messbareKills>=5&&gehaltenKills*2>=messbareKills
-    ?`Du hast ${positionsAnteil(gehaltenKills,messbareKills)} deiner auswertbaren Kills aus gehaltener Position erzielt.`:'';
+    ?`Du triffst gern aus fester Position: <b>${gehaltenKills} von ${messbareKills}</b> messbaren Kills hast du aus einer gehaltenen Stellung gemacht.`:'';
+  const distWort=fein?['sehr kurzer Distanz (unter 10 m)','kurzer Distanz (10 bis 25 m)','mittlerer Distanz (25 bis 100 m)','großer Distanz (ab 100 m)']
+    :['kurzer Distanz (unter 25 m)','mittlerer Distanz (25 bis 100 m)','großer Distanz (ab 100 m)'];
+  const dw=x=>distWort[dist.indexOf(x)]||esc(x.name);
   const distanzStaerke=staerke?(()=>{
     const [ruhig,bewegt]=fein&&staerke.fach===0?[0,0]:(kontext.bewegung_distanz?.[0]?.[staerke.fach]||[0,0]);
-    const bewegung=ruhig+bewegt>=5&&bewegt>ruhig
-      ?` Bei ${positionsAnteil(bewegt,ruhig+bewegt)} deiner dort auswertbaren Kills warst du vorher in Bewegung.`:'';
-    return `${esc(staerke.name)} ist deine stärkste Distanz.${fall(staerke)}${bewegung}`;
+    const bewegung=ruhig+bewegt>=5&&bewegt>ruhig?` Meist aus der Bewegung heraus (${bewegt} von ${ruhig+bewegt} messbaren Kills).`:'';
+    return `Auf ${dw(staerke)} gewinnst du die meisten Duelle: ${bil(staerke)} (${pz(staerke)}).${bewegung}`;
   })():'';
+  const distanzSchwaeche=schwaeche?`Auf ${dw(schwaeche)} verlierst du die meisten Duelle: ${bil(schwaeche)} (${pz(schwaeche)}).`:'';
+  const hoehePlusTxt=besteHoehe?[`Selbst von unten gewinnst du deine Duelle: ${bil(besteHoehe)}, wenn dein Gegner höher steht.`,
+    `Auf gleicher Höhe mit dem Gegner bist du stark: ${bil(besteHoehe)}.`,`Von oben bist du stark: ${bil(besteHoehe)}, wenn du höher stehst als dein Gegner.`][hoehe.indexOf(besteHoehe)]:'';
+  const hoeheMinusTxt=schwacheHoehe?[`Von unten tust du dich schwer: ${bil(schwacheHoehe)}, wenn dein Gegner höher steht. Höhere Stellungen suchen.`,
+    `Auf gleicher Höhe verlierst du oft: ${bil(schwacheHoehe)}.`,`Selbst von oben verlierst du oft: ${bil(schwacheHoehe)}. Weniger Silhouette zeigen.`][hoehe.indexOf(schwacheHoehe)]:'';
+  const rn=x=>`${x.n} ${x.n===1?'Runde':'Runden'}`;
   const bilanzZeile=(titel,werte,leer='')=>werte.some(x=>x.k||x.t)
     ?`<h5>${titel}</h5><div class="bil">${werte.map(x=>{const n=x.k+x.t,q=n?Math.round(100*x.k/n):0,kl=istStark(x)?'stark':istSchwach(x)?'schwach':'';
       return `<div class="bil-z ${kl}"><span>${esc(x.name)}</span><div class="bil-b" aria-hidden="true">${n?`<i class="k" style="width:${100*x.k/n}%"></i><i class="t" style="width:${100*x.t/n}%"></i>`:''}</div>
@@ -1786,12 +1804,12 @@ function dmPerformance(m){
       ${spiele.length?waffenKennzahlen([['Runden',spiele.length],['Kills',kills],['Tode',tode],['Bilanz',netto>0?'+'+netto:netto]]):'<span class="mut">Noch keine Runden mit Kill-/Todesdaten.</span>'}
       ${trend}</div>
     <div class="perf-karten">
-    ${punkte('Stärken','+','plus',[distanzStaerke,besteHoehe?`Du erzielst klar mehr Kills als Tode, wenn du ${esc(besteHoehe.lage)} stehst.${fall(besteHoehe)}`:'',positionsStaerke,
-      besteKarte?`${esc(besteKarte.name)} liegt dir.${rundenTxt(besteKarte)}`:'',besterModus?`Im Modus ${esc(besterModus.name)} bist du stark.${rundenTxt(besterModus)}`:'',
-      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du die beste Bilanz.${fall(besterGegner)}`:'',...vgPlus,granTxt,...knPlus])}
-    ${punkte('Verbesserungspotenzial','−','minus',[schwaeche?`Auf ${esc(schwaeche.name)} hast du klar mehr Tode als Kills.${fall(schwaeche)}`:'',schwacheHoehe?`Du stirbst deutlich häufiger, als du Kills erzielst, wenn du ${esc(schwacheHoehe.lage)} stehst.${fall(schwacheHoehe)}`:'',positionsTipp,
-      schwacheKarte?`Auf ${esc(schwacheKarte.name)} läuft es schlecht.${rundenTxt(schwacheKarte)}`:'',schwacherModus?`Im Modus ${esc(schwacherModus.name)} tust du dich schwer.${rundenTxt(schwacherModus)}`:'',
-      schwersterGegner?`${GT(schwersterGegner.name,'dm')} ist dein schwerster Gegner.${fall(schwersterGegner)}`:'',ursacheTxt,...vgMinus,...knMinus])}
+    ${punkte('Stärken','+','plus',[distanzStaerke,hoehePlusTxt,positionsStaerke,...vgPlus,...knPlus,
+      besteKarte?`${esc(besteKarte.name)} liegt dir: ${bil(besteKarte)} in ${rn(besteKarte)}.`:'',besterModus?`Im Modus ${esc(besterModus.name)} bist du stark: ${bil(besterModus)} in ${rn(besterModus)}.`:'',
+      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du deine beste Bilanz: ${bil(besterGegner)}.`:'',granTxt])}
+    ${punkte('Verbesserungspotenzial','−','minus',[distanzSchwaeche,hoeheMinusTxt,positionsTipp,...vgMinus,...knMinus,
+      schwacheKarte?`Auf ${esc(schwacheKarte.name)} läuft es nicht: ${bil(schwacheKarte)} in ${rn(schwacheKarte)}.`:'',schwacherModus?`Im Modus ${esc(schwacherModus.name)} tust du dich schwer: ${bil(schwacherModus)} in ${rn(schwacherModus)}.`:'',
+      schwersterGegner?`Gegen ${GT(schwersterGegner.name,'dm')} hast du deine schlechteste Bilanz: ${bil(schwersterGegner)}.`:'',ursacheTxt])}
     </div>${vgTabelle}${knBlock}${distanz}${distanz?'<small class="mut">Gewertete Spielerduelle mit bekannter Distanz.</small>':''}${hoehenZeile}
     <small class="mut">Die Höhenbilanz vergleicht deine Position mit der des Gegners. Ab 3 m Unterschied zählt sie als höher oder tiefer.</small><br>
     <small class="mut">Stärken und Schwächen gibt es ab 3 gewerteten Runden und nur bei klarem Abstand: mindestens 60 % Kills (bzw. Tode) bei mindestens 5 Duellen oder 55 % bei mindestens 30 Duellen, bei Karten und Modi ab 2 Runden oder 10 Duellen. Der Trend vergleicht die K/D der letzten Runden mit den Runden davor (ab 0,1 Unterschied).</small><br>
