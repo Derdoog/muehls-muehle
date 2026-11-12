@@ -2770,10 +2770,10 @@ function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n]
   profilDialog(prKopf(n,`${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}`,'pve'),
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf]]);
   const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n)}
-// Update 177: eigener Profilkopf (nur mit gekauftem Profilhintergrund) oben in Deathmatch, PvE Chernarus und PvE Evakuierung
+// Update 177/178: eigener Profilkopf oben in Deathmatch, PvE Chernarus und PvE Evakuierung
 function ichKoepfe(){const z={pve:'',dm:'',evakuierung:''},klick={};
   if(ICH&&ICH.benutzer&&IGT&&D){
-    const dm=IGT.dm,pv=IGT.pve||IGT.dm,hat=n=>!!(n&&KS(n)&&KS(n).hg);
+    const dm=IGT.dm,pv=IGT.pve||IGT.dm,hat=n=>!!n;   // Update 178: auch ohne gekauften Hintergrund (Standard-Kopf)
     if(hat(dm)){const el=(D.dm&&D.dm.elo)||[],i=el.findIndex(x=>x.name===dm);
       z.dm=prKopf(dm,i>=0?`⚔️ Deathmatch · Elo ${el[i].elo} · Platz ${i+1} von ${el.length}`:'⚔️ Deathmatch','dm');klick.dm=()=>dmProfil(dm)}
     if(hat(pv)){const s=((D.pve&&D.pve.spieler)||[]).find(x=>x.name===pv);
