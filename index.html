@@ -1556,6 +1556,7 @@ const WOBO_WAFFEN={
   "ka-101": [["556x45 Rounds", 600, 96.72, 96.72, 340, "https://wobo.tools/dayz-weapon-info-tool/KA_101/"]],
   "ka-74": [["545x39 Rounds", 600, 80.5, 89.44, 325, "https://wobo.tools/dayz-weapon-info-tool/KA_74/"]],
   "ka-m": [["762x39 Rounds", 600, 90.13, 107.03, 400, "https://wobo.tools/dayz-weapon-info-tool/KAM/"]],
+  "ka-m gold": [["762x39 Rounds", 600, 90.13, 107.03, 400, "https://wobo.tools/dayz-weapon-info-tool/KAM/"]],
   "kas-74u": [["545x39 Rounds", 600, 65.55, 72.83, 300, "https://wobo.tools/dayz-weapon-info-tool/KAS_74U/"]],
   "kolt 1911": [["45 Rounds", 451.12, 35.86, 39.85, 190, "https://wobo.tools/dayz-weapon-info-tool/Kolt_1911/"]],
   "lar": [["308 Rounds", 600, 129.7, 129.7, 500, "https://wobo.tools/dayz-weapon-info-tool/LAR/"]],
@@ -1754,7 +1755,7 @@ document.addEventListener('click',e=>{
 function waffenGruppen(liste,treffer,zeile){
   const gruppen=new Map(Object.keys(WAFFEN_KATEGORIEN).map(k=>[k,[]]));
   for(const w of liste){
-    const n=w.waffe.toLowerCase(), bild=WB?.[n];
+    const n=w.waffe.toLowerCase(), bild=n==='ka-m gold'?'akm.webp':WB?.[n];
     const k=Object.keys(WAFFEN_KATEGORIEN).find(k=>WAFFEN_KATEGORIEN[k].includes(bild))
       ||(n==='nahkampf'?'Nahkampf':'Sonstige');
     gruppen.get(k).push(w);
