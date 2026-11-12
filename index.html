@@ -646,8 +646,8 @@ nav button{min-width:0}
 </head>
 <body>
 <header>
-  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span class="mut" id="stand">lade …</span><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
-  <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">PvE Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="meine" id="meineTab" hidden>👤 Meine<span class="lang"> Statistik</span></button></nav>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span class="mut" id="stand">lade …</span><button class="login" id="shopBtn" type="button">🛒 Shop</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
+  <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">PvE Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button></nav>
 </header>
 <main>
   <div class="serverleiste">
@@ -726,7 +726,7 @@ nav button{min-width:0}
     <p id="eFehler" role="status"></p></div>
   </dialog>
   <section class="tab" id="t-meine">
-    <div class="panel"><h3 id="mTitel">Meine Statistik</h3><details id="mKonto"><summary>Gamertags und Charaktere</summary><div id="mListe"></div><div id="mWahl" class="mwahl"></div></details></div>
+    <div class="panel"><h3 id="mTitel">Mein Profil</h3><details id="mKonto"><summary>Gamertags und Charaktere</summary><div id="mListe"></div><div id="mWahl" class="mwahl"></div></details></div>
     <div class="reiter" id="mModus" role="group" aria-label="Statistikmodus">
       <button type="button" data-modus="dm">⚔️ Deathmatch</button><button type="button" data-modus="pve">🌲 PvE</button>
     </div><div class="reiter" id="mReiter"></div>
@@ -734,9 +734,10 @@ nav button{min-width:0}
       <div class="mr" id="mr-uebersicht"><div class="m-nur-dm" id="mr-dm"></div><div class="m-nur-pve" id="mr-pve"></div><div id="mUebersichtExtra"></div></div><div class="mr" id="mr-waffen"></div>
       <div class="mr" id="mr-erfolge"></div>
       <div class="mr" id="mr-karte"><div class="panel m-nur-pve"><h3>🗺 Meine Karte (PvE Chernarus)</h3><div id="mKarte"></div><div class="mut" id="mr-karte-text" style="margin-top:8px"></div></div><div id="mr-heat" class="panel m-nur-dm" style="margin-top:12px"></div></div>
-      <div class="mr" id="mr-titel"></div><div class="mr" id="mr-shop"></div><div class="mr" id="mr-level"></div>
+      <div class="mr" id="mr-titel"></div><div class="mr" id="mr-level"></div>
     </div>
   </section>
+  <section class="tab" id="t-shop"><div id="shopLogin" class="panel"><h3>🛒 Rubel-Shop</h3><p>Melde dich mit deinem Spieler-Konto an, um den Shop zu nutzen.</p><button class="login" id="shopLoginBtn" type="button">🔑 Spieler-Login</button></div><div id="mr-shop" hidden></div></section>
 </main>
 <footer class="zuschauer-footer">
   <div class="footer-haupt">
@@ -1467,7 +1468,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
     ${DIREKT&&r.id?`<a class="rlink" href="/zuschauer/runde/${+r.id}">🔗 Eigene Seite dieser Runde (zum Teilen)</a>`:''}</div></details>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
   $('#dSaison').innerHTML=(m.saisons||[]).slice(0,6).map(s=>`<div class="rh"><span>${MN[+s.monat.slice(5)-1]} ${s.monat.slice(0,4)}</span><b class="name" data-dm="${esc(s.meister||'')}">${s.meister?'👑 '+esc(s.meister):'–'}</b><span class="mut">${s.runden} Runden${s.top&&s.top[0]?' · '+s.top[0][1]+' Siege · '+s.top[0][2]+' Kills':''}</span></div>`).join('')||'<div class="mut">Noch keine Saison.</div>';
   waffenKatalog(m);
-  $('#dSchrot').innerHTML=statistikInfo(['Der Katalog zeigt Kills und Treffer aller Spieler. Schüsse daneben stehen nicht im Server-Log. Deine Werte findest du unter Meine Statistik → Waffen.',d.schrot_hinweis].filter(Boolean).join(' '));
+  $('#dSchrot').innerHTML=statistikInfo(['Der Katalog zeigt Kills und Treffer aller Spieler. Schüsse daneben stehen nicht im Server-Log. Deine Werte findest du unter Mein Profil → Waffen.',d.schrot_hinweis].filter(Boolean).join(' '));
   $$('#dRunden details').forEach(x=>x.ontoggle=()=>{const k=+x.dataset.rd;if(x.open)OFFEN.add(k);else OFFEN.delete(k)});
   $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b><span class="mut">${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt</span>
     <span class="mut" style="display:block">${Object.entries(k.modi).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,z])=>esc(n)+' '+z+'×').join(' · ')}</span></div></div>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
@@ -1927,9 +1928,9 @@ async function stimme(d){try{const r=await fetch('/zuschauer/abstimmung',{method
 // ---------------- Spieler-Login, Registrierung und Meine Statistik (Reiter, Charakter-Auswahl)
 let ICH=null,MK=null,MG=null,IGT=null;   // Update 177: IGT = eigene Gamertags {dm, pve} fuer den Profilkopf oben in den Reitern
 async function ichLaden(){if(!DIREKT)return;$('#loginBtn').hidden=false;ICH=await holeJson('/zuschauer/ich');
-  const da=ICH&&ICH.benutzer;if(da)cmLaden().then(()=>{try{if(D)cmPanel(D.dm.custom)}catch(e){}});$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;
+  const da=ICH&&ICH.benutzer;if(da)cmLaden().then(()=>{try{if(D)cmPanel(D.dm.custom)}catch(e){}});$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;$('#shopLogin').hidden=!!da;$('#mr-shop').hidden=!da;if(!da){$('#mr-shop').innerHTML='';delete $('#mr-shop').dataset.sig}
   if(!da)IGT=null;else if(!IGT){const m_=await holeJson('/zuschauer/meine?char=alle');if(m_)IGT={dm:m_.dm_gamertag||null,pve:(m_.pve_gamertags||[])[0]||null}}try{ichKoepfe()}catch(e){console.error(e)}
-  if(!da&&$('#t-meine').classList.contains('an'))tab('pve')}
+  if(!da&&$('#t-meine').classList.contains('an'))tab('pve');if(da&&$('#t-shop').classList.contains('an'))meineLaden()}
 function loginForm(reg){const offen=!ICH||ICH.registrierung_an!==false;
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">${reg?'Konto anlegen':'Spieler-Login'}</h2>
     <div class="mut" style="margin-bottom:12px">${reg?'Leg dir selbst ein Konto an. Deine Gamertags ordnet dir danach der Admin zu (PvE: einer oder mehrere Charaktere, Deathmatch: einer).':'Mit deinem Zugang siehst du deine eigene Statistik und deine Charaktere auf der PvE-Karte.'}</div>
@@ -1949,7 +1950,7 @@ function loginForm(reg){const offen=!ICH||ICH.registrierung_an!==false;
       const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').textContent=j.meldung||'Ging nicht';return}
       const b=$('#lb').value.trim(),p=$('#lp').value;loginForm(false);$('#lb').value=b;$('#lp').value=p;$('#lm').style.color='var(--acc)';$('#lm').textContent=j.meldung||'Konto angelegt, jetzt anmelden.';return}
     const r=await fetch('/zuschauer/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({benutzer:$('#lb').value,passwort:$('#lp').value})});
-    const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').style.color='#e8775f';$('#lm').textContent=j.meldung||'Anmeldung fehlgeschlagen';return}dlg.close();await ichLaden();tab('meine');meineLaden()}}
+    const j=await r.json().catch(()=>({}));if(!r.ok){$('#lm').style.color='#e8775f';$('#lm').textContent=j.meldung||'Anmeldung fehlgeschlagen';return}dlg.close();const ziel=$('#t-shop').classList.contains('an')?'shop':'meine';await ichLaden();tab(ziel);meineLaden()}}
 $('#loginBtn').onclick=async()=>{if(ICH&&ICH.benutzer){await fetch('/zuschauer/logout',{method:'POST'});MK&&MK.remove();MK=null;await ichLaden();return}loginForm(false)};
 function skript(u){return new Promise((ok,f)=>{const s=document.createElement('script');s.src=u;s.onload=ok;s.onerror=f;document.head.appendChild(s)})}
 const pq=p=>p?`${String(Math.floor(p[0]/100)).padStart(3,'0')} ${String(Math.floor((15360-p[1])/100)).padStart(3,'0')}`:'';
@@ -1967,7 +1968,7 @@ function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)re
     L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
 let MModus='dm';
 $$('#mModus button').forEach(b=>b.onclick=()=>{MModus=b.dataset.modus;if(MREIT==='dm'||MREIT==='pve')MREIT='uebersicht';reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
-const MREITER=[['uebersicht','📋 Übersicht'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level'],['shop','🛒 Rubel-Shop']];
+const MREITER=[['uebersicht','📋 Übersicht'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level']];
 let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
 try{MREIT=sichtSpeicher.getItem('meine_reiter')||MREIT;MWAHL=sichtSpeicher.getItem('meine_char')||MWAHL}catch(e){}
 (function(){const h=decodeURIComponent(location.hash||'');const m=h.match(/^#meine(?:\/([a-z]+))?(?:\/(.+))?$/);if(m){if(m[1])MREIT=m[1];if(m[2])MWAHL=m[2]}})();
@@ -1986,7 +1987,7 @@ async function meineLaden(){if(!ICH||!ICH.benutzer||MLAEUFT)return;MLAEUFT=true;
 async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encodeURIComponent(MWAHL));
   if(!d&&MWAHL!=='alle'){MWAHL='alle';d=await holeJson('/zuschauer/meine?char=alle')}if(!d)return;MDATEN=d;IGT={dm:d.dm_gamertag||null,pve:(d.pve_gamertags||[])[0]||null};try{ichKoepfe()}catch(e){console.error(e)}
   reiterZeigen();reiterMerken();
-  $('#mTitel').textContent='Meine Statistik ('+ICH.benutzer+')';
+  $('#mTitel').textContent='Mein Profil ('+ICH.benutzer+')';
   const pt=d.pve_gamertags||[];
   $('#mWahl').innerHTML=pt.length>1?`<label class="mut m-nur-pve">🌲 PvE-Charakter: <select id="mWahlSel" class="wahl"><option value="alle">Alle zusammen (${pt.length})</option>${pt.map(g=>`<option value="${esc(g)}" ${g===MWAHL?'selected':''}>${esc(g)}</option>`).join('')}</select></label>`:'';
   $('#mWahl').innerHTML+=`<span class="mut m-nur-dm">⚔️ DM-Gamertag: <b style="color:var(--text)">${d.dm_gamertag?esc(d.dm_gamertag):'– noch keiner –'}</b></span>`;
@@ -2667,7 +2668,7 @@ function vsBinden(d){$$('#mr-shop [data-kv]').forEach(b=>b.onclick=()=>{const p=
 function vsTestkonto(d){const s=d.shop;if(!s||!s.test||!s.gt)return '';const n=s.gt,mk=s.meine_kosmetik||{aktiv:{}},X=vsDemo(n),k=ksAus(s,mk.aktiv,mk.plakette);
   const T=mitVorschau(n,k,()=>dmProfilTeile(n,X.s,X.pr,[],X.lv,'Deathmatch-Profil'),X.lvs);
   return `<div class="panel vs"><h3>🧪 Testkonto · Demo-Profil <span class="vs-marke">Beispielwerte</span></h3>
-    <div class="hinweis">Das ist ein Testkonto: es spielt nicht mit, steht in keiner Rangliste und bekommt keine Rubel aus Runden oder Level. Damit du trotzdem alles siehst, steht hier ein komplettes Profil mit <b>Beispielwerten</b> und deiner getragenen Ausstattung. Ausstattung wechseln und einzelne Teile anprobieren: Reiter „🛒 Rubel-Shop“.</div>
+    <div class="hinweis">Das ist ein Testkonto: es spielt nicht mit, steht in keiner Rangliste und bekommt keine Rubel aus Runden oder Level. Damit du trotzdem alles siehst, steht hier ein komplettes Profil mit <b>Beispielwerten</b> und deiner getragenen Ausstattung. Ausstattung wechseln und einzelne Teile anprobieren: „🛒 Shop“ in der Kopfzeile.</div>
     ${vorschauHtml(s,n,mk.aktiv,mk.plakette)}
     <div class="vs-demo">${vsOhneKlick(T[0])}${T[1].slice(0,3).map(r=>`<h4>${r[0]}</h4>${vsOhneKlick(r[1])}`).join('')}</div></div>`}
 const KPL={hg:'🎨 Hintergrund',name:'🖋️ Namensfarbe',font:'Schriftart',rahmen:'🖼️ Profilrahmen',effekt:'✨ Effekt',symbol:'💀 Killfeed-Symbol',abzeichen:'🏷️ Saison-Abzeichen',titel:'📜 Wunschtitel'};
@@ -2718,7 +2719,7 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
     ${zeile('Ziel-Kills (Modus „Ziel“)',P.ziel_kills.join(' / ')+' Kills, wer zuerst da ist, gewinnt')}</table>
   <div class="mut">Rundensieger: die meisten Punkte, bei Gleichstand mehr Kills, dann weniger Tode; mindestens 1 Kill. Gewertet werden nur Runden mit mindestens ${R.min_spieler} Spielern.
     Als Teilnehmer zählt, wer einen Kill oder Tod hat oder mindestens ${Math.round(R.leben_min_s/60)} Minute am Leben war.</div>
-  ${S.an?`<h4>🛒 Rubel</h4><div>${RUB(S.kurs_punkt)} je Rundenpunkt, ${RUB(S.teilnahme)} fürs Mitspielen, ${RUB(S.sieg)} für den Rundensieg. Nur Runden ab ${S.min_spieler} Spielern, höchstens ${S.farm_max} bezahlte Kills auf dasselbe Opfer, Deckel ${RUB(S.max_runde)} je Runde und ${RUB(S.max_tag)} je Tag. Einlösen: Meine Statistik → 🛒 Rubel-Shop.</div>`:''}
+  ${S.an?`<h4>🛒 Rubel</h4><div>${RUB(S.kurs_punkt)} je Rundenpunkt, ${RUB(S.teilnahme)} fürs Mitspielen, ${RUB(S.sieg)} für den Rundensieg. Nur Runden ab ${S.min_spieler} Spielern, höchstens ${S.farm_max} bezahlte Kills auf dasselbe Opfer, Deckel ${RUB(S.max_runde)} je Runde und ${RUB(S.max_tag)} je Tag. Einlösen: 🛒 Shop in der Kopfzeile.</div>`:''}
   <h4>📈 Elo</h4><div>Start ${E.start}. Nach jedem Kill wechselt Elo vom Opfer zum Schützen:</div>
   <div class="formel">Erwartung = 1 ÷ (1 + 10 hoch ((Elo des Opfers − Elo des Schützen) ÷ 400))<br>Gewinn = ${E.k} × (1 − Erwartung) · das Opfer verliert genauso viel</div>
   <div class="mut">In Worten: Die „Erwartung“ ist die geschätzte Chance des Schützen, gegen dieses Opfer zu gewinnen (zwischen 0 und 1). Sind beide gleich stark, ist sie 0,5 – der Schütze bekommt ${E.k} × 0,5 = ${E.k/2} Elo. Ist das Opfer viel stärker, liegt sie nahe 0 und es gibt fast ${E.k} Elo; ist es viel schwächer, fast nichts. ${E.k} ist also der höchste Gewinn pro Kill.</div>
@@ -2782,8 +2783,9 @@ function ichKoepfe(){const z={pve:'',dm:'',evakuierung:''},klick={};
   for(const k in z){const el=$('#ichKopf-'+k);if(!el)continue;if(el.dataset.sig!==z[k]){el.innerHTML=z[k];el.dataset.sig=z[k]}
     el.hidden=!z[k];el.onclick=klick[k]||null;el.title=z[k]?'Eigenes Profil öffnen':''}}
 {const _z=zeichnen;zeichnen=function(){_z.apply(this,arguments);try{ichKoepfe()}catch(e){console.error(e)}}}
-const _tab=tab;tab=t=>{_tab(t);if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
+const _tab=tab;tab=t=>{_tab(t);if(t==='shop')meineLaden();if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
+$('#shopBtn').onclick=()=>tab('shop');$('#shopLoginBtn').onclick=()=>loginForm(false);
 $('#regelnBtn').onclick=regelnDialog;
 holeJson('/zuschauer/waffen_bilder.json').then(x=>{if(x&&x.namen){WB=x.namen;if(D)zeichnen();if(MDATEN){delete $('#mStat').dataset.sig;meineStat(MDATEN)}}});
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
@@ -2854,7 +2856,7 @@ async function eMelden(bereit){
 $('#eJa').onclick=()=>eMelden(true);
 $('#eWarten').onclick=()=>eMelden(false);
 if(DIREKT){eLaden();setInterval(()=>{if(!document.hidden)eLaden()},5000)}
-if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an'))meineLaden()},15000);
+if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an')||$('#t-shop').classList.contains('an'))meineLaden()},15000);
 setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
 function naechster(){const s=DIREKT?10:TAKT-(Date.now()/1000)%TAKT+9;setTimeout(()=>{if(!document.hidden)laden();naechster()},s*1000)}naechster();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)laden()});setInterval(()=>{if(D)zeichnen()},30000);
