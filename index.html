@@ -128,7 +128,7 @@
   .reiter button.an{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border-color:var(--acc)}
   .reiter.klein{margin:10px 0 8px}.reiter.klein button{padding:5px 10px;font-size:11px}
   .serverleiste{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:6px;max-width:100%;margin-bottom:12px}
-  .serverleiste:has(#sStatus[hidden]):has(#dMatchAktion:empty){display:none}
+  
   .serverleiste .status{justify-content:center;margin:0;text-align:center}
   .serverleiste #sStatus[hidden],#dMatchAktion:empty{display:none}
   #dMatchAktion button{width:100%;height:100%;color:var(--acc2);cursor:pointer}
@@ -642,16 +642,27 @@ nav button{min-width:0}
 .recht-dialog h2{margin-top:0}.recht-dialog p,.recht-dialog li{line-height:1.55}
 .recht-dialog form{display:flex;justify-content:flex-end}.speicher-aktionen{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 </style>
-<style>.kopf-aktionen{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px 10px}.admin-link{text-decoration:none;white-space:nowrap}@media(max-width:540px){.kopf-aktionen{gap:4px}}</style>
+<style>.kopf-aktionen{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:6px 10px}.admin-link{text-decoration:none;white-space:nowrap}@media(max-width:540px){.kopf{position:relative;display:block;padding:10px 10px 0}.kopf h1{padding-right:0}.kopf-aktionen{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px;margin-top:7px}.kopf-aktionen .login{min-width:0;padding:6px;font-size:10px;letter-spacing:.02em;text-align:center}.kopf-aktionen #loginBtn{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}@media(max-width:360px){.kopf h1{font-size:15px}}</style>
+<style>
+/* Kompakter Seitenkopf und unaufdringlicher Zeitstempel */
+.kopf{padding-bottom:4px}.kopf h1{letter-spacing:.09em}.kopf-aktionen .login{border-color:var(--line2)}
+.kopf-aktionen #shopBtn{border-color:var(--acc);color:var(--acc2)}
+.kopf-aktionen .login:hover,.kopf-aktionen .login:focus-visible{border-color:var(--acc);color:var(--acc2)}
+.serverleiste{align-items:stretch;grid-auto-columns:auto}
+.serverstatus{display:flex;align-items:center;gap:8px;min-width:0;padding:0 10px;background:var(--panel2);border:1px solid var(--line2)}
+.serverstatus .status{padding:4px 0;border:0;background:none;white-space:nowrap}
+.serverstatus #stand{font-size:10px;white-space:nowrap;opacity:.75}
+@media(max-width:540px){.kopf{padding-top:10px}.kopf-aktionen{margin-top:8px}.serverstatus{gap:6px;padding:0 7px}.serverstatus #stand{font-size:9px}}
+</style>
 </head>
 <body>
 <header>
-  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span class="mut" id="stand">lade …</span><button class="login" id="shopBtn" type="button">🛒 Shop</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><button class="login" id="shopBtn" type="button">🛒 Shop</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
   <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">PvE Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button></nav>
 </header>
 <main>
   <div class="serverleiste">
-    <div class="status" id="sStatus" hidden></div>
+    <div class="serverstatus"><div class="status" id="sStatus" hidden></div><span class="mut" id="stand">lade …</span></div>
     <div id="dMatchAktion"></div>
   </div>
   <div id="banner"></div>
@@ -1397,7 +1408,7 @@ const dmSpieler=(name,i,wert,details,extras='',fortschritt='')=>
   ${fortschritt}<div class="dm-spieler-werte mut">${details.map(x=>`<span>${esc(x)}</span>`).join('')}</div></div>`;
 const dmWertung=(tabelle,kompakt)=>`<div class="dm-tabelle">${tabelle}</div><div class="dm-kompakt">${kompakt}</div>`;
 const SIEGER=gt=>`<div class="sieger">🏆 ${GT(gt,'dm')} 🏆</div>`;
-const prKopf=(n,unter,w)=>`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 class="ks-lesbar" style="margin:0 0 2px">${RB(w||'dm',n)}${KSYM(KS(n)?.symbol,KS(n)?.sym)}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${TT(n)}</h2><div class="mut">${unter}</div></div>`;
+const prKopf=(n,unter,w,titel)=>`<div class="prkopf${KSK(n).replace(/ ks-name-\S+/,'')}"><h2 class="ks-lesbar" style="margin:0 0 2px">${RB(w||'dm',n)}${KSYM(KS(n)?.symbol,KS(n)?.sym)}<span class="${KSN(n)}">${esc(n)}</span>${PLK(n)}${titel===undefined?TT(n):(titel?`<span class="titel">${esc(titel)}</span>`:((KS(n)||{}).titel_text?`<span class="titel">${esc(KS(n).titel_text)}</span>`:''))}</h2><div class="mut">${unter}</div></div>`;
 function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   $('#stand').textContent=(alt>600?'⚠ letzter Stand ':'Stand ')+uhr(d.stand)+(alt>600?' (Steuerung gerade nicht erreichbar)':'');
   statusZeichnen();
@@ -1992,7 +2003,7 @@ async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encod
   $('#mWahl').innerHTML=pt.length>1?`<label class="mut m-nur-pve">🌲 PvE-Charakter: <select id="mWahlSel" class="wahl"><option value="alle">Alle zusammen (${pt.length})</option>${pt.map(g=>`<option value="${esc(g)}" ${g===MWAHL?'selected':''}>${esc(g)}</option>`).join('')}</select></label>`:'';
   $('#mWahl').innerHTML+=`<span class="mut m-nur-dm">⚔️ DM-Gamertag: <b style="color:var(--text)">${d.dm_gamertag?esc(d.dm_gamertag):'– noch keiner –'}</b></span>`;
   const sel=$('#mWahlSel');if(sel){sel.value=pt.includes(MWAHL)?MWAHL:'alle';sel.onchange=()=>{MWAHL=sel.value;delete $('#mStat').dataset.sig;meineLaden()}}
-  const sig=JSON.stringify([d.pve,d.dm,d.pve_einzeln,d.dm_titel]).length+'|'+MWAHL+'|'+JSON.stringify(d.shop&&d.shop.test?d.shop.meine_kosmetik:0);
+  const sig=JSON.stringify([d.pve,d.dm,d.pve_einzeln,d.dm_titel,(d.charaktere||[]).map(c=>[c.name,c.titel])])+'|'+MWAHL+'|'+JSON.stringify(d.shop&&d.shop.test?d.shop.meine_kosmetik:0);
   try{if($('#mStat').dataset.sig!==sig){meineStat(d);$('#mStat').dataset.sig=sig}}catch(e){console.error(e);$('#mUebersichtExtra').innerHTML='<div class="mut">Statistik konnte nicht angezeigt werden.</div>'}
   $('#mListe').innerHTML=(d.status==='wartet'||(!pt.length&&!d.dm_gamertag))?`<div class="hinweis">⏳ Dein Konto wartet auf die Zuordnung. <b>Dein Admin ordnet dir deine Gamertags zu.</b> Danach siehst du hier deine Statistik.</div>`
     :d.charaktere.map(c=>c.unbekannt?`<div class="spl"><span class="av tot">?</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">noch nie auf dem PvE-Server gesehen</span></div></div>`
@@ -2460,7 +2471,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gol
   $('#mUebersichtExtra').innerHTML=nachtragText()+vsTestkonto(d);
   // Deathmatch
   if(m){
-    $('#mr-dm').innerHTML=`<div class="stat-uebersicht"><div class="panel">${prKopf(m.name,'⚔️ Deathmatch')}`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
+    $('#mr-dm').innerHTML=`<div class="stat-uebersicht"><div class="panel">${prKopf(m.name,'⚔️ Deathmatch','dm',m.titel_wahl?d.dm_titel:null)}`+kach([[m.elo,'Elo'],[m.kd,'K/D'],[m.kills+' / '+m.tode,'Kills / Tode'],[m.kopfquote+' %','Kopfschuss-Quote'],[m.weitester?m.weitester+' m':'–','weitester Kill'],[m.siege+' / '+m.runden,'Siege / Runden'],[m.beste_serie,'beste Serie'],[dauer(m.laengstes_leben),'längstes Leben']])
       +'</div>'
       +podestKartenRivalen(m)+letzteRunden(m.runden_liste)
       +dmPerformance(m)
@@ -2474,7 +2485,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gol
 +'</div></section></div>'}
   else $('#mr-dm').innerHTML=`<div class="panel">${keinDm}</div>`;
   // PvE
-  $('#mr-pve').innerHTML=v?`<div class="stat-uebersicht"><div class="panel">${v.zusammen&&v.zusammen.length>1?`<h3 class="bereich pve">🌲 PvE Chernarus · ${wahlTxt}</h3>`:prKopf(v.name,'🌲 PvE Chernarus','pve')}`+kach([[dauer(v.spielzeit),'Spielzeit'],[dauer(v.ueberlebt),'am Leben seit'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[v.kd,'K/D'],[v.strecke+' km','gelaufen'],[v.werte.weitester?v.werte.weitester+' m':'–','weitester Kill'],[v.werte.bewusstlos,'mal bewusstlos'],[(v.schatz.funde||0)+' / '+(v.schatz.ketten||0),'Schätze / Ketten']])
+  $('#mr-pve').innerHTML=v?`<div class="stat-uebersicht"><div class="panel">${v.zusammen&&v.zusammen.length>1?`<h3 class="bereich pve">🌲 PvE Chernarus · ${wahlTxt}</h3>`:prKopf(v.name,'🌲 PvE Chernarus','pve',(d.charaktere||[]).find(c=>c.name===v.name)?.titel||null)}`+kach([[dauer(v.spielzeit),'Spielzeit'],[dauer(v.ueberlebt),'am Leben seit'],[v.werte.kills+' / '+v.werte.tode,'Spieler-Kills / Tode'],[v.kd,'K/D'],[v.strecke+' km','gelaufen'],[v.werte.weitester?v.werte.weitester+' m':'–','weitester Kill'],[v.werte.bewusstlos,'mal bewusstlos'],[(v.schatz.funde||0)+' / '+(v.schatz.ketten||0),'Schätze / Ketten']])
       +'</div><section class="panel"><h4>Aktivität und Begegnungen</h4><div class="stat-details">'
       +statistikBlock('🔫 Kills nach Waffe',balken(v.waffen))
       +statistikBlock('📅 Spielzeit nach Wochentag',balken((v.wochentag||[]).map((n,i)=>[WTN[i],n]),dauer))
