@@ -402,7 +402,14 @@ td,th,.rh,.chip,.badge,.bg{overflow-wrap:anywhere}
 nav .live[hidden]{display:none}
 nav .live.aus{background:#80857e;animation:none;box-shadow:none;opacity:.75}
 @media(min-width:521px){.kurz{display:none}}
-@media(max-width:520px){nav{flex-wrap:wrap;overflow-x:visible;gap:3px;padding:6px 6px 0} nav button{flex:1 1 auto;padding:8px 6px;font-size:11.5px;letter-spacing:.03em;white-space:nowrap} .lang{display:none}
+@media(max-width:600px){
+  nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;gap:5px;padding:8px 8px 0}
+  nav button{min-height:44px;padding:7px 6px;font-size:12px;line-height:1.25;letter-spacing:.03em;white-space:normal;border-bottom:1px solid var(--line)}
+  nav .lang{display:inline}
+  nav .kurz{display:none}
+  nav:has(#meineTab[hidden]) [data-t="evakuierung"]{grid-column:1 / -1}
+}
+@media(max-width:520px){.lang{display:none} nav .lang{display:inline}
   table{font-size:12.5px} th{font-size:10px;letter-spacing:.02em;white-space:normal;padding:5px 4px;vertical-align:bottom} td{padding:6px 4px}
   .nm{display:none} table.wt th,table.wt td{padding:4px 5px;font-size:12px} .panel.scroll,.scroll{overflow-x:auto}}
 .bg{cursor:pointer;position:relative} .bg:focus-visible{outline:2px solid var(--acc)} .bg .bgt{min-width:0;flex:1}
