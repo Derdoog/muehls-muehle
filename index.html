@@ -730,7 +730,14 @@ nav button{min-width:0}
     <div id="er-wertung" class="er panel" hidden><h3>Wertungen</h3><div id="eWertungen"></div></div>
     <div id="er-erfolge" class="er panel" hidden><h3>Level und Erfolge</h3><div id="eErfolge"></div></div>
   </section>
-  <dialog id="eBereit" aria-labelledby="eBereitTitel">
+  <dialog id="juggBereit" aria-labelledby="juggBereitTitel">
+  <div class="dlg"><h3 id="juggBereitTitel">Juggernaut · Bereit?</h3>
+  <p id="juggBereitStand"></p>
+  <button class="login" type="button" id="juggJa">Ja, bin bereit</button>
+  <button class="login" type="button" id="juggNein">Noch warten</button>
+  <p id="juggFehler" role="status"></p></div>
+</dialog>
+<dialog id="eBereit" aria-labelledby="eBereitTitel">
     <div class="dlg"><h3 id="eBereitTitel">PvE Evakuierung</h3><p>Hast du deine Ausrüstung? Kann es losgehen?</p>
     <button type="button" class="login" id="eJa" disabled>Ja, bin bereit</button>
     <button type="button" class="login" id="eWarten" disabled>Noch warten</button>
@@ -1446,14 +1453,14 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   // Deathmatch
   const ro=m.rotation||{},nx=ro.naechster,ab=ro.abstimmung;
   let plan='';
-  if(ro.aktiv){plan=`<div class="mut" style="margin-top:6px">🔁 Wechselt alle ${ro.minuten} min${ro.wechsel_um&&m.laeuft?` · nächster Wechsel in <b class="countdown" data-bis="${ro.wechsel_um}">${countdown(ro.wechsel_um)}</b>`:''}</div>`;
+  if(ro.aktiv){plan=`<div class="mut" style="margin-top:6px">${ro.ohne_zeit?'Punktelimit: 20':'🔁 Wechselt alle '+ro.minuten+' min'}${ro.wechsel_um&&m.laeuft?` · nächster Wechsel in <b class="countdown" data-bis="${ro.wechsel_um}">${countdown(ro.wechsel_um)}</b>`:''}</div>`;
     if(nx)plan+=`<div class="naechste">${nx.bild?`<img src="${esc(nx.bild)}" alt="" loading="lazy">`:''}<div><div class="mut">Geplant als Nächstes</div><b>${esc(nx.karte)}</b> · ${esc(nx.modus)} · ${esc(nx.zeit)}${ro.abstimmung_an?'<div class="mut">Die Abstimmung kann das noch ändern.</div>':''}</div></div>`;
     if(ab&&ab.stimmen)plan+=`<div class="mut" style="margin-top:4px">🗳️ ${ab.karten.length?(ab.karten.length>1?'Gleichstand: <b>'+ab.karten.map(esc).join(' / ')+'</b>':'Abstimmung führt: <b>'+esc(ab.karten[0])+'</b>')+` (${ab.karte_stimmen} ${ab.karte_stimmen===1?'Stimme':'Stimmen'})`:'Noch keine Karte gewählt'}${ab.modi.length?' · Modus: '+ab.modi.map(esc).join(' / '):''} · ${ab.stimmen} ${ab.stimmen===1?'Stimme':'Stimmen'} insgesamt</div>`}
   else if(ro.pausiert)plan='<div class="mut" style="margin-top:6px">⚠ Die Automatik ist gerade pausiert, der Admin schaut nach.</div>';
   const w=m.wertung||{},wz=[];
   if(w.distanz)wz.push(`📏 Distanz: unter ${w.grenzen[0]} m = ${w.distanz_punkte[0]}, bis ${w.grenzen[1]} m = ${w.distanz_punkte[1]}, darüber = ${w.distanz_punkte[2]} Punkte, Kopfschuss +${w.kopfschuss}`);
   if(w.kopfgeld)wz.push(`💰 Kopfgeld: ${m.kopfgeld?'<b>'+esc(m.kopfgeld)+'</b> trägt es, wer ihn erlegt bekommt +'+w.kopfgeld_bonus+' extra':'noch niemand (ab 3 Punkten)'}`);
-  if(m.juggernaut&&m.juggernaut.length)wz.push('🛡️ Juggernaut: <b>'+m.juggernaut.map(esc).join(', ')+'</b> (+'+w.jugg_bonus+' für den, der ihn erlegt)');
+  if(m.juggernaut&&m.juggernaut.length)wz.push('🛡️ Juggernaut: <b>'+m.juggernaut.map(esc).join(', ')+'</b> ('+w.jugg_bonus+' Punkte für den Abschuss)');
   $('#dRunde').innerHTML=m.laeuft?`<div class="panel runde">${m.bild?`<img class="arena${ro.aktiv?'':' flach'}" src="${esc(m.bild)}" alt="">`:''}<div class="mut">Läuft gerade seit ${dauer(Date.now()/1000-(m.seit||d.stand))}</div><div class="gross">${esc(m.karte)} · ${esc(m.modus)}</div>
       <div>${[m.zeit,...(m.regeln||[])].filter(Boolean).map(x=>`<span class="chip">${esc(x)}</span>`).join('')}</div>
       ${wz.length?`<div style="margin-top:6px;font-size:14px">${wz.join('<br>')}</div>`:''}${m.online&&m.online.length?`<div class="mut" style="margin-top:6px">Im Spiel (${m.online.length}): ${m.online.map(esc).join(', ')}</div>`:''}${plan}</div>`
@@ -2725,7 +2732,7 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
   <h4>🎯 Punkte je Runde</h4><table class="rg">${zeile('Kill',(P.kill>0?'+':'')+P.kill+' Punkt')}
     ${zeile('Mit Distanzwertung (je nach Runde)',`unter ${g[0]} Meter: ${dp[0]} Punkt · ${g[0]} bis ${g[1]} Meter: ${dp[1]} Punkte · über ${g[1]} Meter: ${dp[2]} Punkte; Kopfschuss zusätzlich +${P.kopfschuss}`)}
     ${zeile('Kopfgeld 💰 (je nach Runde)',`Der Führende trägt das Kopfgeld, sobald er mindestens ${P.kopfgeld_ab} Punkte hat. Wer ihn erlegt: +${P.kopfgeld_bonus} extra`)}
-    ${zeile('Juggernaut 🛡️ (Modus)',`Juggernaut erlegen: +${P.jugg_bonus} extra. Juggernaut-Waffen: ${P.jugg_waffen.map(esc).join(', ')}`)}
+    ${zeile('Juggernaut 🛡️ (Modus)',`Juggernaut erlegen: ${P.jugg_bonus} Punkte. Jäger-Kill: 0,2. Juggernaut-Kill: 1. Bis zu 2 Bonuspunkte für Schaden am Juggernaut. Juggernaut-Waffen: ${P.jugg_waffen.map(esc).join(', ')}`)}
     ${zeile('Selbstmord',P.selbstmord+' Punkte')}${zeile('Tod durch Umgebung (Sturz, Zone …)',P.umwelt+' Punkte')}
     ${zeile('Ziel-Kills (Modus „Ziel“)',P.ziel_kills.join(' / ')+' Kills, wer zuerst da ist, gewinnt')}</table>
   <div class="mut">Rundensieger: die meisten Punkte, bei Gleichstand mehr Kills, dann weniger Tode; mindestens 1 Kill. Gewertet werden nur Runden mit mindestens ${R.min_spieler} Spielern.
@@ -2866,6 +2873,43 @@ async function eMelden(bereit){
 }
 $('#eJa').onclick=()=>eMelden(true);
 $('#eWarten').onclick=()=>eMelden(false);
+let juggLobby=null,juggGefragt=null,juggSendet=false;
+const juggDialog=$('#juggBereit');
+function juggZeichnen(lobby){
+  juggLobby=lobby;
+  if(!lobby.offen||!lobby.kann_bereit){
+    juggGefragt=null;
+    if(juggDialog.open)juggDialog.close();
+    return;
+  }
+  $('#juggBereitStand').textContent=lobby.karte+' · '+lobby.anzahl+' bereit · Start ab 3 Spielern';
+  if(juggGefragt!==lobby.id&&!lobby.ich_bereit&&!document.querySelector('dialog[open]')){
+    juggGefragt=lobby.id;
+    $('#juggFehler').textContent='';
+    juggDialog.showModal();
+  }
+}
+async function juggLaden(){
+  if(juggSendet)return;
+  const d=await holeJson('/zuschauer/juggernaut');
+  if(d&&!juggSendet)juggZeichnen(d);
+}
+async function juggMelden(bereit){
+  if(juggSendet||!juggLobby?.offen)return;
+  juggSendet=true;
+  try{
+    const response=await fetch('/zuschauer/juggernaut/bereit',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({id:juggLobby.id,bereit})});
+    const d=await response.json();
+    if(!response.ok)throw new Error(d.meldung);
+    if(bereit||!d.offen)juggDialog.close();
+    juggZeichnen(d);
+  }catch(e){$('#juggFehler').textContent=e.message||'Bereitmeldung fehlgeschlagen.'}
+  finally{juggSendet=false}
+}
+$('#juggJa').onclick=()=>juggMelden(true);
+$('#juggNein').onclick=()=>juggMelden(false);
+if(DIREKT)setInterval(()=>{if(!document.hidden&&ICH?.benutzer)juggLaden()},5000);
 if(DIREKT){eLaden();setInterval(()=>{if(!document.hidden)eLaden()},5000)}
 if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an')||$('#t-shop').classList.contains('an'))meineLaden()},15000);
 setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
