@@ -473,6 +473,7 @@ nav button{min-width:0}
   /* Update 160: Performance-Block und Rundenanalyse */
   .perf-karten{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:12px;margin:12px 0}
   .perf-karte{padding:12px 14px;border:1px solid var(--line2);background:var(--panel2)}
+.perf-mehr{margin-top:4px}.perf-mehr>summary{cursor:pointer;color:var(--mut);font-size:.85em;list-style:none}.perf-mehr>summary::before{content:'▸ '}.perf-mehr[open]>summary::before{content:'▾ '}.perf-mehr>summary::-webkit-details-marker{display:none}
   .perf-karte.plus{border-left:3px solid #8fd16a;background:linear-gradient(110deg,rgba(143,209,106,.08),var(--panel2) 55%)}
   .perf-karte.minus{border-left:3px solid #e8775f;background:linear-gradient(110deg,rgba(232,119,95,.08),var(--panel2) 55%)}
   .perf-karte>b{font:700 12px var(--kopf);text-transform:uppercase;letter-spacing:.07em}
@@ -1795,8 +1796,28 @@ function dmPerformance(m){
     :leer?`<h5>${titel}</h5><p class="mut">${leer}</p>`:'';
   const distanz=bilanzZeile('Killbilanz nach Distanz',dist);
   const hoehenZeile=bilanzZeile('Killbilanz nach Höhenlage',hoehe,'Für die gewerteten Runden liegen noch keine zuordenbaren Höhenwerte vor.');
-  const punkte=(titel,zeichen,klasse,texte)=>`<div class="perf-karte ${klasse}"><b>${titel}</b><ul class="performance-liste">
-    ${texte.some(Boolean)?texte.filter(Boolean).map(t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`).join(''):'<li class="mut">Noch kein klares Muster.</li>'}</ul></div>`;
+  // Update 171: relative Staerken gegen den eigenen Schnitt (je Bereich der beste Wert, mind. 10 Punkte ueber dem eigenen Schnitt)
+  const q0=kills+tode?kills/(kills+tode):0;
+  const relOk=(x,min=5)=>genug&&x.k+x.t>=min&&quote(x)>=q0+0.1&&quote(x)>=0.4;
+  const benutzt=new Set([staerke,besteHoehe,besteKarte,besterModus,besterGegner,schwaeche,schwacheHoehe,schwacheKarte,schwacherModus,schwersterGegner].filter(Boolean));
+  const bestRel=(liste,f=()=>true)=>liste.filter(x=>f(x)&&relOk(x)&&!benutzt.has(x)).sort((a,b)=>quote(b)-quote(a)||(b.k-a.k))[0];
+  const rp=x=>`${bil(x)} (${pz(x)}, dein Schnitt ${Math.round(100*q0)} %)`;
+  const rD=bestRel(dist),rH=bestRel(hoehe),rK=karten.length>1?bestRel(karten,mapOk):null,rM=modi.length>1?bestRel(modi,mapOk):null,rG=bestRel(gegner);
+  const relativ=[
+    rD&&[rD,`Auf ${dw(rD)} schlägst du dich besser als sonst: ${rp(rD)}.`],
+    rH&&[rH,`${['Von unten','Auf gleicher Höhe','Von oben'][hoehe.indexOf(rH)]} schlägst du dich besser als sonst: ${rp(rH)}.`],
+    rK&&[rK,`Auf ${esc(rK.name)} schlägst du dich besser als sonst: ${rp(rK)} in ${rn(rK)}.`],
+    rM&&[rM,`Im Modus ${esc(rM.name)} schlägst du dich besser als sonst: ${rp(rM)} in ${rn(rM)}.`],
+    rG&&[rG,`Gegen ${GT(rG.name,'dm')} hältst du gut mit: ${rp(rG)}.`]
+  ].filter(Boolean).sort((a,b)=>quote(b[0])-quote(a[0])).map(x=>x[1]);
+  const waffeTxt=genug&&top&&top[1]>=5&&(Number(m.kills)||0)>=10?`Deine meisten Kills: <b>${esc(top[0])}</b> (${top[1]} von ${m.kills}).`:'';
+  const auffuellen=liste=>{const a=liste.filter(Boolean);if(a.length>=3)return a;
+    return a.concat([...relativ,waffeTxt].filter(Boolean).slice(0,3-a.length))};
+  const punkte=(titel,zeichen,klasse,texte)=>{
+    const li=t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`;
+    const a=texte.filter(Boolean),vorne=a.slice(0,5),rest=a.slice(5);
+    return `<div class="perf-karte ${klasse}"><b>${titel}</b><ul class="performance-liste">
+    ${a.length?vorne.map(li).join(''):'<li class="mut">Noch kein klares Muster.</li>'}</ul>${rest.length?`<details class="perf-mehr"><summary>${rest.length} weitere</summary><ul class="performance-liste">${rest.map(li).join('')}</ul></details>`:''}</div>`};
   const netto=kills-tode;
   const farbe=spiele.length<3?'':netto>0?'performance-positiv':netto<0?'performance-negativ':'';
   return `<section class="waffen-gruppe"><h4>Performance</h4>
@@ -1804,9 +1825,9 @@ function dmPerformance(m){
       ${spiele.length?waffenKennzahlen([['Runden',spiele.length],['Kills',kills],['Tode',tode],['Bilanz',netto>0?'+'+netto:netto]]):'<span class="mut">Noch keine Runden mit Kill-/Todesdaten.</span>'}
       ${trend}</div>
     <div class="perf-karten">
-    ${punkte('Stärken','+','plus',[distanzStaerke,hoehePlusTxt,positionsStaerke,...vgPlus,...knPlus,
+    ${punkte('Stärken','+','plus',auffuellen([distanzStaerke,hoehePlusTxt,positionsStaerke,...vgPlus,...knPlus,
       besteKarte?`${esc(besteKarte.name)} liegt dir: ${bil(besteKarte)} in ${rn(besteKarte)}.`:'',besterModus?`Im Modus ${esc(besterModus.name)} bist du stark: ${bil(besterModus)} in ${rn(besterModus)}.`:'',
-      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du deine beste Bilanz: ${bil(besterGegner)}.`:'',granTxt])}
+      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du deine beste Bilanz: ${bil(besterGegner)}.`:'',granTxt]))}
     ${punkte('Verbesserungspotenzial','−','minus',[distanzSchwaeche,hoeheMinusTxt,positionsTipp,...vgMinus,...knMinus,
       schwacheKarte?`Auf ${esc(schwacheKarte.name)} läuft es nicht: ${bil(schwacheKarte)} in ${rn(schwacheKarte)}.`:'',schwacherModus?`Im Modus ${esc(schwacherModus.name)} tust du dich schwer: ${bil(schwacherModus)} in ${rn(schwacherModus)}.`:'',
       schwersterGegner?`Gegen ${GT(schwersterGegner.name,'dm')} hast du deine schlechteste Bilanz: ${bil(schwersterGegner)}.`:'',ursacheTxt])}
