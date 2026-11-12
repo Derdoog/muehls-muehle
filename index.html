@@ -296,6 +296,7 @@
 .rk-kat{border-top:1px solid var(--line);padding:4px 0}.rk-kat:first-child{border-top:0}
 .rk-kat>summary{cursor:pointer;font-weight:600;padding:6px 0;list-style:none}.rk-kat>summary::-webkit-details-marker{display:none}
 .rk-kat>summary::before{content:'▸ ';color:var(--mut)}.rk-kat[open]>summary::before{content:'▾ '}
+.ich-kopf{cursor:pointer;margin-bottom:10px}.ich-kopf>.prkopf{margin:0}.ich-kopf[hidden]{display:none}
 .rk-tab{width:100%;border-collapse:collapse;font-size:13px;margin:2px 0 6px}
 .rk-tab th{text-align:left;font-weight:500;color:var(--mut);font-size:12px;padding:3px 6px;border-bottom:1px solid var(--line2)}
 .rk-tab td{padding:5px 6px;border-bottom:1px solid var(--line);vertical-align:top}.rk-tab tr:last-child td{border-bottom:0}
@@ -655,6 +656,7 @@ nav button{min-width:0}
   </div>
   <div id="banner"></div>
   <section class="tab an" id="t-pve">
+    <div class="ich-kopf" id="ichKopf-pve"></div>
     <div id="pBanner"></div>
     <div class="kacheln" id="pKacheln"></div>
     <div class="panel" id="pSchatz" hidden></div>
@@ -669,6 +671,7 @@ nav button{min-width:0}
     <div class="panel"><h3>📅 Termine</h3><div id="pKal"></div><div class="mut" style="margin-top:6px" id="pKalIcs"></div></div>
   </section>
   <section class="tab" id="t-dm">
+    <div class="ich-kopf" id="ichKopf-dm"></div>
     <div style="display:flex;justify-content:flex-end;margin-bottom:10px"><button class="regelbtn" id="regelnBtn">❓ Regeln &amp; Punkte</button></div>
     <div class="reiter" id="dReiter" role="group" aria-label="Deathmatch-Ansicht">
       <button type="button" class="an" data-dr="live" aria-pressed="true">🎯 Übersicht</button>
@@ -699,6 +702,7 @@ nav button{min-width:0}
     <div class="dr" id="dr-karten" hidden>      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div></div>
   </section>
   <section class="tab" id="t-evakuierung">
+    <div class="ich-kopf" id="ichKopf-evakuierung"></div>
     <div class="reiter" id="eReiter" role="group" aria-label="Ansicht PvE Evakuierung">
       <button type="button" data-er="live" class="an" aria-pressed="true" disabled>Übersicht</button>
       <button type="button" data-er="einsatz" aria-pressed="false" disabled>Letzte Einsätze</button>
@@ -1921,9 +1925,10 @@ function voteZeichnen(){const v=VOTE,el=$('#dVote');if(!v||!v.offen){el.hidden=t
 async function stimme(d){try{const r=await fetch('/zuschauer/abstimmung',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
   if(!r.ok){const j=await r.json().catch(()=>({}));alert(j.meldung||'Abstimmen ging nicht')}}catch(e){}await voteLaden()}
 // ---------------- Spieler-Login, Registrierung und Meine Statistik (Reiter, Charakter-Auswahl)
-let ICH=null,MK=null,MG=null;
+let ICH=null,MK=null,MG=null,IGT=null;   // Update 177: IGT = eigene Gamertags {dm, pve} fuer den Profilkopf oben in den Reitern
 async function ichLaden(){if(!DIREKT)return;$('#loginBtn').hidden=false;ICH=await holeJson('/zuschauer/ich');
   const da=ICH&&ICH.benutzer;if(da)cmLaden().then(()=>{try{if(D)cmPanel(D.dm.custom)}catch(e){}});$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;
+  if(!da)IGT=null;else if(!IGT){const m_=await holeJson('/zuschauer/meine?char=alle');if(m_)IGT={dm:m_.dm_gamertag||null,pve:(m_.pve_gamertags||[])[0]||null}}try{ichKoepfe()}catch(e){console.error(e)}
   if(!da&&$('#t-meine').classList.contains('an'))tab('pve')}
 function loginForm(reg){const offen=!ICH||ICH.registrierung_an!==false;
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">${reg?'Konto anlegen':'Spieler-Login'}</h2>
@@ -1979,7 +1984,7 @@ function reiterZeigen(){
 let MLAEUFT=false;
 async function meineLaden(){if(!ICH||!ICH.benutzer||MLAEUFT)return;MLAEUFT=true;try{await meineLaden2()}finally{MLAEUFT=false}}
 async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encodeURIComponent(MWAHL));
-  if(!d&&MWAHL!=='alle'){MWAHL='alle';d=await holeJson('/zuschauer/meine?char=alle')}if(!d)return;MDATEN=d;
+  if(!d&&MWAHL!=='alle'){MWAHL='alle';d=await holeJson('/zuschauer/meine?char=alle')}if(!d)return;MDATEN=d;IGT={dm:d.dm_gamertag||null,pve:(d.pve_gamertags||[])[0]||null};try{ichKoepfe()}catch(e){console.error(e)}
   reiterZeigen();reiterMerken();
   $('#mTitel').textContent='Meine Statistik ('+ICH.benutzer+')';
   const pt=d.pve_gamertags||[];
@@ -2765,6 +2770,18 @@ function profil(n){const p=D.pve,s=p.spieler.find(x=>x.name===n),pr=p.profile[n]
   profilDialog(prKopf(n,`${s.online?'🟢 gerade online':'zuletzt da '+vor(s.zuletzt)} · dabei seit ${pr.zuerst?new Date(pr.zuerst*1000).toLocaleDateString('de-DE'):'–'}${(D.dm.elo||[]).some(x=>x.name===n)?` · <span class="name" id="zuDm">Deathmatch-Profil ansehen</span>`:''}`,'pve'),
     [['📋 Übersicht',ueb],['🔫 Waffen',waf],['🏅 Erfolge',erf]]);
   const zd=$('#zuDm');if(zd)zd.onclick=()=>dmProfil(n)}
+// Update 177: eigener Profilkopf (nur mit gekauftem Profilhintergrund) oben in Deathmatch, PvE Chernarus und PvE Evakuierung
+function ichKoepfe(){const z={pve:'',dm:'',evakuierung:''},klick={};
+  if(ICH&&ICH.benutzer&&IGT&&D){
+    const dm=IGT.dm,pv=IGT.pve||IGT.dm,hat=n=>!!(n&&KS(n)&&KS(n).hg);
+    if(hat(dm)){const el=(D.dm&&D.dm.elo)||[],i=el.findIndex(x=>x.name===dm);
+      z.dm=prKopf(dm,i>=0?`⚔️ Deathmatch · Elo ${el[i].elo} · Platz ${i+1} von ${el.length}`:'⚔️ Deathmatch','dm');klick.dm=()=>dmProfil(dm)}
+    if(hat(pv)){const s=((D.pve&&D.pve.spieler)||[]).find(x=>x.name===pv);
+      z.pve=prKopf(pv,`🌲 PvE Chernarus${s&&s.online?' · 🟢 gerade online':''}`,'pve');klick.pve=()=>profil(pv);
+      z.evakuierung=prKopf(pv,'🚁 PvE Evakuierung','pve');klick.evakuierung=()=>profil(pv)}}
+  for(const k in z){const el=$('#ichKopf-'+k);if(!el)continue;if(el.dataset.sig!==z[k]){el.innerHTML=z[k];el.dataset.sig=z[k]}
+    el.hidden=!z[k];el.onclick=klick[k]||null;el.title=z[k]?'Eigenes Profil öffnen':''}}
+{const _z=zeichnen;zeichnen=function(){_z.apply(this,arguments);try{ichKoepfe()}catch(e){console.error(e)}}}
 const _tab=tab;tab=t=>{_tab(t);if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 $('#regelnBtn').onclick=regelnDialog;
