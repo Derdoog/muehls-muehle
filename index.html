@@ -605,8 +605,8 @@ nav button{min-width:0}
     </div>
     <div id="er-live" class="er">
       <div class="zwei">
-        <div class="panel"><h3>Killfeed</h3><div id="eFeed" class="kf"><span class="mut">In Vorbereitung · Die erste Karte wird noch auf Livonia getestet.</span></div></div>
-        <div class="panel"><h3>Stand dieser Runde</h3><div id="eStand" class="mut">Noch gesperrt</div><button type="button" id="eBereitStatus" class="login" hidden disabled>Bereitmeldung ändern</button></div>
+        <div class="panel"><h3>Hinweise</h3><div id="eHinweis"><span class="mut">In Vorbereitung · Die erste Karte wird noch auf Livonia getestet.</span></div></div>
+        <div class="panel"><h3>Ereignisse</h3><div id="eStand" class="mut">Noch gesperrt</div><div id="eFeed" class="kf" role="log"></div><button type="button" id="eBereitStatus" class="login" hidden disabled>Bereitmeldung ändern</button></div>
       </div>
     </div>
     <div id="er-einsatz" class="er panel" hidden><h3>Letzte Einsätze</h3><div id="eEinsatz"></div></div>
@@ -2148,6 +2148,7 @@ function eZeichnen(d){
   }
   $('#eJa').disabled=$('#eWarten').disabled=!r?.kann_bereit||eSendet;
   if(!frei)return;
+  $('#eHinweis').textContent=r?.hinweis||'Keine aktuellen Missionshinweise.';
   $('#eFeed').innerHTML=r?.feed?.length?r.feed.map(text=>'<div>'+esc(text)+'</div>').join(''):'<span class="mut">Keine Meldungen.</span>';
   $('#eStand').textContent=r?(r.ende?'Einsatz beendet':r.aktiv?
     r.karte+' · '+r.entkommen+'/'+r.team+' evakuiert'+(r.rest===null?'':' · noch '+eZeit(r.rest)):
@@ -2155,7 +2156,7 @@ function eZeichnen(d){
   $('#eEinsatz').innerHTML=d.einsatz.map(e=>'<details><summary>'+eRunde(e)+' · '+eZeit(e.dauer)+
     (e.wertung==='bestaetigt'?' · '+e.entkommen.length+'/'+e.team.length+' evakuiert':' · Ohne Wertung')+
     '</summary><p>'+ (e.sidequest?'Sidequest abgeschlossen. ':'')+
-    (e.wertung==='bestaetigt'?Object.entries(e.punkte).map(([n,p])=>esc(n)+' · '+p+' Punkte').join('<br>'):
+    (e.wertung==='bestaetigt'?Object.entries(e.punkte).map(([n,p])=>esc(n)+' · '+p+' Punkte'+(e.rubel_cent?.[n]?' · '+RUB(e.rubel_cent[n]):'')).join('<br>'):
     e.grund==='spielerzahl'?'Abweichende Spielerzahl.':'')+'</p></details>').join('')||eLeer;
   $('#eWertungen').innerHTML=d.wertungen.map(w=>'<p><b>'+eRunde(w.zeit)+'</b><br>Bestzeit '+eZeit(w.zeit.dauer)+
     ' · '+w.zeit.team.map(esc).join(', ')+'<br>Punkterekord '+Object.values(w.punkte.punkte).reduce((a,b)=>a+b,0)+
