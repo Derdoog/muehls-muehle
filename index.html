@@ -293,6 +293,10 @@
     .dm-kompakt{display:block}
     .dm-wertung .rh{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 8px}
     .dm-wertung .rh>span:first-child{grid-column:1/-1}
+.rk-kat{border-top:1px solid var(--line);padding:4px 0}.rk-kat:first-child{border-top:0}
+.rk-kat>summary{cursor:pointer;font-weight:600;padding:6px 0;list-style:none}.rk-kat>summary::-webkit-details-marker{display:none}
+.rk-kat>summary::before{content:'▸ ';color:var(--mut)}.rk-kat[open]>summary::before{content:'▾ '}
+.rk .rk-mehr{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:2px 14px;font-size:12px;color:var(--mut)}.rk .rk-mehr i{font-style:normal}
   }
   :is(#dr-wertung,.pve-level-panel) table{table-layout:fixed}
   :is(#dr-wertung,.pve-level-panel) :is(th,td){white-space:normal;overflow-wrap:anywhere}
@@ -898,7 +902,7 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   const re=m.rekorde||{},dmR=[['elo','🏆 Höchste Elo',v=>v],['kills','⚔️ Meiste Kills',v=>v],['siege','🥇 Meiste Siege',v=>v],['beste_serie','🔥 Längste Serie',v=>v+' Kills'],
     ['weitester','🎯 Weitester Kill',v=>v+' m'],['laengstes_leben','⏱️ Längstes Leben',v=>dauer(v)],['kopf','💀 Meiste Kopfschüsse',v=>v],['rache','⚔️ Meiste Rache',v=>v],
     ['kopfgeld_kills','💰 Meiste Kopfgelder',v=>v],['jugg_kills','🛡️ Juggernaut-Jäger',v=>v]];
-  $('#dRuhm').innerHTML=ruhm(m.elo,dmR,'data-dm')+(re.runde_kills?`<div class="rh"><span>🏅 Meiste Kills in einer Runde</span><b>${GT(re.runde_kills[0],'dm')}</b><span class="mut">${re.runde_kills[1]} Kills · ${esc(re.runde_kills[2])}</span></div>`:'')
+  $('#dRuhm').innerHTML=m.ruhm&&(m.ruhm.rekorde||[]).length?ruhmKat(m.ruhm):ruhm(m.elo,dmR,'data-dm')+(re.runde_kills?`<div class="rh"><span>🏅 Meiste Kills in einer Runde</span><b>${GT(re.runde_kills[0],'dm')}</b><span class="mut">${re.runde_kills[1]} Kills · ${esc(re.runde_kills[2])}</span></div>`:'')
     +(re.weitester?`<div class="rh"><span>📏 Weitester Schuss</span><b>${GT(re.weitester[0],'dm')}</b><span class="mut">${re.weitester[3]} m · ${esc(re.weitester[2]||'')} · ${esc(re.weitester[4])}</span></div>`:'')||'<div class="mut">Noch keine Rekorde.</div>';
   $('#pRuhm').innerHTML=ruhm(p.spieler,[['kills','⚔️ Meiste Kills',v=>v],['weitester','🎯 Weitester Kill',v=>v+' m'],['kopf','💀 Meiste Kopfschüsse',v=>v],['spielzeit','⏳ Meiste Spielzeit',v=>dauer(v)],
     ['strecke','🥾 Weiteste Strecke',v=>v+' km'],['erfolge','🏅 Meiste Erfolge',v=>v],['sitzungen','🔁 Meiste Besuche',v=>v]],'data-n')
@@ -1183,6 +1187,13 @@ function schatzZeichnen(d){const s=d.schatz||{},el=$('#pSchatz');
       ${x.status==='abgelaufen'&&x.planquadrat?`<div class="mut">Lag in Planquadrat ${esc(x.planquadrat)}</div>`:''}</div></div>`).join('')}
     ${s.rang&&s.rang.length?`<div class="mut" style="margin-top:6px">🏴‍☠️ Rangliste: ${s.rang.slice(0,5).map((r,i)=>esc(r[0])+' '+r[1]).join(' · ')}</div>`:''}
     <div class="mut" style="margin-top:6px">Gefunden ist ein Schatz, wenn du direkt daneben stehst (Spielerliste alle 5 min) oder dort ein Emote machst.</div>`}
+function ruhmKat(R){   // Update 172: Ruhmeshalle DM in Kategorien, Platz 1 bis 3
+  const datum=t=>new Date(t*1000).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'2-digit'});
+  const zeile=x=>{const [n,w]=x.top[0];
+    return `<div class="rh rk"><span>${esc(x.t)}${x.h?' '+statistikInfo(x.h):''}</span><b class="name" data-dm="${esc(n)}">${GT(n,'dm')}</b><span class="mut">${esc(w)}${x.info?' · '+esc(x.info):''}${x.seit?' · '+datum(x.seit):''}</span>${
+      x.top.length>1?`<span class="rk-mehr">${x.top.slice(1).map((y,i)=>`<span>${['🥈','🥉'][i]} <span class="name" data-dm="${esc(y[0])}">${esc(y[0])}</span> <i>${esc(y[1])}</i></span>`).join('')}</span>`:''}</div>`};
+  return (R.kat||[]).map(([k,t],i)=>{const es=R.rekorde.filter(x=>x.kat===k);
+    return es.length?`<details class="rk-kat" ${i<2?'open':''}><summary>${esc(t)} <span class="mut">${es.length}</span></summary>${es.map(zeile).join('')}</details>`:''}).join('')}
 function ruhm(liste,felder,attr){return felder.map(([k,t,f])=>{const best=[...(liste||[])].filter(s=>(s[k]||0)>0).sort((a,b)=>b[k]-a[k])[0];
   return best?`<div class="rh"><span>${t}</span><b class="name" ${attr}="${esc(best.name)}">${GT(best.name,attr==='data-dm'?'dm':'pve')}</b><span class="mut">${f(best[k])}</span></div>`:''}).join('')}
 function countdown(bis){const s=Math.max(0,Math.round(bis-Date.now()/1000));return s<=0?'gleich':Math.floor(s/60)+':'+String(s%60).padStart(2,'0')+' min'}
