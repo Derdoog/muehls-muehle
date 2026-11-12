@@ -515,6 +515,7 @@ nav button{min-width:0}
   #granModal{border:2px solid #e8775f;max-width:min(520px,calc(100vw - 24px));padding:18px 20px;background:var(--bg);color:var(--text)}
   #granModal::backdrop{background:rgba(0,0,0,.75)}
   #granModal h3{margin:0 0 10px;color:#f39886} #granModal .gu-opt{margin-top:10px} #granModal .gu-erg{margin-top:10px}
+#t-evakuierung button:disabled{opacity:.45;cursor:not-allowed}
 </style>
 <style>.game-ui-icon{display:inline-block;width:1.22em;height:1.22em;vertical-align:-.22em;fill:currentColor;pointer-events:none;flex:none}.game-icon-credit{display:block;margin:12px 0;text-align:center;font-size:11px;color:var(--mut,#a0a495)}.game-icon-credit a{color:inherit}</style>
 <style>
@@ -536,7 +537,7 @@ nav button{min-width:0}
 <body>
 <header>
   <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span class="mut" id="stand">lade …</span><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
-  <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="meine" id="meineTab" hidden>👤 Meine<span class="lang"> Statistik</span></button></nav>
+  <nav><button data-t="pve" class="an">🌲 PvE<span class="lang"> Chernarus</span><span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">Evakuierung (PvE)</button><button data-t="meine" id="meineTab" hidden>👤 Meine<span class="lang"> Statistik</span></button></nav>
 </header>
 <main>
   <div class="serverleiste">
@@ -588,6 +589,19 @@ nav button{min-width:0}
     <div class="dr" id="dr-waffen" hidden>    <div class="panel"><h3>🔫 Waffenkatalog <span id="dSchrot"></span></h3><div id="dWaffen" class="waffen-liste"></div></div></div>
     <div class="dr" id="dr-karten" hidden>      <div class="panel"><h3>🗺 Karten</h3><div id="dKarten"></div></div></div>
   </section>
+  <div class="tab" id="t-evakuierung">
+    <div class="panel">
+      <h3>Evakuierung (PvE)</h3>
+      <p>Rüstet euch aus, löst wechselnde Missionsziele und entkommt gemeinsam durch die Evakuierungszone.</p>
+      <p class="mut">In Vorbereitung · Die erste Karte wird noch auf Livonia getestet.</p>
+      <div class="mwahl" aria-label="Evakuierungsreiter">
+        <button type="button" disabled>Übersicht</button>
+        <button type="button" disabled>Letzte Einsätze</button>
+        <button type="button" disabled>Wertungen</button>
+        <button type="button" disabled>Erfolge</button>
+      </div>
+    </div>
+  </div>
   <section class="tab" id="t-meine">
     <div class="panel"><h3 id="mTitel">Meine Statistik</h3><details id="mKonto"><summary>Gamertags und Charaktere</summary><div id="mListe"></div><div id="mWahl" class="mwahl"></div></details></div>
     <div class="reiter" id="mModus" role="group" aria-label="Statistikmodus">
