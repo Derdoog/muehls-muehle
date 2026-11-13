@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de">
+<html lang="de" data-welt="dm">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -729,11 +729,47 @@ dialog.aktion-dialog::backdrop{background:#000b}dialog.aktion-dialog .dlg{paddin
 #mModus{display:none}
 @media(max-width:600px){.kopf-aktionen{grid-template-columns:auto auto minmax(0,1fr) auto}#weltSchalter{grid-column:1/-1;justify-self:end}nav:has(#meineTab[hidden]) [data-t="evakuierung"]{grid-column:auto}nav{grid-template-columns:repeat(2,minmax(0,1fr))}}
 </style>
+<style>
+/* Kompakter Kopf: direkte Navigation, seltenere Aktionen im Menü. */
+.mobil-menue{display:none}
+@media(max-width:600px){
+ header{position:relative}
+ .kopf{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 10px 7px}
+ .kopf h1{flex:0 1 auto;min-width:0;margin:0;padding:0;white-space:nowrap;font-size:clamp(12px,3.4vw,16px);letter-spacing:.045em}
+ .kopf h1 span{font-size:9px;margin-left:3px;padding:1px 4px}
+ .kopf-aktionen{display:flex;flex:0 0 auto;align-items:center;gap:5px;margin:0}
+ .kopf-aktionen>#ansichtBtn,.kopf-aktionen>#loginBtn,.kopf-aktionen>.admin-link{display:none}
+ #weltSchalter{display:inline-flex;padding:2px;gap:1px}
+ #weltSchalter button{min-height:36px;padding:4px 7px;font-size:11px}
+ .mobil-menue{display:block;position:relative}
+ .mobil-menue summary{display:flex;align-items:center;justify-content:center;width:40px;height:40px;cursor:pointer;list-style:none;border:1px solid var(--line2);border-radius:8px;background:var(--bg2);color:var(--text);font-size:19px}
+ .mobil-menue summary::-webkit-details-marker{display:none}
+ .mobil-menue-inhalt{position:absolute;z-index:100;right:0;top:calc(100% + 6px);min-width:190px;max-width:min(290px,90vw);padding:5px;border:1px solid var(--line2);border-radius:9px;background:var(--bg2);box-shadow:0 8px 24px #000a}
+ .mobil-menue-inhalt button,.mobil-menue-inhalt a{display:block;width:100%;min-height:42px;padding:10px;border:0;border-radius:5px;background:transparent;color:var(--text);font:inherit;text-align:left;text-decoration:none;overflow-wrap:anywhere}
+ .mobil-menue-inhalt [hidden]{display:none}
+ .mobil-menue-inhalt button:hover,.mobil-menue-inhalt a:hover{background:var(--panel)}
+ header nav{display:flex;align-items:stretch;gap:3px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 10px;white-space:nowrap}
+ header nav::-webkit-scrollbar{display:none}
+ header nav button{flex:1 0 auto;min-width:0;min-height:43px;padding:8px 8px;font-size:11px;letter-spacing:0}
+}
+
+/* Update 183: Reiter auf dem Handy als gleich breite Kacheln in einer Zeile (kein verstecktes Scrollen) */
+@media(max-width:600px){
+ header nav{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);overflow:visible;gap:3px;padding:0 6px;white-space:normal}
+ header nav button{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:54px;
+   padding:7px 2px 6px;font-size:10px;line-height:1.15;letter-spacing:0;text-align:center;white-space:normal;overflow-wrap:normal;-webkit-hyphens:auto;hyphens:auto}
+ header nav button .game-ui-icon{width:19px;height:19px;margin:0;flex:0 0 auto}
+ header nav button .live{position:absolute;top:6px;right:6px;margin:0}
+ header nav button .kurz{display:none!important}
+ header nav button .lang{display:inline!important}
+}
+@media(max-width:360px){header nav button{font-size:9px;letter-spacing:0}}
+</style>
 </head>
 <body>
 <header>
-  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span id="weltSchalter" role="group" aria-label="Spielbereich"><button type="button" data-welt="pve" aria-pressed="true">🌲 PvE</button><button type="button" data-welt="dm" aria-pressed="false">⚔ PvP</button></span><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="shopBtn" type="button">🛒 Shop</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a></span></div>
-  <nav><button data-t="pve" class="an">🌲 Chernarus<span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">🚁 Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="waffen">🔫 Waffen</button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button></nav>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span id="weltSchalter" role="group" aria-label="Spielbereich"><button type="button" data-welt="pve" aria-pressed="false">🌲 PvE</button><button type="button" data-welt="dm" aria-pressed="true">⚔ PvP</button></span><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a><details class="mobil-menue" id="mobilMenue"><summary aria-label="Menü öffnen">☰</summary><div class="mobil-menue-inhalt"><button type="button" id="mobilAnsicht">⚙ Ansicht</button><button type="button" id="mobilKonto" hidden>🔑 Spieler-Login</button><a href="/admin">Zum Adminbereich</a></div></details></span></div>
+  <nav><button data-t="pve">🌲 Chernarus<span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm" class="an">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">🚁 Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="waffen">🔫 Waffen</button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button><button type="button" data-t="shop" id="shopBtn">🛒 Shop</button></nav>
 </header>
 <main>
   <div id="liveLeiste" hidden></div>
@@ -1359,7 +1395,7 @@ OTHER DEALINGS IN THE FONT SOFTWARE.
 </dialog>
 <script>
 const sichtSpeicher=(()=>{
-  const schluessel=['tab','meine_ebenen','meine_reiter','meine_char','ansicht_v2','welt_v1'];
+  const schluessel=['tab','meine_ebenen','meine_reiter','meine_char','ansicht_v2','welt_v1','welt_v2'];
   const entscheidung='dayz-ansicht-einwilligung-v1';
   function erlaubt(){try{return localStorage.getItem(entscheidung)==='ja'}catch(e){return false}}
   function loeschen(){try{schluessel.forEach(k=>localStorage.removeItem(k))}catch(e){}}
@@ -1509,7 +1545,7 @@ const DIREKT=!REPO;   // direkt vom Steuer-Server ausgeliefert (/zuschauer): Dat
 async function laden(){
   let d=null;const jetzt=Date.now()/1000;
   if(DIREKT){d=await holeJson('/zuschauer/daten.json');if(!d){$('#stand').textContent='Daten gerade nicht erreichbar';return}D=d;zeichnen();
-    if(ersterTab){ersterTab=false;let t=null;try{t=sichtSpeicher.getItem('tab')}catch(e){}tab(t||(sichtSpeicher.getItem('welt_v1')||(d.dm.laeuft?'dm':'pve')))}return}
+    if(ersterTab){ersterTab=false;let t=null;try{t=sichtSpeicher.getItem('tab')}catch(e){}tab((t==='pve'||t==='dm'||t==='evakuierung')?(WELT==='dm'?'dm':t==='evakuierung'?'evakuierung':'pve'):(t||WELT))}return}
   // Live-Zweige: der Takt, der vor 8 s lief, ist sicher schon geschrieben (Zweig live-XX)
   for(const zur of [8,38]){const t=Math.floor((jetzt-zur)/TAKT);
     const x=await holeJson(`https://raw.githubusercontent.com/${REPO}/live-${String(((t%ZWEIGE)+ZWEIGE)%ZWEIGE).padStart(2,'0')}/daten.json`);
@@ -1518,7 +1554,7 @@ async function laden(){
   if(!d)d=await holeJson(`https://raw.githubusercontent.com/${REPO}/daten/daten.json`);
   if(!d){$('#stand').textContent='Daten gerade nicht erreichbar';return}
   D=d;zeichnen();
-  if(ersterTab){ersterTab=false;let t=null;try{t=sichtSpeicher.getItem('tab')}catch(e){}tab(t||(sichtSpeicher.getItem('welt_v1')||(d.dm.laeuft?'dm':'pve')))}
+  if(ersterTab){ersterTab=false;let t=null;try{t=sichtSpeicher.getItem('tab')}catch(e){}tab((t==='pve'||t==='dm'||t==='evakuierung')?(WELT==='dm'?'dm':t==='evakuierung'?'evakuierung':'pve'):(t||WELT))}
 }
 // Update 7: Bausteine, die Webseite und Kosmetik-Vorschau gemeinsam benutzen (eine Quelle, damit die Vorschau genau stimmt)
 const PKT=k=>k.gruende&&k.gruende.length?` <span class="pk">${k.punkte>0?'+':''}${k.punkte} (${k.gruende.map(esc).join(', ')})</span>`:'';
@@ -2069,7 +2105,7 @@ async function stimme(d){try{const r=await fetch('/zuschauer/abstimmung',{method
 // ---------------- Spieler-Login, Registrierung und Meine Statistik (Reiter, Charakter-Auswahl)
 let ICH=null,MK=null,MG=null,IGT=null;   // Update 177: IGT = eigene Gamertags {dm, pve} fuer den Profilkopf oben in den Reitern
 async function ichLaden(){if(!DIREKT)return;$('#loginBtn').hidden=false;ICH=await holeJson('/zuschauer/ich');
-  const da=ICH&&ICH.benutzer;if(da)cmLaden().then(()=>{try{if(D)cmPanel(D.dm.custom)}catch(e){}});$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#meineTab').hidden=!da;$('#shopLogin').hidden=!!da;$('#mr-shop').hidden=!da;if(!da){$('#mr-shop').innerHTML='';delete $('#mr-shop').dataset.sig}
+  const da=ICH&&ICH.benutzer;if(da)cmLaden().then(()=>{try{if(D)cmPanel(D.dm.custom)}catch(e){}});$('#loginBtn').textContent=da?'👤 '+ICH.benutzer+' · Abmelden':'🔑 Spieler-Login';$('#mobilKonto').hidden=false;$('#mobilKonto').textContent=$('#loginBtn').textContent;$('#meineTab').hidden=!da;$('#shopLogin').hidden=!!da;$('#mr-shop').hidden=!da;if(!da){$('#mr-shop').innerHTML='';delete $('#mr-shop').dataset.sig}
   if(!da){IGT=null;ICHN=new Set()}else if(!IGT){const m_=await holeJson('/zuschauer/meine?char=alle');if(m_){IGT={dm:m_.dm_gamertag||null,pve:(m_.pve_gamertags||[])[0]||null,alle:[m_.dm_gamertag,...(m_.pve_gamertags||[])].filter(Boolean)};ICHN=new Set(IGT.alle)}}try{ichKoepfe()}catch(e){console.error(e)}
   if(!da&&$('#t-meine').classList.contains('an'))tab('pve');if(da&&($('#t-shop').classList.contains('an')||$('#t-waffen').classList.contains('an')))meineLaden()}
 function loginForm(reg){const offen=!ICH||ICH.registrierung_an!==false;
@@ -2107,7 +2143,7 @@ function rasterZeichnen(){if(!MK)return;MR.clearLayers();if(!MEBENE.raster)retur
 function orteZeichnen(){if(!MK||!ORTE)return;MO.clearLayers();if(!MEBENE.orte)return;const z=MK.getZoom();
   ORTE.forEach(o=>{const gross=['Capital','City'].includes(o[3]);if(!gross&&!(o[3]==='Village'&&z>=-3)&&!(['Camp','Local','LocalOffice','RailroadStation'].includes(o[3])&&z>=-1.5))return;
     L.marker([o[2],o[1]],{interactive:false,icon:L.divIcon({className:'ortlabel'+(gross?' stadt':''),html:esc(o[0]),iconSize:null,iconAnchor:[0,0]})}).addTo(MO)})}
-let MModus='pve';
+let MModus='dm';
 $$('#mModus button').forEach(b=>b.onclick=()=>{MModus=b.dataset.modus;if(MREIT==='dm'||MREIT==='pve')MREIT='uebersicht';reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
 const MREITER=[['uebersicht','📋 Übersicht'],['waffen','🔫 Waffen'],['erfolge','🏅 Erfolge'],['karte','🗺 Karte & Heatmap'],['titel','🏷 Titel'],['level','⭐ Level']];
 let MREIT='uebersicht',MWAHL='alle',MDATEN=null;
@@ -2977,13 +3013,14 @@ function liveLeiste(){const el=$('#liveLeiste');if(!el)return;const m=D&&D.dm;
   const h=`<div class="live-leiste" role="button" tabindex="0" title="Zur laufenden Runde"><span class="live-punkt"></span><b>LIVE</b> <span>⚔️ ${esc(m.karte)} · ${esc(m.modus)}</span>${bis?` <span>⏱ noch <b class="countdown" data-bis="${bis}">${countdown(bis)}</b></span>`:''}${f?` <span>👑 ${GT(f[0],'dm')} <span class="mut">${esc(String(f[3]??f[1]))} P.</span></span>`:''}<span class="mut">${(m.online||[]).length} im Spiel ›</span></div>`;
   if(el.dataset.sig!==h){el.innerHTML=h;el.dataset.sig=h;const x=el.querySelector('.live-leiste');x.onclick=()=>tab('dm');x.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tab('dm')}}}
   el.hidden=false}
-let WELT='pve';try{const w=sichtSpeicher.getItem('welt_v1');if(w==='pve'||w==='dm')WELT=w}catch(e){}
-function weltSync(w){WELT=w==='dm'?'dm':'pve';document.documentElement.dataset.welt=WELT;MModus=WELT;
+let WELT='dm';try{const w=sichtSpeicher.getItem('welt_v2');if(w==='pve'||w==='dm')WELT=w}catch(e){}
+function weltSync(w,merken=false){WELT=w==='dm'?'dm':'pve';document.documentElement.dataset.welt=WELT;MModus=WELT;
   document.querySelectorAll('#weltSchalter [data-welt]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.welt===WELT)));
-  try{sichtSpeicher.setItem('welt_v1',WELT);reiterZeigen();if(MREIT==='karte'&&$('#t-meine').classList.contains('an'))karteZeichnen(MDATEN)}catch(e){console.error(e)}}
+  try{if(merken)sichtSpeicher.setItem('welt_v2',WELT);reiterZeigen();if(MREIT==='karte'&&$('#t-meine').classList.contains('an'))karteZeichnen(MDATEN)}catch(e){console.error(e)}}
 const _tab=tab;tab=t=>{if(t==='pve'||t==='evakuierung')weltSync('pve');else if(t==='dm')weltSync('dm');_tab(t);try{liveLeiste()}catch(e){}if(t==='waffen'){meineLaden();waffenGemeinsamZeichnen()}if(t==='shop')meineLaden();if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
-weltSync(WELT);if(WELT==='dm'&&!['meine','shop'].includes(sichtSpeicher.getItem('tab'))&&!location.hash.startsWith('#meine'))tab('dm');document.querySelectorAll('#weltSchalter [data-welt]').forEach(b=>b.onclick=()=>{const aktiv=document.querySelector('.tab.an')?.id;weltSync(b.dataset.welt);if(aktiv==='t-waffen')waffenGemeinsamZeichnen();else if(aktiv!=='t-meine'&&aktiv!=='t-shop')tab(WELT==='dm'?'dm':'pve')});
+weltSync(WELT);if(WELT==='dm'&&!['meine','shop'].includes(sichtSpeicher.getItem('tab'))&&!location.hash.startsWith('#meine'))tab('dm');document.querySelectorAll('#weltSchalter [data-welt]').forEach(b=>b.onclick=()=>{const aktiv=document.querySelector('.tab.an')?.id;weltSync(b.dataset.welt,true);if(aktiv==='t-waffen')waffenGemeinsamZeichnen();else if(aktiv!=='t-meine'&&aktiv!=='t-shop')tab(WELT==='dm'?'dm':'pve')});
+$('#mobilAnsicht').onclick=()=>{$('#mobilMenue').open=false;$('#ansichtBtn').click()};$('#mobilKonto').onclick=()=>{$('#mobilMenue').open=false;$('#loginBtn').click()};document.addEventListener('click',e=>{const m=$('#mobilMenue');if(m.open&&!m.contains(e.target))m.open=false});document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#mobilMenue').open=false});
 $('#shopBtn').onclick=()=>tab('shop');$('#shopLoginBtn').onclick=()=>loginForm(false);
 $('#regelnBtn').onclick=regelnDialog;
 holeJson('/zuschauer/waffen_bilder.json').then(x=>{if(x&&x.namen){WB=x.namen;if(D)zeichnen();if(MDATEN){delete $('#mStat').dataset.sig;meineStat(MDATEN)}if($('#t-waffen').classList.contains('an'))waffenGemeinsamZeichnen()}});
