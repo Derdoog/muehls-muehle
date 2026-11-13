@@ -474,6 +474,33 @@ nav button{min-width:0}
 .rk-kat>summary{cursor:pointer;font-weight:600;padding:6px 0;list-style:none}.rk-kat>summary::-webkit-details-marker{display:none}
 .rk-kat>summary::before{content:'▸ ';color:var(--mut)}.rk-kat[open]>summary::before{content:'▾ '}
 .ich-kopf{cursor:pointer;margin-bottom:10px}
+.wl-box{padding:12px 14px;margin:0 0 12px;border:1px solid var(--line2);background:var(--panel2)}
+.wl-box h4{margin:0;color:#e7c483;text-transform:uppercase;font-size:14px;display:flex;align-items:center;gap:6px}
+.wl-zeile{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px}
+.wl-stufe b{font-size:20px;color:var(--acc2)}
+.wl-balken{height:10px;background:#0b0d0a;border:1px solid var(--line2);overflow:hidden}
+.wl-balken i{display:block;height:100%;background:linear-gradient(90deg,#8a6a1d,#e0b84a);transition:width .4s}
+.wl-info{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:13px;margin:6px 0}
+.wl-pips{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;margin:8px 0 6px}
+.wl-pips i{height:7px;background:#2a2d26;border:1px solid var(--line)}.wl-pips i.an{background:#c9a037;border-color:#c9a037}
+.wl-pips i.gold.an{background:#ffd76a;box-shadow:0 0 6px #ffd76a}.wl-pips i.frueher{background:rgba(201,160,55,.3)}
+.wl-fuss{font-size:12px}
+.wl-sum{display:block;margin-top:4px;color:var(--text)}
+.wl-abz{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.3px;padding:1px 5px;margin-left:4px;vertical-align:2px;
+  color:#111;background:#c9a037;text-transform:uppercase}.wl-abz.gold{background:#ffd76a;box-shadow:0 0 6px #ffd76a}
+.wd-tabelle{overflow-x:auto}.wd-tabelle table{width:100%;border-collapse:collapse;font-size:13px}
+.wd-tabelle th,.wd-tabelle td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+.wd-tabelle tr>th:first-child,.wd-tabelle td.wd-l{text-align:left}
+.wd-tabelle table th,.wd-tabelle table td{padding:6px 7px;vertical-align:middle;line-height:1.25}
+@media(max-width:600px){.wd-tabelle table{font-size:12px}.wd-tabelle table th,.wd-tabelle table td{padding:5px 4px}.wd-tabelle tr>th:first-child{white-space:normal;font-size:11px;letter-spacing:0}}.wd-tabelle tr:first-child th{color:var(--mut);font-weight:500;font-size:12px}
+.wd-tabelle tr>th:first-child{font-weight:500;color:var(--mut)}.wd-tabelle td{color:var(--text)}
+.wd-tabelle tr.wd-ich td{background:rgba(212,166,42,.08)}
+.wd-rekord{margin-top:6px;font-size:12px}.wd-platz{font-size:12px;color:var(--acc2);margin-left:6px;font-weight:500}
+.wd-zonen-paar{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.wd-zonen h5{margin:0 0 6px}.wd-zonen>div{display:grid;grid-template-columns:60px 1fr 44px;gap:8px;align-items:center;font-size:13px;margin:3px 0}
+.wd-zonen meter{width:100%}.wd-zonen b{text-align:right}
+#mr-waffen>.panel{margin-top:0}
+.waffen-gruppen.wd-gruppen{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}@media(max-width:800px){.waffen-gruppen.wd-gruppen{grid-template-columns:minmax(0,1fr)}}
 .ich-name{box-shadow:inset 0 -2px 0 var(--acc);padding-bottom:1px}
 .zwei.versteckt{display:none!important}
 #liveLeiste{margin:0 0 10px}#liveLeiste[hidden]{display:none}
@@ -769,7 +796,7 @@ dialog.aktion-dialog::backdrop{background:#000b}dialog.aktion-dialog .dlg{paddin
 <body>
 <header>
   <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span id="weltSchalter" role="group" aria-label="Spielbereich"><button type="button" data-welt="pve" aria-pressed="false">🌲 PvE</button><button type="button" data-welt="dm" aria-pressed="true">⚔ PvP</button></span><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><a class="login admin-link" href="/admin">Zum Adminbereich</a><details class="mobil-menue" id="mobilMenue"><summary aria-label="Menü öffnen">☰</summary><div class="mobil-menue-inhalt"><button type="button" id="mobilAnsicht">⚙ Ansicht</button><button type="button" id="mobilKonto" hidden>🔑 Spieler-Login</button><a href="/admin">Zum Adminbereich</a></div></details></span></div>
-  <nav><button data-t="pve">🌲 Chernarus<span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm" class="an">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">🚁 Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="waffen">🔫 Waffen</button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button><button type="button" data-t="shop" id="shopBtn">🛒 Shop</button></nav>
+  <nav><button data-t="pve">🌲 Chernarus<span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm" class="an">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">🚁 Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button><button type="button" data-t="shop" id="shopBtn">🛒 Shop</button></nav>
 </header>
 <main>
   <div id="liveLeiste" hidden></div>
@@ -867,11 +894,11 @@ dialog.aktion-dialog::backdrop{background:#000b}dialog.aktion-dialog .dlg{paddin
       <div class="mr" id="mr-titel"></div><div class="mr" id="mr-level"></div>
     </div>
   </section>
-  <section class="tab" id="t-waffen">
+  <section class="tab" id="t-waffen" hidden>
     <div class="panel"><h3>🔫 Waffen</h3><p class="mut" id="waffenHinweis"></p>
       <div class="waffen-filter"><label>Suche <input id="waffenSuche" type="search" placeholder="Waffe suchen"></label>
         <label>Ansicht <select id="waffenAuswahl"><option value="alle">Alle Waffen</option><option value="meine">Meine Waffen</option></select></label>
-        <label>Sortierung <select id="waffenSort"><option value="name">Name</option><option value="eigene">Meine Kills</option><option value="gesamt">Kills aller Spieler</option></select></label>
+        <label>Sortierung <select id="waffenSort"><option value="kat">Nach Kategorien</option><option value="name">Name</option><option value="eigene">Meine Kills</option><option value="gesamt">Kills aller Spieler</option><option value="stufe">Waffenstufe</option></select></label>
         <label>Kategorie <select id="waffenKat"><option value="alle">Alle Kategorien</option></select></label></div>
       <div id="waffenGemeinsam" class="waffen-liste"></div>
     </div>
@@ -2157,7 +2184,7 @@ function reiterZeigen(){
   $('#t-meine').dataset.modus=MModus;
   $$('#mModus button').forEach(b=>{const an=b.dataset.modus===MModus;b.classList.toggle('an',an);b.setAttribute('aria-pressed',String(an))});
   $('#mReiter').innerHTML=MREITER.map(([id,t])=>`<button data-mr="${id}" class="${id===MREIT?'an':''}">${t}</button>`).join('');
-  $$('#mReiter [data-mr]').forEach(b=>b.onclick=()=>{if(b.dataset.mr==='waffen'){waffenOeffnen('meine');return}MREIT=b.dataset.mr;reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN)});
+  $$('#mReiter [data-mr]').forEach(b=>b.onclick=()=>{MREIT=b.dataset.mr;reiterZeigen();reiterMerken();if(MREIT==='karte')karteZeichnen(MDATEN);if(MREIT==='waffen')try{waffenGemeinsamZeichnen()}catch(e){console.error(e)}});
   $$('.mr').forEach(x=>x.classList.toggle('an',x.id==='mr-'+MREIT))}
 let MLAEUFT=false;
 async function meineLaden(){if(!ICH||!ICH.benutzer||MLAEUFT)return;MLAEUFT=true;try{await meineLaden2()}finally{MLAEUFT=false}}
@@ -2176,7 +2203,7 @@ async function meineLaden2(){let d=await holeJson('/zuschauer/meine?char='+encod
     :`<div class="spl"><span class="av ${c.online?'':'tot'}">${esc((c.name[0]||'?').toUpperCase())}</span><div class="mitte"><b>${esc(c.name)}</b><span class="mut">${c.online?'🟢 online seit '+uhr(c.seit):'zuletzt da '+vor(c.zuletzt)} · überlebt seit dem letzten Tod: ${dauer(c.ueberlebt)} Spielzeit${c.basen.length?' · '+c.basen.length+' Basis/Lager':''}</span></div></div>`).join('');
   try{const ss=JSON.stringify(d.shop||null);if($('#mr-shop').dataset.sig!==ss){shopZeichnen(d);$('#mr-shop').dataset.sig=ss}}catch(e){console.error(e)}
   try{levelZeichnen(d)}catch(e){console.error(e)}
-  if(MREIT==='karte')karteZeichnen(d);if($('#t-waffen').classList.contains('an'))waffenGemeinsamZeichnen()}
+  if(MREIT==='karte')karteZeichnen(d);if(waffenSichtbar())waffenGemeinsamZeichnen()}
 async function karteZeichnen(d){if(!d)return;
   if(!window.L){const c=document.createElement('link');c.rel='stylesheet';c.href='/zuschauer/leaflet.css';document.head.appendChild(c);try{await skript('/zuschauer/leaflet.js')}catch(e){$('#mKarte').innerHTML='<div class="mut" style="padding:16px">Karte konnte nicht geladen werden.</div>';return}}
   const B=[[0,0],[15360,15360]],ll=p=>[p[1],p[0]],pts=[];
@@ -2303,29 +2330,81 @@ function eigeneWaffen(liste,bereich,offen,rekorde={}){
   })}</div>`;
 }
 let WAFILTER='alle';
-function waffenOeffnen(filter){WAFILTER=filter||'alle';$('#waffenAuswahl').value=WAFILTER;tab('waffen')}
+function waffenSichtbar(){return $('#t-meine').classList.contains('an')&&MREIT==='waffen'}   // Update 184: Waffen liegen im Profil
+function waffenOeffnen(filter){WAFILTER=filter||'alle';$('#waffenAuswahl').value=WAFILTER;MREIT='waffen';tab('meine');reiterZeigen();try{waffenGemeinsamZeichnen()}catch(e){}}
 function waffenKategorie(name){const bild=WB?.[String(name).toLowerCase()];return Object.keys(WAFFEN_KATEGORIEN).find(k=>WAFFEN_KATEGORIEN[k].includes(bild))||(String(name).toLowerCase()==='nahkampf'?'Nahkampf':'Sonstige')}
 function waffenGemeinsamZeichnen(){
-  const el=$('#waffenGemeinsam');if(!el)return;const art=WELT,own=art==='dm'?MDATEN?.dm:MDATEN?.pve;
-  const eigene=own?.waffen_detail||[],global=D?.dm?.waffenkatalog||[],map=new Map(),norm=x=>String(x||'').trim().toLocaleLowerCase('de-DE'),key=x=>WB?.[norm(x)]?'bild:'+WB[norm(x)]:'name:'+norm(x);
-  global.forEach(w=>map.set(key(w.waffe),{name:w.waffe,global:art==='dm'?w:null,eigen:[]}));
+  const el=$('#waffenGemeinsam');if(!el)return;const art=WELT,own=art==='dm'?MDATEN?.dm:MDATEN?.pve,ich=own?.name||IGT?.dm||'';
+  const nr=n=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:2}),m_=n=>n?nr(n)+' m':'–';
+  const eigene=own?.waffen_detail||[],global=art==='dm'?(D?.dm?.waffenkatalog||[]):[],map=new Map(),norm=x=>String(x||'').trim().toLocaleLowerCase('de-DE'),key=x=>WB?.[norm(x)]?'bild:'+WB[norm(x)]:'name:'+norm(x);
+  global.forEach(w=>map.set(key(w.waffe),{name:w.waffe,global:w,eigen:[]}));
   eigene.forEach(w=>{const k=key(w.waffe),o=map.get(k)||{name:w.waffe,global:null,eigen:[]};o.eigen.push(w);map.set(k,o)});
-  const kategorien=[...new Set([...map.values()].map(x=>waffenKategorie(x.name)))].sort((a,b)=>a.localeCompare(b,'de'));
+  const kategorien=[...new Set([...map.values()].map(x=>waffenKategorie(x.name)))].sort((a,b)=>Object.keys(WAFFEN_KATEGORIEN).indexOf(a)-Object.keys(WAFFEN_KATEGORIEN).indexOf(b));
   const kat=$('#waffenKat'),altKat=kat.value;kat.innerHTML='<option value="alle">Alle Kategorien</option>'+kategorien.map(k=>`<option value="${esc(k)}">${esc(k)}</option>`).join('');kat.value=kategorien.includes(altKat)?altKat:'alle';
-  const sortEl=$('#waffenSort');sortEl.querySelector('option[value=gesamt]').disabled=art!=='dm';if(art!=='dm'&&sortEl.value==='gesamt')sortEl.value='name';
+  const sortEl=$('#waffenSort');sortEl.querySelector('option[value=gesamt]').disabled=art!=='dm';if(art!=='dm'&&sortEl.value==='gesamt')sortEl.value='kat';
   const suche=$('#waffenSuche').value.trim().toLocaleLowerCase('de-DE'),sort=sortEl.value,filter=$('#waffenAuswahl').value;
-  $('#waffenHinweis').textContent=art==='dm'?'Deathmatch: Eigene und gesamte Werte erscheinen zusammen.':'PvE: Eigene Werte sind verfügbar; vollständige Gesamtwerte aller Spieler werden derzeit nicht bereitgestellt.';
+  $('#waffenHinweis').textContent=art==='dm'?'Deathmatch: deine Werte und die aller Spieler auf einer Seite. Umschalten oben über PvE/PvP.':'PvE: deine eigenen Werte. Werte aller Spieler gibt es im PvE noch nicht.';
+  // eigene Eintraege derselben Waffe zusammenfassen
+  const summe=liste=>{if(!liste.length)return null;const a={kills:0,kopf_kills:0,treffer:0,kopf_treffer:0,schaden:0,kill_distanz_max:0,treffer_distanz_max:0,vermutlich:liste.every(w=>w.vermutlich)};let dm=0,dn=0;
+    liste.forEach(w=>{['kills','kopf_kills','treffer','kopf_treffer','schaden'].forEach(k=>a[k]+=Number(w[k]||0));a.kill_distanz_max=Math.max(a.kill_distanz_max,Number(w.kill_distanz_max||0));a.treffer_distanz_max=Math.max(a.treffer_distanz_max,Number(w.treffer_distanz_max||0));if(w.distanz_mittel&&w.treffer){dm+=w.distanz_mittel*w.treffer;dn+=Number(w.treffer)}});
+    a.distanz_mittel=dn?dm/dn:null;const z={};liste.forEach(w=>Object.entries(w.zonen||{}).forEach(([k,v])=>z[k]=(z[k]||0)+v*(w.treffer||0)));const zt=Object.values(z).reduce((x,y)=>x+y,0);a.zonen=zt?Object.fromEntries(Object.entries(z).map(([k,v])=>[k,Math.round(v/zt*100)])):null;return a};
+  const alle=g=>{if(!g)return null;const sp=g.spieler||[],s_=i=>sp.reduce((n,x)=>n+Number(x[i]||0),0),mx=i=>sp.reduce((b,x)=>Number(x[i]||0)>b[0]?[Number(x[i]),x[0]]:b,[0,'']);
+    return {kills:g.kills,kopf_kills:s_(2),treffer:s_(3),kopf_treffer:s_(4),schaden:s_(5),kill:mx(6),trf:mx(7),zonen:g.zonen,spieler:sp}};
+  const eigKills=x=>x.eigen.reduce((n,w)=>n+Number(w.kills||0),0),gesKills=x=>Number(x.global?.kills||0);
   let liste=[...map.values()].filter(x=>(!suche||norm(x.name).includes(suche)||x.eigen.some(w=>norm(w.waffe).includes(suche)))&&(kat.value==='alle'||waffenKategorie(x.name)===kat.value)&&(filter!=='meine'||x.eigen.length>0));
-  liste.sort((a,b)=>sort==='eigene'?(b.eigen.reduce((n,w)=>n+Number(w.kills||0),0)-a.eigen.reduce((n,w)=>n+Number(w.kills||0),0)||a.name.localeCompare(b.name,'de')):sort==='gesamt'&&art==='dm'?(Number(b.global?.kills||0)-Number(a.global?.kills||0)||a.name.localeCompare(b.name,'de')):a.name.localeCompare(b.name,'de'));
-  if(D?.dm)waffenKatalog(D.dm);
-  const globalDetails=new Map([...document.querySelectorAll('#dWaffen details[data-waffe]')].map(x=>[key(x.dataset.waffe),x.querySelector(':scope > .waffen-detail')?.innerHTML||'']));
-  const rechner=own?.waffen_distanzrekorde||{};
-  el.innerHTML=liste.length?`<div class="waffen-raster">${liste.map(x=>{
-    const personal=x.eigen.map(w=>new DOMParser().parseFromString(eigeneWaffen([w],art,new Set(),rechner),'text/html').querySelector('.waffen-detail')?.innerHTML||'').join('');
-    const insgesamt=art==='dm'?globalDetails.get(key(x.name)):null;
-    return `<details data-waffe="${esc(x.name)}" class="${x.eigen.length?'waffe-eigen':own?'waffe-offen':''}"><summary><b>${esc(x.name)}</b>${wbild(x.name)}<strong>${x.eigen.length?esc(String(x.eigen.reduce((n,w)=>n+Number(w.kills||0),0)))+' eigene Kills':own?'Noch nicht erfasst':ICH?.benutzer?'Eigene Werte nicht verfügbar':'Für eigene Werte anmelden'}</strong><small>${esc(waffenKategorie(x.name))}</small></summary>
-      <div class="waffen-detail"><section class="waffenlevel" aria-label="Waffenfortschritt"><div class="waffenlevel-kopf"><h4>🎯 Waffenfortschritt</h4><span class="waffenlevel-status">In Vorbereitung</span></div><p class="mut">Hier siehst du künftig Herausforderungen und deinen Fortschritt mit dieser Waffe.</p><div class="waffenlevel-themen"><span>Treffer</span><span>Kills</span><span>Kopfschuss-Kills</span><span>Distanzkills</span></div></section><h4>Meine Werte</h4>${personal||'<p class="mut">'+(ICH?.benutzer?'Noch keine eigenen Werte erfasst.':'Melde dich an, um deine Werte zu sehen.')+'</p>'}<h4>Alle Spieler · ${art==='dm'?'Deathmatch':'PvE'}</h4>${insgesamt||'<p class="mut">Für diese Auswahl sind keine vollständigen Gesamtwerte verfügbar.</p>'}</div></details>`}).join('')}</div>`:'<p class="mut">'+(filter==='meine'&&!ICH?.benutzer?'Melde dich an, um deine Waffen zu sehen.':'Keine Waffen für diese Auswahl gefunden.')+'</p>';
+  const standard=(a,b)=>eigKills(b)-eigKills(a)||gesKills(b)-gesKills(a)||a.name.localeCompare(b.name,'de');
+  const stufeVon=x=>{const f=wlVon(x);return f?f.level*100000+f.xp_gesamt:-1};
+  liste.sort(sort==='stufe'?(a,b)=>stufeVon(b)-stufeVon(a)||standard(a,b):sort==='eigene'?standard:sort==='gesamt'?(a,b)=>gesKills(b)-gesKills(a)||a.name.localeCompare(b.name,'de'):sort==='name'?(a,b)=>a.name.localeCompare(b.name,'de'):standard);
+  const offen=new Set([...el.querySelectorAll('details[data-waffe][open]')].map(x=>x.dataset.waffe));
+  const zelle=(du,ges,fmt=nr)=>`<td>${du==null?'–':fmt(du)}</td>${art==='dm'?`<td>${ges==null?'–':fmt(ges)}</td>`:''}`;
+  const pz=(a,b)=>b?Math.round(100*a/b)+' %':'–';
+  const WL=MDATEN?.waffenlevel,WLW=(art==='dm'?WL?.dm:WL?.pve)||null,RG=WL?.regeln;
+  const wlVon=x=>{if(!WLW)return null;let b=null;[x.name,...x.eigen.map(w=>w.waffe)].forEach(n=>{const f=WLW.waffen?.[String(n||'').trim().toLocaleLowerCase('de-DE')];if(f&&(!b||f.level*1e5+f.xp_gesamt>b.level*1e5+b.xp_gesamt))b=f});return b};
+  const rb=k=>(k/100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽';
+  const wlBlock=x=>{
+    const regel=RG?`So gibt es XP: Treffer ${RG.xp.treffer}, Kill ${RG.xp.kill}, Kopfschuss-Kill +${RG.xp.kopf}, Kill ab ${RG.xp.distanz_ab} m +${RG.xp.distanz}. `
+      +(art==='dm'?`Zählt nur in gewerteten Runden, höchstens ${nr(RG.dm_max_tag)} XP am Tag über alle Waffen.`:'Im PvE zählen Treffer und Kills gegen Spieler. Beim Tod beginnt der Fortschritt wieder bei 0, jede Stufe wird je Charakter aber nur einmal bezahlt.')
+      +` Belohnung: ${rb(RG.betrag[1])} je Stufe, ${rb(RG.betrag[10])} für Stufe 10.`:'';
+    const kopf=`<h4>🎯 Waffenfortschritt ${statistikInfo(regel)}</h4>`;
+    if(!ICH?.benutzer)return `<section class="wl-box">${kopf}<p class="mut">Melde dich an, um deine Waffenstufe zu sehen.</p></section>`;
+    if(!WL)return `<section class="wl-box">${kopf}<p class="mut">Noch keine Daten.</p></section>`;
+    if(WLW&&!WLW.aktiv)return `<section class="wl-box">${kopf}<p class="mut">Wird gerade aus den Server-Logs ausgewertet, gleich ist dein Stand da.</p></section>`;
+    const f=wlVon(x)||{level:0,xp_gesamt:0,xp_im_level:0,xp_bis_level:RG?RG.schwellen[1]:100,prozent:0,bestes:0,bezahlt:0,verdient:0};
+    const max=f.level>=10,naechste=max?0:(RG?RG.betrag[f.level+1]:0);
+    const pips=Array.from({length:10},(_,i)=>`<i class="${i<f.level?'an':''}${i===9?' gold':''}${i>=f.level&&i<(f.bestes||0)?' frueher':''}" title="Stufe ${i+1}"></i>`).join('');
+    return `<section class="wl-box"><div class="wl-zeile">${kopf}<div class="wl-stufe"><b>Stufe ${f.level}</b><span class="mut"> / 10</span></div></div>
+      <div class="wl-balken"><i style="width:${max?100:f.prozent||0}%"></i></div>
+      <div class="wl-info">${max?'<b>Höchste Stufe erreicht</b>':`<span><b>${nr(f.xp_im_level)}</b> / ${nr(f.xp_bis_level)} XP bis Stufe ${f.level+1}</span><span class="mut">nächste Belohnung ${rb(naechste)}</span>`}</div>
+      <div class="wl-pips">${pips}</div>
+      <div class="mut wl-fuss">${nr(f.xp_gesamt)} XP gesamt · verdient ${rb(f.verdient||0)}${art==='pve'&&f.bestes>f.level?` · beste Stufe bisher ${f.bestes} (bezahlt)`:''}${art==='dm'&&WLW.heute?` · heute ${nr(WLW.heute)} / ${nr(RG.dm_max_tag)} XP`:''}</div></section>`};
+  const kachel=x=>{const e=summe(x.eigen),g=alle(x.global),titel=x.name.replace(/^./,c=>c.toUpperCase());
+    const rang=g&&ich?g.spieler.findIndex(p=>p[0]===ich):-1;
+    const unter=e?(e.vermutlich?nr(e.kills)+' vermutlich':e.kills?nr(e.kills)+' eigene Kills':nr(e.treffer)+' Treffer, noch kein Kill'):own?'Noch nicht benutzt':ICH?.benutzer?'Keine eigenen Werte':'Für eigene Werte anmelden';
+    let det='';
+    if(e&&e.vermutlich){det=`<p class="mut">${nr(e.kills)} vermutliche Granatenkills (größter Abstand ${m_(e.kill_distanz_max)}). Das Server-Log nennt bei Granaten keinen Werfer, den Kill bekommt vermutlich der nächste Gegner (höchstens 50 m). Zählt 0,5 Punkte und Elo, aber nicht als Kill.</p>`}
+    else{
+      const zeilen=[['Kills',e?.kills,g?.kills],['Kopfschuss-Kills',e?.kopf_kills,g?.kopf_kills],['Treffer',e?.treffer,g?.treffer],['Kopftreffer',e?.kopf_treffer,g?.kopf_treffer],
+        ['Kopftreffer-Anteil',e?pz(e.kopf_treffer,e.treffer):null,g?pz(g.kopf_treffer,g.treffer):null,x=>x],
+        ['Treffer pro Kill',e&&e.kills?e.treffer/e.kills:null,g&&g.kills?g.treffer/g.kills:null],
+        ['Schaden',e?.schaden,g?.schaden],['Ø Schaden pro Treffer',e&&e.treffer?e.schaden/e.treffer:null,g&&g.treffer?g.schaden/g.treffer:null],
+        ['Weitester Kill',e?.kill_distanz_max||null,g?.kill[0]||null,m_],['Weitester Treffer',e?.treffer_distanz_max||null,g?.trf[0]||null,m_],
+        ['Mittlere Treffer-Entfernung',e?.distanz_mittel,null,m_]];
+      const tab=`<div class="wd-tabelle"><table><tr><th></th><th>Du</th>${art==='dm'?'<th>Alle Spieler</th>':''}</tr>${zeilen.map(([t,du,ges,f])=>`<tr><th>${t}</th>${zelle(du,ges,f||nr)}</tr>`).join('')}</table>
+        ${g&&(g.kill[0]||g.trf[0])?`<div class="mut wd-rekord">Rekorde: weitester Kill ${m_(g.kill[0])}${g.kill[1]?' ('+esc(g.kill[1])+')':''} · weitester Treffer ${m_(g.trf[0])}${g.trf[1]?' ('+esc(g.trf[1])+')':''}</div>`:''}</div>`;
+      const zonen=(z,t)=>`<div class="wd-zonen"><h5>${t}</h5>${z?Object.entries(ZN).map(([k,l])=>{const v=Math.max(0,Math.min(100,Number(z[k])||0));return `<div><span>${l}</span><meter min="0" max="100" value="${v}"></meter><b>${v} %</b></div>`}).join(''):'<p class="mut">Keine Körperzonen erfasst.</p>'}</div>`;
+      const besten=g&&g.spieler.length?`<section class="waffen-gruppe"><h4>Bestenliste ${statistikInfo('Alle Spieler mit dieser Waffe im Deathmatch, sortiert nach Kills.')}</h4><div class="wd-tabelle"><table><tr><th>#</th><th style="text-align:left">Spieler</th><th>Kills</th><th>Treffer</th><th class="nm">Kopf-Kills</th><th class="nm">Weitester Kill</th></tr>
+        ${g.spieler.slice(0,10).map((p,i)=>`<tr class="${p[0]===ich?'wd-ich':''}"><td>${i+1}</td><td class="wd-l">${GT(p[0],'dm')}</td><td>${nr(p[1])}</td><td>${nr(p[3])}</td><td class="nm">${nr(p[2])}</td><td class="nm">${m_(p[6])}</td></tr>`).join('')}</table></div></section>`:'';
+      det=`<div class="waffen-gruppen wd-gruppen"><section class="waffen-gruppe"><h4>${art==='dm'?'Du im Vergleich':'Deine Werte'}${rang>=0?` <span class="wd-platz">Platz ${rang+1} von ${g.spieler.length}</span>`:''}</h4>${e||g?tab:'<p class="mut">Noch keine Werte.</p>'}</section>
+        <section class="waffen-gruppe"><h4>Trefferzonen</h4><div class="wd-zonen-paar">${zonen(e?.zonen,'Du')}${art==='dm'?zonen(g?.zonen,'Alle Spieler'):''}</div></section>
+        ${besten}${woboWaffendaten(x.name,nr)}</div>`}
+    return `<details data-waffe="${esc(x.name)}" class="${e?'waffe-eigen':own?'waffe-offen':''}" ${offen.has(x.name)?'open':''}><summary><b>${esc(titel)}${(()=>{const f=wlVon(x);return f&&f.level?` <span class="wl-abz${f.level>=10?' gold':''}">Stufe ${f.level}</span>`:''})()}</b>${wbild(x.name)}<strong>${unter}</strong><small>${g?nr(g.kills)+' Kills aller Spieler':esc(waffenKategorie(x.name))}</small></summary>
+      <div class="waffen-detail">${wlBlock(x)}${det}</div></details>`};
+  {const ws=Object.values(WLW?.waffen||{}),mit=ws.filter(f=>f.level>0||f.bestes>0);const hz=$('#waffenHinweis');if(hz&&ICH?.benutzer&&WLW?.aktiv)hz.innerHTML=esc(hz.textContent)+`<span class="wl-sum">🎯 Waffenstufen: <b>${mit.length}</b> ${mit.length===1?'Waffe':'Waffen'} mit Stufe`+(mit.length?` · höchste <b>Stufe ${Math.max(...ws.map(f=>f.level))}</b>`:'')+` · verdient <b>${rb(ws.reduce((a,f)=>a+(f.verdient||0),0))}</b> · Sortierung „Waffenstufe“ zeigt deine besten zuerst</span>`}
+  if(!liste.length){el.innerHTML='<p class="mut">'+(filter==='meine'&&!ICH?.benutzer?'Melde dich an, um deine Waffen zu sehen.':'Keine Waffen für diese Auswahl gefunden.')+'</p>';return}
+  el.innerHTML=sort==='kat'?kategorien.map(k=>{const w=liste.filter(x=>waffenKategorie(x.name)===k);return w.length?`<section class="waffen-kategorie"><h4>${esc(k)} <small class="mut">(${w.length})</small></h4><div class="waffen-raster">${w.map(kachel).join('')}</div></section>`:''}).join('')
+    :`<div class="waffen-raster">${liste.map(kachel).join('')}</div>`;
 }
+{const p_=$('#t-waffen .panel');if(p_)$('#mr-waffen').appendChild(p_)}   // Update 184
 ['waffenSuche','waffenAuswahl','waffenSort','waffenKat'].forEach(id=>{const e=$('#'+id);e.addEventListener(id==='waffenSuche'?'input':'change',waffenGemeinsamZeichnen)});
 function summeText(s,waffen){
   const beste=[...(waffen||[])].filter(w=>w.kills>0||w.treffer>0)
@@ -2692,10 +2771,7 @@ function meineStat(d){const m=d.dm,v=d.pve,ST=statistikInfo('Bronze, Silber, Gol
   $$('#mr-uebersicht [data-statistik]').forEach(x=>{x.open=offeneStatistik.has(x.dataset.statistik)});
   // Waffen
   const waffenOffen=new Set($$('#mr-waffen details[data-eigene-waffe][open]').map(x=>x.dataset.eigeneWaffe));
-  $('#mr-waffen').innerHTML=`<div class="panel"><h3>Waffenstatistik ${statistikInfo(d.waffen_hinweis||'')}</h3>
-    <section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch${m?' · '+esc(m.name):''}</h3>${m?summeText(m.waffen_summe,m.waffen_detail)+eigeneWaffen(m.waffen_detail,'dm',waffenOffen,m.waffen_distanzrekorde):keinDm}
-    </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE${v?' · '+wahlTxt:''}</h3>${v?summeText(v.waffen_summe,v.waffen_detail)+eigeneWaffen(v.waffen_detail,'pve',waffenOffen,v.waffen_distanzrekorde):keinPve}</section>
-    <div class="mut">Treffer = jeder Treffer mit Schaden an einem anderen Spieler. Kopf-% = Anteil der Treffer in Kopf oder Gehirn. Zonen: Kopf, Torso, Arme (inkl. Hände), Beine (inkl. Füße).${d.schrot_hinweis?' '+esc(d.schrot_hinweis):''}</div></div>`;
+  try{waffenGemeinsamZeichnen()}catch(e){console.error(e)}   // Update 184: Waffen = gemeinsame Liste im Profil
   // Erfolge
   $('#mr-erfolge').innerHTML=`<div class="panel"><section class="m-nur-dm"><h3 class="bereich">⚔️ Deathmatch-Erfolge${m?' · '+esc(m.name):''}</h3>${m?`<h4>🏅 Haupterfolge ${ST}</h4><div class="bgs">${(m.haupt||[]).map(x=>badgeKarte(x,'dm')).join('')}</div><h4>🎖 Stil-Erfolge</h4><div class="bgs">${m.stil.map(x=>badgeKarte(x,'dm')).join('')}</div>`:keinDm}
     </section><section class="m-nur-pve"><h3 class="bereich pve">🌲 PvE-Erfolge${v?' · '+wahlTxt:''}</h3>${v?`<h4>🏅 Meilensteine</h4><div class="bgs">${v.erfolge.map(meilenKarte).join('')}</div><h4>🎖 Stil-Erfolge ${ST}</h4><div class="bgs">${v.stil.map(x=>badgeKarte(x,'pve')).join('')}</div>`:keinPve}</section></div>`;
@@ -3005,7 +3081,7 @@ function ichKoepfe(){const z={pve:'',dm:'',evakuierung:''},klick={};
       z.evakuierung=prKopf(pv,'🚁 PvE Evakuierung','pve');klick.evakuierung=()=>profil(pv)}}
   for(const k in z){const el=$('#ichKopf-'+k);if(!el)continue;if(el.dataset.sig!==z[k]){el.innerHTML=z[k];el.dataset.sig=z[k]}
     el.hidden=!z[k];el.onclick=klick[k]||null;el.title=z[k]?'Eigenes Profil öffnen':''}}
-{const _z=zeichnen;zeichnen=function(){_z.apply(this,arguments);try{ichKoepfe()}catch(e){console.error(e)}try{liveLeiste()}catch(e){console.error(e)}if($('#t-waffen').classList.contains('an'))try{waffenGemeinsamZeichnen()}catch(e){console.error(e)}}}
+{const _z=zeichnen;zeichnen=function(){_z.apply(this,arguments);try{ichKoepfe()}catch(e){console.error(e)}try{liveLeiste()}catch(e){console.error(e)}if(waffenSichtbar())try{waffenGemeinsamZeichnen()}catch(e){console.error(e)}}}
 // Update 182: Live-Leiste in allen Reitern (nicht im Deathmatch-Reiter selbst), solange eine DM-Runde laeuft
 function liveLeiste(){const el=$('#liveLeiste');if(!el)return;const m=D&&D.dm;
   if(!m||!m.laeuft||$('#t-dm').classList.contains('an')){el.hidden=true;return}
@@ -3017,13 +3093,13 @@ let WELT='dm';try{const w=sichtSpeicher.getItem('welt_v2');if(w==='pve'||w==='dm
 function weltSync(w,merken=false){WELT=w==='dm'?'dm':'pve';document.documentElement.dataset.welt=WELT;MModus=WELT;
   document.querySelectorAll('#weltSchalter [data-welt]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.welt===WELT)));
   try{if(merken)sichtSpeicher.setItem('welt_v2',WELT);reiterZeigen();if(MREIT==='karte'&&$('#t-meine').classList.contains('an'))karteZeichnen(MDATEN)}catch(e){console.error(e)}}
-const _tab=tab;tab=t=>{if(t==='pve'||t==='evakuierung')weltSync('pve');else if(t==='dm')weltSync('dm');_tab(t);try{liveLeiste()}catch(e){}if(t==='waffen'){meineLaden();waffenGemeinsamZeichnen()}if(t==='shop')meineLaden();if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
+const _tab=tab;tab=t=>{if(t==='pve'||t==='evakuierung')weltSync('pve');else if(t==='dm')weltSync('dm');_tab(t);try{liveLeiste()}catch(e){}if(t==='waffen'){waffenOeffnen(WAFILTER);return}if(t==='shop')meineLaden();if(t==='meine'){meineLaden();try{history.replaceState(null,'','#meine/'+MREIT+'/'+encodeURIComponent(MWAHL))}catch(e){}}else if((location.hash||'').startsWith('#meine')){try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}}if(t==='dm')voteLaden()};
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
-weltSync(WELT);if(WELT==='dm'&&!['meine','shop'].includes(sichtSpeicher.getItem('tab'))&&!location.hash.startsWith('#meine'))tab('dm');document.querySelectorAll('#weltSchalter [data-welt]').forEach(b=>b.onclick=()=>{const aktiv=document.querySelector('.tab.an')?.id;weltSync(b.dataset.welt,true);if(aktiv==='t-waffen')waffenGemeinsamZeichnen();else if(aktiv!=='t-meine'&&aktiv!=='t-shop')tab(WELT==='dm'?'dm':'pve')});
+weltSync(WELT);if(WELT==='dm'&&!['meine','shop'].includes(sichtSpeicher.getItem('tab'))&&!location.hash.startsWith('#meine'))tab('dm');document.querySelectorAll('#weltSchalter [data-welt]').forEach(b=>b.onclick=()=>{const aktiv=document.querySelector('.tab.an')?.id;weltSync(b.dataset.welt,true);if(waffenSichtbar())waffenGemeinsamZeichnen();else if(aktiv!=='t-meine'&&aktiv!=='t-shop')tab(WELT==='dm'?'dm':'pve')});
 $('#mobilAnsicht').onclick=()=>{$('#mobilMenue').open=false;$('#ansichtBtn').click()};$('#mobilKonto').onclick=()=>{$('#mobilMenue').open=false;$('#loginBtn').click()};document.addEventListener('click',e=>{const m=$('#mobilMenue');if(m.open&&!m.contains(e.target))m.open=false});document.addEventListener('keydown',e=>{if(e.key==='Escape')$('#mobilMenue').open=false});
 $('#shopBtn').onclick=()=>tab('shop');$('#shopLoginBtn').onclick=()=>loginForm(false);
 $('#regelnBtn').onclick=regelnDialog;
-holeJson('/zuschauer/waffen_bilder.json').then(x=>{if(x&&x.namen){WB=x.namen;if(D)zeichnen();if(MDATEN){delete $('#mStat').dataset.sig;meineStat(MDATEN)}if($('#t-waffen').classList.contains('an'))waffenGemeinsamZeichnen()}});
+holeJson('/zuschauer/waffen_bilder.json').then(x=>{if(x&&x.namen){WB=x.namen;if(D)zeichnen();if(MDATEN){delete $('#mStat').dataset.sig;meineStat(MDATEN)}if(waffenSichtbar())waffenGemeinsamZeichnen()}});
 const dlg=$('#dlg');dlg.addEventListener('click',e=>{if(e.target===dlg)dlg.close()});
 $('#takt').textContent='Aktualisiert sich alle '+(DIREKT?10:TAKT)+' Sekunden von selbst.';
 setInterval(()=>{$$('.countdown').forEach(x=>x.textContent=countdown(+x.dataset.bis));if(D)statusZeichnen()},1000);
