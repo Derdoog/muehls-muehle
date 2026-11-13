@@ -871,7 +871,7 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
   <div id="liveLeiste" hidden></div>
   <div class="serverleiste">
     <div class="serverstatus"><div class="status" id="sStatus" hidden></div><span class="mut" id="stand">lade …</span></div>
-    <div id="dMatchAktion"></div><button class="status" type="button" id="juggErneut" hidden>Juggernaut · Bereitschaft</button>
+    <div id="dMatchAktion"></div>
   </div>
   <div id="banner"></div>
   <section class="tab an" id="t-pve">
@@ -900,6 +900,12 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
       <button type="button" data-dr="karten" aria-pressed="false">🗺 Karten</button>
     </div>
     <div class="dr" id="dr-live">
+    <div class="panel" id="rvPanel" hidden><h3>Runde vorzeitig beenden</h3><p id="rvText"></p>
+    <button class="login" id="rvStart" hidden>Abstimmung starten</button>
+    <button class="login" id="rvJa" hidden>Ja, Runde beenden</button>
+    <button class="login" id="rvNein" hidden>Ja-Stimme zurücknehmen</button><p id="rvFehler" role="status"></p></div>
+    <div class="panel" id="allgBereit" hidden><h3>🎮 Wer ist dabei?</h3><p id="allgBereitText"></p>
+      <button type="button" class="login" id="allgBereitBtn">Bin dabei</button><p id="allgBereitHinweis" role="status"></p></div>
     <div class="zwei">
       <div class="panel"><h3>🎯 Killfeed</h3><div id="kfZeit" class="mut kf-zeit">Noch kein Eintrag</div><div id="dKf" class="kf"></div></div>
       <div class="panel dm-wertung"><h3>Stand dieser Runde</h3><div id="dStand"></div></div>
@@ -938,13 +944,6 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
     <div id="er-wertung" class="er panel" hidden><h3>Wertungen</h3><div id="eWertungen"></div></div>
     <div id="er-erfolge" class="er panel" hidden><h3>Level und Erfolge</h3><div id="eErfolge"></div></div>
   </section>
-  <dialog class="aktion-dialog" id="juggBereit" aria-labelledby="juggBereitTitel">
-  <div class="dlg"><h3 id="juggBereitTitel">Juggernaut · Bereit?</h3><p class="mut">Die Runde startet, sobald alle bereit sind und die Spielleitung den Start bestätigt.</p>
-  <p id="juggBereitStand" aria-live="polite"></p><progress id="juggFortschritt" aria-label="Bereite Spieler" max="4" value="0" style="width:100%;accent-color:#e8775f;margin-bottom:12px"></progress>
-  <button class="login" type="button" id="juggJa">Ja, bin bereit</button>
-  <button class="login" type="button" id="juggNein">Noch warten</button>
-  <p id="juggFehler" role="status"></p></div>
-</dialog>
 <dialog class="aktion-dialog" id="eBereit" aria-labelledby="eBereitTitel">
     <div class="dlg"><h3 id="eBereitTitel">PvE Evakuierung</h3><p>Hast du deine Ausrüstung? Kann es losgehen?</p>
     <button type="button" class="login" id="eJa" disabled>Ja, bin bereit</button>
@@ -3331,7 +3330,7 @@ function stgZeichnen(){const el=$('#steuerLeiste');if(!el)return;stgGlocke();
   const warn=rolle==='host'&&H&&H.warnung?`<div class="stg-warn">⚠ Deine Host-Sitzung läuft bald ab. Rotation verlängern? <button class="login stg-haupt" data-stg="verlaengern">Verlängern</button></div>`:'';
   const hostZ=rolle==='admin'?(H?`<div class="stg-info">🎮 Host: <b>${esc(H.gt)}</b> · noch ${stgDauer(H.rest)}${H.endet?' · letzte Runde':''} <button class="login" data-stg="entziehen" style="font-size:11px;padding:3px 8px">Entziehen</button></div>`:'')
     :`<div class="stg-info">Du bist Host. Noch ${stgDauer(H?H.rest:0)}${H&&H.endet?', die laufende Runde ist die letzte':''}. Jede Aktion verlängert auf 2 Stunden.</div>`;
-  el.innerHTML=`<div class="stg-kopf"><h3>🎛 Steuerung</h3><span class="stg-rolle">${rolle==='admin'?'Admin':'Host'}</span><span class="stg-lage">${stgLageText(L)}</span></div>${warn}${hostZ}
+  el.innerHTML=`<div class="stg-kopf"><h3>🎛 Steuerung</h3><span class="stg-rolle">${rolle==='admin'?'Admin':'Host'}</span><span class="stg-lage">${stgLageText(L)}</span></div>${warn}${hostZ}${R.wartet?`<div class="stg-warn">Rotation wartet: ${esc(R.wartet)}.</div>`:''}
     <div class="stg-info mut">Rotation: ${R.art==='zufall'?'Zufall':(R.laenge||0)+' Karten'+(R.mischen?' (gemischt)':'')} · ${R.minuten||30} min · ${R.aktiv?'läuft':'aus'}</div><div class="stg-knoepfe">${kn.join('')}</div>`;
   el.hidden=false;stgKnoepfe()}
 function stgKnoepfe(){
@@ -3344,11 +3343,11 @@ const stgOpt=(liste,wert)=>liste.map(([v,n])=>`<option value="${esc(String(v))}"
 function stgRegelnStart(F,k){const st=(k&&k.standard)||{};return Object.assign({},F.std,{ziel_kills:'30'},st.regeln||{})}
 function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stgMeldung('Match erstellen','Gerade ist keine fertig gebaute Arena verfügbar.');
   const VL=F.vorlagen||[];
-  if(!STGF){const k0=F.karten[0];STGF={karte:k0.id,modus:(k0.standard&&k0.standard.modus)||(k0.modi[0]||{}).id,zeit:'tag',minuten:30,spieler:4,vorlage:'',regeln:stgRegelnStart(F,k0)}}
+  if(!STGF){const k0=F.karten[0];STGF={karte:k0.id,modus:(k0.standard&&k0.standard.modus)||(k0.modi[0]||{}).id,zeit:'tag',minuten:30,spieler:F.spielerzahl||4,vorlage:'',regeln:stgRegelnStart(F,k0)}}
   const k=F.karten.find(x=>x.id===STGF.karte)||F.karten[0];if(!k.modi.some(m=>m.id===STGF.modus))STGF.modus=(k.modi[0]||{}).id;
   const R=STGF.regeln,O=F.optionen,L=(STG.lage||{});
   const sel=(id,liste,wert)=>`<select data-sr="${id}">${stgOpt(liste,wert)}</select>`,an=id=>sel(id,[['1','An'],['0','Aus']],R[id]?'1':'0'),zeile=(t,c)=>`<label><span class="stg-lt">${t}</span>${c}</label>`;
-  const v=VL[+STGF.vorlage];
+  const v=STGF.vorlage===''||STGF.vorlage==null?null:VL[+STGF.vorlage];
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">🎮 Match erstellen</h2>
    <div class="mut" style="margin-bottom:8px">${L.dm&&L.rotation&&L.rotation.aktiv?'Startet sofort, danach geht die Rotation weiter.':'Startet sofort als Einzelmatch (ca. 3 Minuten Serverwechsel).'}</div>
    <div class="stg-vorlage"><label>Vorlage<select id="stgV"><option value="">Eigene Einstellungen</option>${VL.map((x,i)=>`<option value="${i}" ${String(i)===String(STGF.vorlage)?'selected':''}>${esc(x.name)} (${esc(x.titel)} · ${esc(x.modus_name)})</option>`).join('')}</select></label>
@@ -3358,7 +3357,7 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
    ${zeile('Tageszeit',`<select id="stgZ">${stgOpt(F.zeiten.map(z=>[z.id,z.name]),STGF.zeit)}</select>`)}
    ${zeile('Laufzeit',`<select id="stgMi">${stgOpt(F.minuten.map(m=>[m,m+' min']),STGF.minuten)}</select>`)}
    ${zeile('🏁 Ziel-Punkte',sel('ziel_kills',O.ziel_kills,R.ziel_kills))}
-   ${STGF.modus==='juggernaut'?zeile('Spieleranzahl (Juggernaut)',`<select id="stgSp">${stgOpt(F.jugg_spieler.map(n=>[n,n+' Spieler']),STGF.spieler)}</select>`):''}</div>
+   ${zeile('Spielerzahl',`<select id="stgSp">${stgOpt(F.spielerzahlen.map(n=>[n,n===5?'5+ Spieler':n+' Spieler']),STGF.spieler)}</select>`)}</div>
    <h4 class="stg-h">Sonderregeln</h4><div class="stg-form stg-zwei">
    ${zeile('🌫️ Nebel',sel('nebel',O.nebel,R.nebel))}${zeile('☣️ Giftgas',sel('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',sel('rucksaecke',O.rucksaecke,R.rucksaecke))}
    ${zeile('📦 Versorgungskisten',sel('kisten',O.kisten,R.kisten))}${zeile('💰 Kopfgeld',an('kopfgeld'))}${zeile('📏 Distanzwertung',sel('distanz',O.distanz,R.distanz))}
@@ -3383,21 +3382,22 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
   if($('#stgVL'))$('#stgVL').onclick=async()=>{if(!confirm(`Vorlage „${v.name}“ löschen?`))return;const j=await stgPost({aktion:'vorlage_loeschen',name:v.name},true);if(j){STGF.vorlage='';stgMatch()}};
   $('#stgMOk').onclick=async()=>{neu();if(!confirm('Match jetzt starten?'))return;$('#stgMOk').disabled=true;
     const j=await stgPost({aktion:'match',eintrag:{karte:STGF.karte,modus:STGF.modus,zeit:STGF.zeit,minuten:STGF.minuten,regeln:R},spielerzahl:STGF.spieler});
-    if(j&&j.wartet)return stgMeldung('Juggernaut','Bereitabfrage läuft: '+(j.bereit||0)+' von '+(j.ziel||'?')+' bereit. Das Match startet, sobald alle bereit sind.');
     if(j)dlg.close();else $('#stgMOk').disabled=false};
   if(!$('#dlg').open)$('#dlg').showModal()}
 function stgRotation(){const F=STG&&STG.formular,R=(STG.lage||{}).rotation||{};if(!F)return;const VL=F.vorlagen||[];
-  STGR=STGR||{art:R.art==='zufall'?'zufall':'liste',mischen:!!R.mischen,minuten:R.minuten||30,liste:(R.liste||[]).map(x=>({karte:x.karte,modus:x.modus,zeit:x.zeit||'tag',regeln:x.regeln}))};
+  STGR=STGR||{art:R.art==='zufall'?'zufall':'liste',mischen:!!R.mischen,minuten:R.minuten||30,spieler:R.spielerzahl||4,liste:(R.liste||[]).map(x=>({karte:x.karte,modus:x.modus,zeit:x.zeit||'tag',regeln:x.regeln}))};
   const zeile=(x,i)=>{const k=F.karten.find(y=>y.id===x.karte)||F.karten[0]||{modi:[]};if(!k.modi.some(m=>m.id===x.modus))x.modus=(k.modi[0]||{}).id;
     return `<div class="stg-rot" data-i="${i}"><select data-f="karte">${stgOpt(F.karten.map(y=>[y.id,y.titel]),x.karte)}</select><select data-f="modus">${stgOpt(k.modi.map(m=>[m.id,m.name]),x.modus)}</select>
       <select data-f="zeit">${stgOpt(F.zeiten.map(z=>[z.id,z.name]),x.zeit)}</select><span class="knoepfe"><button class="login" data-r="hoch" title="nach oben">↑</button><button class="login" data-r="runter" title="nach unten">↓</button><button class="login" data-r="weg" title="entfernen">✕</button></span>${x.regeln&&Object.keys(x.regeln).length?'<span class="mut stg-rot-r">mit eigenen Sonderregeln</span>':''}</div>`};
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">✏ Rotation bearbeiten</h2>
    <div class="stg-form"><label>Art<select id="stgRA">${stgOpt([['liste','Feste Reihenfolge'],['zufall','Zufall (alle fertigen Karten)']],STGR.art)}</select></label>
+   <label>Spielerzahl<select id="stgRS">${stgOpt(F.spielerzahlen.map(n=>[n,n===5?'5+ Spieler':n+' Spieler']),STGR.spieler)}</select></label>
    ${STGR.art==='liste'?`<label class="stg-check"><input type="checkbox" id="stgRMi" ${STGR.mischen?'checked':''}> Reihenfolge zufällig mischen <span class="mut">(jede Runde der Liste einmal, danach neu gemischt, nie zweimal hintereinander)</span></label>`:''}
    <label>Laufzeit je Runde<select id="stgRM">${stgOpt(F.minuten.map(m=>[m,m+' min']),STGR.minuten)}</select></label>
    ${STGR.art==='liste'?`<div><b>Reihenfolge</b>${STGR.liste.map(zeile).join('')||'<div class="mut">Noch keine Karte.</div>'}
      <div class="stg-vorlage" style="margin-top:6px"><button class="login" id="stgRPlus">+ Karte hinzufügen</button>${VL.length?`<select id="stgRV">${VL.map((x,i)=>`<option value="${i}">${esc(x.name)} (${esc(x.titel)} · ${esc(x.modus_name)})</option>`).join('')}</select><button class="login" id="stgRVP">+ Vorlage hinzufügen</button>`:''}</div></div>`:'<div class="mut">Zufall zieht nach jeder Runde eine andere fertige Karte.</div>'}
    <button class="login cmbtn stg-haupt" id="stgROk">💾 Speichern</button></div>`;
+  $('#stgRS').onchange=()=>STGR.spieler=+$('#stgRS').value;
   $('#stgRA').onchange=()=>{STGR.art=$('#stgRA').value;stgRotation()};$('#stgRM').onchange=()=>STGR.minuten=+$('#stgRM').value;
   if($('#stgRMi'))$('#stgRMi').onchange=()=>STGR.mischen=$('#stgRMi').checked;
   $$('.stg-rot select').forEach(s_=>s_.onchange=()=>{const i=+s_.closest('.stg-rot').dataset.i;STGR.liste[i][s_.dataset.f]=s_.value;if(s_.dataset.f==='karte'){delete STGR.liste[i].regeln;stgRotation()}});
@@ -3405,7 +3405,7 @@ function stgRotation(){const F=STG&&STG.formular,R=(STG.lage||{}).rotation||{};i
     if(b.dataset.r==='weg')Lr.splice(i,1);else{const j=b.dataset.r==='hoch'?i-1:i+1;if(j>=0&&j<Lr.length)[Lr[i],Lr[j]]=[Lr[j],Lr[i]]}stgRotation()});
   if($('#stgRPlus'))$('#stgRPlus').onclick=()=>{const k=F.karten[0];STGR.liste.push({karte:k.id,modus:(k.modi[0]||{}).id,zeit:'tag'});stgRotation()};
   if($('#stgRVP'))$('#stgRVP').onclick=()=>{const x=VL[+$('#stgRV').value];if(!x)return;STGR.liste.push({karte:x.karte,modus:x.modus,zeit:x.zeit,regeln:Object.keys(x.regeln||{}).length?x.regeln:undefined});stgRotation()};
-  $('#stgROk').onclick=async()=>{$('#stgROk').disabled=true;const j=await stgPost({aktion:'rotation',art:STGR.art,mischen:STGR.mischen,minuten:STGR.minuten,liste:STGR.liste},true);if(j){STGR=null;dlg.close()}else $('#stgROk').disabled=false};
+  $('#stgROk').onclick=async()=>{$('#stgROk').disabled=true;const j=await stgPost({aktion:'rotation',art:STGR.art,mischen:STGR.mischen,minuten:STGR.minuten,liste:STGR.liste,spielerzahl:STGR.spieler},true);if(j){STGR=null;dlg.close()}else $('#stgROk').disabled=false};
   if(!$('#dlg').open)$('#dlg').showModal()}
 $('#glocke').onclick=e=>{e.stopPropagation();const p=$('#glockePop');p.hidden=!p.hidden;$('#glocke').setAttribute('aria-expanded',String(!p.hidden));stgGlocke()};
 document.addEventListener('click',e=>{const p=$('#glockePop');if(p&&!p.hidden&&!p.contains(e.target)&&e.target!==$('#glocke')){p.hidden=true;$('#glocke').setAttribute('aria-expanded','false')}});
@@ -3476,49 +3476,6 @@ async function eMelden(bereit){
 }
 $('#eJa').onclick=()=>eMelden(true);
 $('#eWarten').onclick=()=>eMelden(false);
-let juggLobby=null,juggGefragt=null,juggSendet=false;
-const juggDialog=$('#juggBereit');
-function juggZeichnen(lobby){
-  juggLobby=lobby;
-  $('#juggErneut').hidden=!(lobby.offen&&lobby.kann_bereit);
-  $('#juggJa').disabled=!!lobby.ich_bereit;
-  $('#juggNein').textContent=lobby.ich_bereit?'Bereitmeldung zurücknehmen':'Noch warten';
-  if(!lobby.offen||!lobby.kann_bereit){
-    juggGefragt=null;
-    if(juggDialog.open)juggDialog.close();
-    return;
-  }
-  $('#juggFortschritt').max=lobby.ziel;
-  $('#juggFortschritt').value=lobby.anzahl;
-  $('#juggBereitStand').textContent=lobby.karte+' · '+lobby.anzahl+' von '+lobby.ziel+' bereit';
-  if(juggGefragt!==lobby.id&&!lobby.ich_bereit&&!document.querySelector('dialog[open]')){
-    juggGefragt=lobby.id;
-    $('#juggFehler').textContent='';
-    juggDialog.showModal();
-  }
-}
-async function juggLaden(){
-  if(juggSendet)return;
-  const d=await holeJson('/zuschauer/juggernaut');
-  if(d&&!juggSendet)juggZeichnen(d);
-}
-async function juggMelden(bereit){
-  if(juggSendet||!juggLobby?.offen)return;
-  juggSendet=true;
-  try{
-    const response=await fetch('/zuschauer/juggernaut/bereit',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({id:juggLobby.id,bereit})});
-    const d=await response.json();
-    if(!response.ok)throw new Error(d.meldung);
-    if(bereit||!d.offen)juggDialog.close();
-    juggZeichnen(d);
-  }catch(e){$('#juggFehler').textContent=e.message||'Bereitmeldung fehlgeschlagen.'}
-  finally{juggSendet=false}
-}
-$('#juggJa').onclick=()=>juggMelden(true);
-$('#juggNein').onclick=()=>juggMelden(false);
-$('#juggErneut').onclick=()=>{if(!juggDialog.open){$('#juggFehler').textContent='';juggDialog.showModal()}};
-if(DIREKT)setInterval(()=>{if(!document.hidden&&ICH?.benutzer)juggLaden()},5000);
 if(DIREKT){eLaden();setInterval(()=>{if(!document.hidden)eLaden()},5000)}
 if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an')||$('#t-shop').classList.contains('an'))meineLaden()},15000);
 setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
@@ -3572,6 +3529,54 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden)laden()});
     else r.addedNodes.forEach(scan);
   }}).observe(document.body,{childList:true,characterData:true,subtree:true});
 })();
+</script>
+<script>
+(()=>{const box=document.getElementById('allgBereit'), info=document.getElementById('allgBereitText'),
+ btn=document.getElementById('allgBereitBtn'), msg=document.getElementById('allgBereitHinweis');
+if(!box||!btn)return;let state=null;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+async function laden(){try{const r=await fetch('/zuschauer/bereit',{cache:'no-store'});if(!r.ok)throw Error();state=await r.json();
+box.hidden=!state.offen;if(box.hidden)return;const namen=state.bereit||[];
+info.innerHTML='<b>'+Number(state.anzahl_bereit||0)+' bereit</b>'+(namen.length?': '+namen.map(esc).join(', '):'.');
+btn.disabled=!state.kann_melden;btn.textContent=state.ich_bereit?'Bereitmeldung zurücknehmen':'Bin dabei';
+msg.textContent=state.kann_melden?'':(state.offen?'Zum Mitmachen bitte mit zugeordnetem DM-Gamertag anmelden.':'');}
+catch(_){box.hidden=true}}
+btn.addEventListener('click',async()=>{if(!state||!state.kann_melden)return;btn.disabled=true;try{
+const r=await fetch('/zuschauer/bereit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bereit:!state.ich_bereit})});
+const j=await r.json();if(!r.ok){msg.textContent=j.meldung||'Bereitmeldung fehlgeschlagen.';return}await laden();}
+catch(_){msg.textContent='Keine Verbindung.'}finally{if(state)btn.disabled=!state.kann_melden}});
+laden();setInterval(()=>{if(!document.hidden)laden()},15000);})();
+</script><script>
+(()=>{
+  const box=document.getElementById('rvPanel'), text=document.getElementById('rvText'),
+    start=document.getElementById('rvStart'), yes=document.getElementById('rvJa'),
+    no=document.getElementById('rvNein'), err=document.getElementById('rvFehler');
+  const url='/zuschauer/rundenabstimmung';
+  async function laden(){
+    try{
+      const r=await fetch(url,{cache:'no-store'});if(!r.ok){box.hidden=true;return}
+      const v=await r.json();
+      const steuer=typeof STG!=='undefined'&&STG?.kann?.steuern&&STG?.lage?.dm;
+      box.hidden=!(v.offen||steuer);
+      start.hidden=!steuer||v.offen;yes.hidden=!v.offen;no.hidden=!v.offen||!v.ich_ja;
+      yes.disabled=!!v.ich_ja;
+      text.textContent=v.offen?`${v.ja} von ${v.aktive} Ja-Stimmen · ${v.erforderlich} benötigt`:(v.hinweis||'Der Host kann eine Abstimmung starten.');
+    }catch(e){box.hidden=true}
+  }
+  async function senden(data){
+    err.textContent='';
+    try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+      const v=await r.json();if(!r.ok)throw Error(v.meldung||'Aktion fehlgeschlagen');
+      if(v.ausgeloest)err.textContent='Die Runde wird beendet.';
+      await laden();
+    }catch(e){err.textContent=e.message||'Verbindung fehlgeschlagen.'}
+  }
+  start.onclick=()=>senden({aktion:'start'});
+  yes.onclick=()=>senden({aktion:'stimme',ja:true});
+  no.onclick=()=>senden({aktion:'stimme',ja:false});
+  if(location.protocol!=='file:'&&(typeof DIREKT==='undefined'||DIREKT)){laden();setInterval(()=>{if(!document.hidden)laden()},5000)}
+})();
+
 </script>
 </body>
 </html>
