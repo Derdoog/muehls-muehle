@@ -3633,6 +3633,7 @@ function loZeichnen(){const el=$('#mr-loadout');if(!el||!LO)return;const K=LO.ka
   el.innerHTML=`<div class="panel"><h3>🎒 Mein Loadout</h3>
     <p class="mut">Bei Runden mit der Sonderregel <b>Spieler-Loadouts</b> kommen die Loadouts aller Mitspieler in einen Pool. Beim Spawn bekommt jeder zufällig eins davon. Nicht deins? Selbstmord kostet in diesen Runden keine Punkte. Änderungen gelten ab der nächsten Runde.</p>${pool}
     <div class="lo-budget ${zu?'zu':''}"><b>${p} / ${K.budget} Punkte</b><meter min="0" max="${K.budget}" value="${Math.min(p,K.budget)}"></meter><span class="mut">Rubel: ${loRub(LO.stand)} · DM-Level ${F.survivor}</span></div>
+    <div class="lo-budget" id="loPlatz"><b>Platz wird geprüft …</b></div><div id="loFehler"></div>
     <div class="lo-knoepfe"><button class="login" id="loZufall">🎲 Zufälliges Set</button><button class="login cmbtn" id="loSpeichern" ${zu?'disabled':''}>💾 Speichern</button>${LO.gespeichert?`<span class="mut">Gespeichert ${new Date(LO.gespeichert*1000).toLocaleString('de-DE',{dateStyle:'short',timeStyle:'short'})}</span>`:'<span class="mut">Noch nicht gespeichert</span>'}</div>
     ${LO_MELD?`<div class="hinweis" role="status">${LO_MELD}</div>`:''}
     <h4 class="stg-h">Waffenklassen</h4><div class="lo-kls">${kl}</div><p class="mut">Waffen schaltest du über das Klassen-Level frei (XP aller Waffen der Klasse). Optiken, Schalldämpfer und mehr Munition über das Level der Waffe. Militärkleidung über dein Deathmatch-Level. Skins, farbige Teile und zivile Kleidung gibt es für Rubel.</p></div>
@@ -3642,7 +3643,15 @@ function loZeichnen(){const el=$('#mr-loadout');if(!el||!LO)return;const K=LO.ka
   el.querySelectorAll('[data-lo]').forEach(x=>x.onchange=()=>loAendern(x));
   el.querySelectorAll('[data-lokauf]').forEach(b=>b.onclick=()=>loKaufen(b.dataset.lokauf));
   $('#loZufall').onclick=async()=>{const j=await loPost({aktion:'zufall'});if(j){LOE=j.loadout;LO_MELD='Zufälliges Set erstellt. Speichern nicht vergessen.';loZeichnen()}};
-  $('#loSpeichern').onclick=async()=>{const j=await loPost({aktion:'speichern',loadout:LOE});if(j){LO_MELD='✅ Gespeichert ('+j.punkte+' Punkte).';await loLaden0()}}}
+  $('#loSpeichern').onclick=async()=>{const j=await loPost({aktion:'speichern',loadout:LOE});if(j){LO_MELD='✅ Gespeichert ('+j.punkte+' Punkte).';await loLaden0()}};
+  loPruefenSpaeter()}
+let LO_PT=null;
+function loPruefenSpaeter(){clearTimeout(LO_PT);LO_PT=setTimeout(async()=>{try{
+  const r=await fetch('/zuschauer/loadout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({aktion:'pruefen',loadout:LOE})});if(!r.ok)return;const j=await r.json();
+  const P=j.platz||{gesamt:0,belegt:0,fehlt:[]},el=$('#loPlatz');if(!el)return;
+  el.classList.toggle('zu',!!P.fehlt.length);el.innerHTML=`<b>Platz: ${P.belegt} / ${P.gesamt} Felder</b><meter min="0" max="${P.gesamt||1}" value="${Math.min(P.belegt,P.gesamt)}"></meter><span class="mut">Kleidung, Weste und Rucksack</span>`;
+  $('#loFehler').innerHTML=(j.fehler||[]).length?'<div class="hinweis">⚠ '+j.fehler.map(esc).join('<br>⚠ ')+'</div>':'';
+  const s=$('#loSpeichern');if(s)s.disabled=!!(j.fehler||[]).length}catch(e){}},250)}
 async function loLaden0(){LO_LAEUFT=false;LOE=null;await loLaden()}
 function loAendern(x){const s=x.dataset.slot,a=x.dataset.lo;LO_MELD='';
   if(a==='w'){LOE[s]=x.value?{w:x.value}:null}
