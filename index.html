@@ -516,6 +516,15 @@ nav button{min-width:0}
 .waffen-gruppen.wd-gruppen{grid-template-columns:minmax(0,3fr) minmax(0,2fr)}@media(max-width:800px){.waffen-gruppen.wd-gruppen{grid-template-columns:minmax(0,1fr)}}
 .ich-name{box-shadow:inset 0 -2px 0 var(--acc);padding-bottom:1px}
 .zwei.versteckt{display:none!important}
+#dr-live.ttt-an .zwei{display:none!important}
+.panel.ttt{border-top:3px solid #b04a3a}.ttt h3{margin-top:0}
+.ttt-kopf{display:flex;gap:28px;margin:4px 0 10px}.ttt-kopf b{font-size:22px}
+.ttt-rolle{display:block;width:100%;text-align:left;padding:12px 14px;margin:6px 0;border:1px solid var(--line2);background:var(--panel2);color:var(--text);font:inherit;cursor:pointer}
+.ttt-rolle.gruen{border-color:var(--gr)}.ttt-rolle.rot{border-color:var(--rot)}.ttt-rolle.tot{cursor:default;opacity:.85}
+.ttt-check{margin:8px 0}.ttt-check select{max-width:60%}.ttt .rot{color:var(--rot)}
+.ttt-ablauf{margin:8px 0 6px;padding-left:20px;line-height:1.45}.ttt-ablauf li{margin:3px 0}
+.ttt-ergebnis{margin:10px 0 4px;padding:10px 12px;border-left:4px solid var(--line2);background:var(--panel2)}
+.ttt-ergebnis.gruen{border-left-color:var(--gr)}.ttt-ergebnis.rot{border-left-color:var(--rot)}
 #liveLeiste{margin:0 0 10px}#liveLeiste[hidden]{display:none}
 .live-leiste{display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px;width:100%;text-align:left;font:inherit;color:var(--text);cursor:pointer;padding:7px 12px;
   background:linear-gradient(90deg,rgba(190,40,30,.22),var(--panel2) 60%);border:1px solid var(--line2);border-left:3px solid #d0352a}
@@ -917,6 +926,7 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
     <button class="login" id="rvNein" hidden>Ja-Stimme zurücknehmen</button><p id="rvFehler" role="status"></p></div>
     <div class="panel" id="allgBereit" hidden><h3>🎮 Wer ist dabei?</h3><p id="allgBereitText"></p>
       <button type="button" class="login" id="allgBereitBtn">Bin dabei</button><p id="allgBereitHinweis" role="status"></p></div>
+    <div class="panel ttt" id="tttPanel" hidden></div>
     <div class="zwei">
       <div class="panel"><h3>🎯 Killfeed</h3><div id="kfZeit" class="mut kf-zeit">Noch kein Eintrag</div><div id="dKf" class="kf"></div></div>
       <div class="panel dm-wertung"><h3>Stand dieser Runde</h3><div id="dStand"></div></div>
@@ -3223,6 +3233,7 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
     ${zeile('Mit Distanzwertung (je nach Runde)',`unter ${g[0]} Meter: ${dp[0]} Punkt · ${g[0]} bis ${g[1]} Meter: ${dp[1]} Punkte · über ${g[1]} Meter: ${dp[2]} Punkte; Kopfschuss zusätzlich +${P.kopfschuss}`)}
     ${zeile('Kopfgeld 💰 (je nach Runde)',`Der Führende trägt das Kopfgeld, sobald er mindestens ${P.kopfgeld_ab} Punkte hat. Wer ihn erlegt: +${P.kopfgeld_bonus} extra`)}
     ${zeile('Juggernaut 🛡️ (Modus)',`Juggernaut erlegen: ${P.jugg_bonus} Punkte. Jäger-Kill: 0,2. Juggernaut-Kill: 1. Bis zu 2 Bonuspunkte für Schaden am Juggernaut. Juggernaut-Waffen: ${P.jugg_waffen.map(esc).join(', ')}`)}
+    ${P.ttt?zeile('TTT 🕵️ (Modus, nur Ruins)',`Ein geheimer Verräter. Unschuldige erlegen den Verräter: +${P.ttt.verraeter_erlegt}. Verräter erlegt Unschuldigen: +${P.ttt.unschuldig_erlegt}. Teamkill unter Unschuldigen: ${P.ttt.teamkill}. Sieg der Unschuldigen: +${P.ttt.sieg_unschuldig} für jeden Unschuldigen, wer die Fahne hisst +${P.ttt.fahne} extra. Sieg des Verräters: +${P.ttt.sieg_verraeter}. Spielzeit ${P.ttt_minuten} Minuten.`):''}
     ${zeile('Selbstmord',P.selbstmord+' Punkte')}${zeile('Tod durch Umgebung (Sturz, Zone …)',P.umwelt+' Punkte')}
     ${zeile('Ziel-Kills (Modus „Ziel“)',P.ziel_kills.join(' / ')+' Kills, wer zuerst da ist, gewinnt')}</table>
   <div class="mut">Rundensieger: die meisten Punkte, bei Gleichstand mehr Kills, dann weniger Tode; mindestens 1 Kill. Gewertet werden nur Runden mit mindestens ${R.min_spieler} Spielern.
@@ -3822,6 +3833,68 @@ async function pushDeaktivieren() {
     laden();setInterval(()=>{if(!document.hidden)laden()},15000);
   }
 })();
+</script>
+<script>
+/* Update 206: TTT. Hinweismenue statt Killfeed, eigene Rolle (nur fuer dich), Bereit-Check, Rollencheck. */
+(()=>{const box=document.getElementById('tttPanel'),live=document.getElementById('dr-live');if(!box||!live)return;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let S=null,zeigen=false,meld='',lauf=null;
+const uhr=bis=>{const s=Math.max(0,Math.round(bis-Date.now()/1000));return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+const ABLAUF=`<ol class="ttt-ablauf">
+ <li>🔑 Farbigen Schlüssel suchen. Er liegt irgendwo in der Arena, auch in Gebäuden und Verstecken.</li>
+ <li>📦 Die verschlossenen Container in derselben Farbe aufschließen. Nur in einem liegt die Fahne. Ein Schlüssel an der falschen Farbe zerbricht.</li>
+ <li>🚩 Den Fahnenmast finden, Fahne anbringen und ganz hochziehen. Dann gewinnen die Unschuldigen.</li>
+ <li>💀 Wer stirbt, ist raus: nicht wieder einsteigen und im Voicechat still sein.</li>
+ <li>⚰️ Rollencheck: Eine Leiche mit dem Spaten begraben und hier melden. Einmal pro Runde, nur solange du lebst.</li></ol>`;
+function oeff(){return S?S.oeffentlich:(typeof D!=='undefined'&&D&&D.dm?D.dm.ttt:null)}
+function zeichnen(){const o=oeff();const aktiv=!!(o&&(o.lobby||o.runde||o.ergebnis));box.hidden=!aktiv;
+ live.classList.toggle('ttt-an',!!(o&&o.runde));if(!aktiv){box.innerHTML='';return}
+ let h='';const st=S&&S.darf_steuern;
+ if(o.runde&&o.runde.phase==='warten'){const r=o.runde;
+  h+=`<h3>🕵️ TTT · Alle ins Spiel · ${esc(r.karte)}</h3><p>${r.server?'Der Server läuft (nach dem Wechsel braucht er etwa 3 Minuten). Komm rein und bestätige hier, wenn du im Spiel bist.':'Der Server wird gerade umgestellt.'} Sind alle da, verteilt die App die Rollen und die ${o.minuten} Minuten laufen. <b>Bis dahin nicht kämpfen.</b></p>`;
+  h+=`<p><b>${r.imspiel.length} von ${r.spieler} im Spiel</b>${r.imspiel.length?': '+r.imspiel.map(esc).join(', '):''}</p>`;
+  const fehlt=r.namen.filter(n=>!r.imspiel.includes(n));if(fehlt.length)h+=`<p class="mut">Es fehlen noch: ${fehlt.map(esc).join(', ')}</p>`;
+  if(S&&S.teilnehmer)h+=`<button type="button" class="login" id="tttImSpiel" ${r.server?'':'disabled'}>${S.ich_imspiel?'Doch noch nicht im Spiel':'✅ Ich bin im Spiel'}</button>${S.ich_imspiel&&!S.im_log?' <span class="mut">Warte auf deinen Login im Server-Log …</span>':''} `;
+  if(st)h+=`<button type="button" class="login" id="tttLos" ${r.imspiel.length<(o.min||3)?'disabled':''}>Jetzt losgehen</button>`;
+  if(r.warten_bis)h+=`<p class="mut">Spätestens in <b class="ttt-uhr" data-bis="${r.warten_bis}">${uhr(r.warten_bis)}</b> geht es mit den Bestätigten los (ab ${o.min||3}), sonst wird abgebrochen.</p>`;}
+ else if(o.runde){const r=o.runde;
+  h+=`<h3>🕵️ TTT läuft · ${esc(r.karte)}</h3><div class="ttt-kopf"><div><div class="mut">Restzeit</div><b class="ttt-uhr" data-bis="${r.ende_um||''}">${r.ende_um?uhr(r.ende_um):'startet'}</b></div><div><div class="mut">Am Leben</div><b>${r.lebend} von ${r.spieler}</b></div></div>`;
+  if(S&&S.rolle){const v=S.rolle==='verraeter';
+   h+=S.tot?'<div class="ttt-rolle tot">💀 Du bist raus. Bitte nicht wieder einsteigen und im Voicechat still sein.</div>'
+    :`<button type="button" class="ttt-rolle ${zeigen?(v?'rot':'gruen'):''}" id="tttZeigen">${zeigen?(v?'🔴 Du bist der <b>Verräter</b>':'🟢 Du bist <b>unschuldig</b>'):'👁 Rolle anzeigen (nur für dich)'}</button>`;
+   if(zeigen&&S.hinweis&&!S.tot)h+=`<div class="mut">${esc(S.hinweis)}</div>`;
+   const c=S.check||{};
+   if(c.ergebnis)h+=`<div class="ttt-check">⚰️ Dein Rollencheck: <b>${esc(c.ergebnis.opfer)}</b> war ${c.ergebnis.rolle==='verraeter'?'<b class="rot">der Verräter</b>':'<b>unschuldig</b>'}.</div>`;
+   else if(c.moeglich)h+=c.tote&&c.tote.length?`<div class="ttt-check">⚰️ Begraben: <select id="tttOpfer">${c.tote.map(n=>`<option>${esc(n)}</option>`).join('')}</select> <button type="button" class="login" id="tttBegraben">Rolle prüfen</button></div>`
+     :'<div class="mut ttt-check">⚰️ Rollencheck: Sobald jemand gestorben ist (laut Log), kannst du ihn nach dem Begraben hier prüfen.</div>';}
+  else if(S&&!S.angemeldet)h+='<div class="mut">Mitspieler: anmelden, um die eigene Rolle zu sehen.</div>';
+  h+=`<div class="mut">Mit dabei: ${r.namen.map(esc).join(', ')}</div>`+ABLAUF+'<div class="mut">Killfeed und Rundenstand bleiben bis zur Auflösung verborgen.</div>';}
+ else if(o.lobby){const l=o.lobby;
+  h+=`<h3>🕵️ TTT · Bereit-Check · ${esc(l.karte)}</h3><p><b>${l.anzahl} von ${l.ziel} bereit</b>${l.namen.length?': '+l.namen.map(esc).join(', '):''}</p>`;
+  h+=`<p class="mut">${l.start_um?'Alle da! Start in <b class="ttt-uhr" data-bis="'+l.start_um+'">'+uhr(l.start_um)+'</b>, wer noch will, kann sich jetzt melden.':'Die Runde startet, sobald alle bereit sind.'} Danach braucht der Server etwa 3 Minuten.</p>`;
+  if(S&&S.kann_bereit)h+=`<button type="button" class="login" id="tttBereit">${S.ich_bereit?'Bereitmeldung zurücknehmen':'Bin dabei'}</button> `;
+  else h+='<p class="mut">Zum Mitmachen bitte mit zugeordnetem DM-Gamertag anmelden.</p>';
+  if(st)h+=`<button type="button" class="login" id="tttStart" ${l.anzahl<(o.min||3)?'disabled':''}>Jetzt starten</button> <button type="button" class="login" id="tttAbbruch">Abbrechen</button>`;
+  h+=`<details class="ttt-regeln"><summary>So läuft TTT</summary><p>Einer von euch ist heimlich der Verräter. Die anderen sind unschuldig und haben ${o.minuten} Minuten Zeit.</p>${ABLAUF}</details>`;}
+ if(o.ergebnis){const e=o.ergebnis,u=e.sieger==='unschuldig';const pz=Object.entries(e.punkte||{}).map(([n,p])=>esc(n)+' '+(p>0?'+':'')+p).join(', ');
+  h+=`<div class="ttt-ergebnis ${u?'gruen':'rot'}"><b>${u?'🟢 Die Unschuldigen gewinnen':'🔴 Der Verräter gewinnt'}</b> · ${esc(e.karte)}<br>Verräter war <b>${(e.verraeter||[]).map(esc).join(', ')}</b>. ${esc(e.grund)}${e.farbe?' Schlüsselfarbe: '+esc(e.farbe)+'.':''}${pz?'<br><span class="mut">Bonus: '+pz+'</span>':''}</div>`;}
+ if(meld)h+=`<p class="mut" role="status">${esc(meld)}</p>`;
+ box.innerHTML=h;
+ const b=id=>document.getElementById(id);
+ if(b('tttZeigen'))b('tttZeigen').onclick=()=>{zeigen=!zeigen;zeichnen()};
+ if(b('tttBereit'))b('tttBereit').onclick=()=>post({aktion:'bereit',bereit:!S.ich_bereit});
+ if(b('tttStart'))b('tttStart').onclick=()=>{if(confirm('TTT jetzt mit den bereiten Spielern starten?'))post({aktion:'starten'})};
+ if(b('tttAbbruch'))b('tttAbbruch').onclick=()=>{if(confirm('Bereit-Check abbrechen?'))post({aktion:'abbrechen'})};
+ if(b('tttImSpiel'))b('tttImSpiel').onclick=()=>post({aktion:'imspiel',bereit:!S.ich_imspiel});
+ if(b('tttLos'))b('tttLos').onclick=()=>{if(confirm('Ohne die Fehlenden losgehen? Rollen werden jetzt verteilt.'))post({aktion:'los'})};
+ if(b('tttBegraben'))b('tttBegraben').onclick=()=>{const n=b('tttOpfer').value;if(confirm(n+' begraben und Rolle prüfen? Das geht nur einmal pro Runde.'))post({aktion:'begraben',opfer:n})};}
+async function laden(){try{const r=await fetch('/zuschauer/ttt',{cache:'no-store'});if(!r.ok)throw Error();S=await r.json()}catch(_){S=null}zeichnen()}
+async function post(d){meld='';try{const r=await fetch('/zuschauer/ttt',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});
+ const j=await r.json().catch(()=>({}));if(!r.ok){meld=j.meldung||'Das ging nicht.'}else{if(j.oeffentlich)S=j;if(j.rolle&&d.aktion==='begraben')S.check={genutzt:true,ergebnis:{opfer:j.opfer,rolle:j.rolle}};}}catch(_){meld='Keine Verbindung.'}
+ if(d.aktion!=='bereit')await laden();else zeichnen()}
+setInterval(()=>{box.querySelectorAll('.ttt-uhr[data-bis]').forEach(x=>{if(x.dataset.bis)x.textContent=uhr(+x.dataset.bis)})},1000);
+function takt(){clearTimeout(lauf);const o=oeff();lauf=setTimeout(async()=>{if(!document.hidden)await laden();takt()},o&&(o.lobby||o.runde)?5000:20000)}
+laden().then(takt);})();
 </script>
 </body>
 </html>
