@@ -335,7 +335,8 @@
   .rubel{font:700 28px var(--kopf);color:var(--acc2);letter-spacing:.03em}
   .ware{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;margin:6px 0 12px}
   :where(.ware)>div{background:var(--panel2);border:1px solid var(--line);padding:8px 10px;display:flex;flex-direction:column;gap:4px;transition:border-color .15s;min-width:0}
-  .ware>div:hover{border-color:var(--acc)} .ware b{font-size:13px} .ware .preis{font:700 15px var(--kopf);color:var(--acc2)}
+  .ware>div:hover{border-color:var(--acc)} .ware b{font-size:13px}
+.ware .wimg{display:block;width:100%;height:96px;margin:0;box-sizing:border-box} .ware .preis{font:700 15px var(--kopf);color:var(--acc2)}
   .ware .zeile{display:flex;gap:6px;align-items:center;justify-content:space-between}
   .ware input{width:58px;font:inherit;padding:3px 5px;background:var(--bg2);color:var(--text);border:1px solid var(--line2)}
   .knopf{background:linear-gradient(180deg,var(--acc2),var(--acc));color:#141414;border:0;padding:8px 14px;font:700 13px var(--kopf);text-transform:uppercase;letter-spacing:.07em;clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px)}
@@ -497,7 +498,7 @@ nav button{min-width:0}
 .lo-knoepfe{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0}.lo-kls{display:flex;flex-wrap:wrap;gap:6px}.lo-kl{border:1px solid var(--rand,#333);padding:4px 8px;font-size:13px}
 .lo-raster{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}.lo-waffe{border:1px solid var(--rand,#333);padding:10px;display:flex;flex-direction:column;gap:6px}
 .lo-waffe h4{margin:0}.lo-waffe label,.lo-gear label{display:flex;flex-direction:column;gap:3px;font-size:13px}.lo-waffe select,.lo-gear select{width:100%;max-width:100%}
-.lo-check{flex-direction:row!important;align-items:center;gap:6px!important}.lo-gear{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.lo-gear .wimg{width:110px;height:58px;margin:2px 0}.lo-check{flex-direction:row!important;align-items:center;gap:6px!important}.lo-gear{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
 .lo-gad{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:4px}.lo-kauf{align-self:flex-start;font-size:12px}.lo-meister{margin:0 0 10px;line-height:1.9}
 .wl-abz{display:inline-block;font-size:10px;font-weight:600;letter-spacing:.3px;padding:1px 5px;margin-left:4px;vertical-align:2px;
   color:#111;background:#c9a037;text-transform:uppercase}.wl-abz.gold{background:#ffd76a;box-shadow:0 0 6px #ffd76a}
@@ -3029,10 +3030,10 @@ async function shopLoadoutLaden(){
     if(!d.gt){status.textContent='Zum Kaufen mit einem Deathmatch-Gamertag anmelden.';return}
     status.textContent='Verfügbar: '+loRub(d.stand);
     const artikel=new Map();
-    const eintragen=(id,name,preis,level=0,gruppe,waffe)=>{if(preis)artikel.set(id,{name,preis,level,gruppe,waffe})};
+    const eintragen=(id,name,preis,level=0,gruppe,waffe,info)=>{if(preis)artikel.set(id,{name,preis,level,gruppe,waffe,info})};
     if(wahl==='kleidung'){
       for(const [platz,teile] of Object.entries(k.ausruestung)){
-        teile.forEach(([id,name,_,lv,preis])=>eintragen(id,name,preis,lv,k.plaetze[platz]||platz));
+        teile.forEach(([id,name,pp,lv,preis,fe,sp])=>eintragen(id,name,preis,lv,k.plaetze[platz]||platz,undefined,[fe?fe+' Felder Stauraum':'',pp?'+'+pp+' P im Loadout':''].filter(Boolean).join(' · ')));
       }
     }else{
       for(const [waffe,w] of Object.entries(k.waffen)){
@@ -3043,7 +3044,7 @@ async function shopLoadoutLaden(){
     const gruppen=Map.groupBy?Map.groupBy(artikel,([,x])=>x.gruppe):[...artikel].reduce((m,e)=>{const g=e[1].gruppe;if(!m.has(g))m.set(g,[]);m.get(g).push(e);return m},new Map());
     liste.innerHTML=[...gruppen].map(([gruppe,eintraege])=>`<section><h4>${esc(gruppe)}</h4><div class="ware">${eintraege.sort((a,b)=>a[1].name.localeCompare(b[1].name,'de')).map(([id,x])=>{
       const gekauft=d.besitz.includes(id), gesperrt=x.level>d.freigaben.survivor;
-      return `<div>${shopVarianten[id]?`<img loading="lazy" decoding="async" alt="" style="width:100%;height:96px;object-fit:contain" src="data:image/webp;base64,${shopVarianten[id]}">`:WB?.[id.toLowerCase()]?wbild(id):x.waffe&&WB?.[x.waffe.toLowerCase()]?`<div>${wbild(x.waffe)}<small class="mut">Basismodell</small></div>`:""}<b>${esc(x.name)}</b><span>${loRub(x.preis)}${x.level?' · DM-Level '+x.level:''}</span>
+      return `<div>${shopVarianten[id]?`<img loading="lazy" decoding="async" alt="" style="width:100%;height:96px;object-fit:contain" src="data:image/webp;base64,${shopVarianten[id]}">`:WB?.[id.toLowerCase()]?wbild(id):x.waffe&&WB?.[x.waffe.toLowerCase()]?`<div>${wbild(x.waffe)}<small class="mut">Basismodell</small></div>`:""}<b>${esc(x.name)}</b>${x.info?`<small class="mut">${esc(x.info)}</small>`:''}<span>${loRub(x.preis)}${x.level?' · DM-Level '+x.level:''}</span>
         <button type="button" class="login" data-shoplo="${esc(id)}" ${gekauft||gesperrt||d.test||!d.shop_an||x.preis>d.stand?'disabled':''}>${gekauft?'Gekauft':gesperrt?'Gesperrt':'Kaufen'}</button></div>`;
     }).join('')}</div></section>`).join('');
     liste.querySelectorAll('[data-shoplo]').forEach(b=>b.onclick=async()=>{
@@ -3728,8 +3729,8 @@ function loZeichnen(){const el=$('#mr-loadout');if(!el||!LO)return;const K=LO.ka
   const F=LO.freigaben,p=loPunkte(LOE),zu=p>K.budget;
   const kl=Object.entries(K.klassen).map(([k,n])=>{const x=F.klassen[k];return `<span class="lo-kl"><b>${esc(n)}</b> Level ${x.level}${x.naechste?` <small class="mut">${x.xp}/${x.naechste} XP</small>`:' <small class="mut">max</small>'}</span>`}).join('');
   const gear=Object.entries(K.ausruestung).map(([pl,L])=>{const cur=(LOE.kleidung||{})[pl]??K.start[pl],x=L.find(y=>y[0]===cur)||[];
-    return `<label>${esc(K.plaetze[pl]||pl)} <select data-lo="gear" data-pl="${pl}">${L.map(([c,n,pp,lv,pr])=>{const lock=lv&&F.survivor<lv;
-      return `<option value="${c}" ${cur===c?'selected':''} ${lock?'disabled':''}>${esc(n)}${pp?' · +'+pp+' P':''}${lock?' 🔒 DM-Level '+lv:''}${pr?(LO.besitz.includes(c)?' ✔':' · '+loRub(pr)):''}</option>`}).join('')}</select>${loKaufKnopf(cur,x[4])}</label>`}).join('');
+    return `<label>${esc(K.plaetze[pl]||pl)} ${cur&&WB?.[cur.toLowerCase()]?wbild(cur):''}<select data-lo="gear" data-pl="${pl}">${L.map(([c,n,pp,lv,pr,fe])=>{const lock=lv&&F.survivor<lv;
+      return `<option value="${c}" ${cur===c?'selected':''} ${lock?'disabled':''}>${esc(n)}${pp?' · +'+pp+' P':''}${fe?' · '+fe+' Felder':''}${lock?' 🔒 DM-Level '+lv:''}${pr?(LO.besitz.includes(c)?' ✔':' · '+loRub(pr)):''}</option>`}).join('')}</select>${loKaufKnopf(cur,x[4])}</label>`}).join('');
   const gad=K.gadgets.map(([c,n,pp])=>`<label class="lo-check"><input type="checkbox" data-lo="gadget" value="${c}" ${(LOE.gadgets||[]).includes(c)?'checked':''}> ${esc(n)} · +${pp} P</label>`).join('');
   const pool=LO.pool?`<div class="hinweis">Diese Runde im Pool: ${LO.pool.map(esc).join(', ')||'–'}</div>`:'';
   el.innerHTML=`<div class="panel"><h3>🎒 Mein Loadout</h3>
@@ -3740,7 +3741,7 @@ function loZeichnen(){const el=$('#mr-loadout');if(!el||!LO)return;const K=LO.ka
     ${LO_MELD?`<div class="hinweis" role="status">${LO_MELD}</div>`:''}
     <h4 class="stg-h">Waffenklassen</h4><div class="lo-kls">${kl}</div><p class="mut">Waffen schaltest du über das Klassen-Level frei (XP aller Waffen der Klasse). Optiken, Schalldämpfer und mehr Munition über das Level der Waffe. Militärkleidung über dein Deathmatch-Level. Skins, farbige Teile und zivile Kleidung gibt es für Rubel.</p></div>
     <div class="panel"><h3>🔫 Waffen</h3><div class="lo-raster">${LO_SLOTS.map(([s,t])=>loWaffe(s,t)).join('')}</div></div>
-    <div class="panel"><h3>🦺 Ausrüstung und Kleidung</h3><div class="lo-gear">${gear}</div></div>
+    <div class="panel"><h3>🦺 Ausrüstung und Kleidung</h3><div class="lo-gear">${gear}</div><p class="mut">Stauraum kostet Punkte: je volle ${K.stauraum_je||15} Felder mehr als die Startkleidung (Weste: mehr als keine Weste) 1 Punkt. Die Punkte stehen schon in der Auswahl.</p></div>
     <div class="panel"><h3>💣 Taktik (höchstens ${K.gadgets_max})</h3><div class="lo-gad">${gad}</div><p class="mut">Feldflasche, Essen, zwei Verbände und Kochsalz sind immer dabei.</p></div>`;
   el.querySelectorAll('[data-lo]').forEach(x=>x.onchange=()=>loAendern(x));
   el.querySelectorAll('[data-lokauf]').forEach(b=>b.onclick=()=>loKaufen(b.dataset.lokauf));
