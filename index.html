@@ -3238,6 +3238,15 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
     ${zeile('Ziel-Kills (Modus „Ziel“)',P.ziel_kills.join(' / ')+' Kills, wer zuerst da ist, gewinnt')}</table>
   <div class="mut">Rundensieger: die meisten Punkte, bei Gleichstand mehr Kills, dann weniger Tode; mindestens 1 Kill. Gewertet werden nur Runden mit mindestens ${R.min_spieler} Spielern.
     Als Teilnehmer zählt, wer einen Kill oder Tod hat oder mindestens ${Math.round(R.leben_min_s/60)} Minute am Leben war.</div>
+  ${P.ttt?`<h4>🕵️ TTT · Kurzanleitung (nur Ruins, ab 3 Spielern)</h4><ol class="ttt-ablauf">
+    <li>Bereit-Check auf der Zuschauerseite: „Bin dabei“ drücken. Sind alle bereit, startet der Server TTT.</li>
+    <li>Ins Spiel kommen und auf der Zuschauerseite „Ich bin im Spiel“ drücken. Bis alle drin sind, nicht kämpfen.</li>
+    <li>Sind alle da, gibt es die Rollen (ein geheimer Verräter) und ${P.ttt_minuten} Minuten laufen. Deine Rolle siehst nur du auf der Zuschauerseite.</li>
+    <li>Unschuldige: farbigen Schlüssel finden, die Container derselben Farbe aufschließen (in einem liegt die Fahne), Fahne am Mast ganz hochziehen. Schlüssel an falscher Farbe zerbricht.</li>
+    <li>Verräter: unerkannt bleiben, bis die Zeit abläuft, oder alle Unschuldigen ausschalten.</li>
+    <li>Wer stirbt, ist raus: nicht wieder einsteigen, im Voicechat still sein.</li>
+    <li>Rollencheck: Leiche mit dem Spaten begraben und auf der Zuschauerseite melden. Einmal pro Runde, nur lebend.</li></ol>
+  <div class="mut">Killfeed und Rundenstand sind bis zur Auflösung versteckt. Nach Fahne, Tod des Verräters, Tod aller Unschuldigen oder Zeitablauf löst die App auf und stoppt den Server.</div>`:''}
   ${S.an?`<h4>🛒 Rubel</h4><div>${RUB(S.kurs_punkt)} je Rundenpunkt, ${RUB(S.teilnahme)} fürs Mitspielen, ${RUB(S.sieg)} für den Rundensieg. Nur Runden ab ${S.min_spieler} Spielern, höchstens ${S.farm_max} bezahlte Kills auf dasselbe Opfer, Deckel ${RUB(S.max_runde)} je Runde und ${RUB(S.max_tag)} je Tag. Einlösen: 🛒 Shop in der Kopfzeile.</div>`:''}
   <h4>📈 Elo</h4><div>Start ${E.start}. Nach jedem Kill wechselt Elo vom Opfer zum Schützen:</div>
   <div class="formel">Erwartung = 1 ÷ (1 + 10 hoch ((Elo des Opfers − Elo des Schützen) ÷ 400))<br>Gewinn = ${E.k} × (1 − Erwartung) · das Opfer verliert genauso viel</div>
