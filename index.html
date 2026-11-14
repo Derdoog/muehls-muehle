@@ -3028,20 +3028,23 @@ async function shopLoadoutLaden(){
     if(!d.gt){status.textContent='Zum Kaufen mit einem Deathmatch-Gamertag anmelden.';return}
     status.textContent='Verfügbar: '+loRub(d.stand);
     const artikel=new Map();
-    const eintragen=(id,name,preis,level=0)=>{if(preis)artikel.set(id,{name,preis,level})};
+    const eintragen=(id,name,preis,level=0,gruppe,waffe)=>{if(preis)artikel.set(id,{name,preis,level,gruppe,waffe})};
     if(wahl==='kleidung'){
-      Object.values(k.ausruestung).flat().forEach(([id,name,_,lv,preis])=>eintragen(id,name,preis,lv));
+      for(const [platz,teile] of Object.entries(k.ausruestung)){
+        teile.forEach(([id,name,_,lv,preis])=>eintragen(id,name,preis,lv,k.plaetze[platz]||platz));
+      }
     }else{
-      for(const w of Object.values(k.waffen)){
-        if(wahl==='skins')w.skins.forEach(([id,p])=>eintragen(id,w.name+' · '+id.split('_').slice(1).join(' '),p));
-        else Object.values(w.teile).flat().forEach(([id,p])=>eintragen(id,id.replaceAll('_',' '),p));
+      for(const [waffe,w] of Object.entries(k.waffen)){
+        if(wahl==='skins')w.skins.forEach(([id,p])=>eintragen(id,w.name+' · '+id.split('_').slice(1).join(' '),p,0,k.klassen[w.klasse],waffe));
+        else Object.entries(w.teile).forEach(([platz,teile])=>teile.forEach(([id,p])=>eintragen(id,id.replaceAll('_',' '),p,0,k.teil_namen[platz]||platz)));
       }
     }
-    liste.innerHTML=[...artikel.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'de')).map(([id,x])=>{
+    const gruppen=Map.groupBy?Map.groupBy(artikel,([,x])=>x.gruppe):[...artikel].reduce((m,e)=>{const g=e[1].gruppe;if(!m.has(g))m.set(g,[]);m.get(g).push(e);return m},new Map());
+    liste.innerHTML=[...gruppen].map(([gruppe,eintraege])=>`<section><h4>${esc(gruppe)}</h4><div class="ware">${eintraege.sort((a,b)=>a[1].name.localeCompare(b[1].name,'de')).map(([id,x])=>{
       const gekauft=d.besitz.includes(id), gesperrt=x.level>d.freigaben.survivor;
-      return `<div><b>${esc(x.name)}</b><span>${loRub(x.preis)}${x.level?' · DM-Level '+x.level:''}</span>
+      return `<div>${WB?.[id.toLowerCase()]?wbild(id):x.waffe&&WB?.[x.waffe.toLowerCase()]?`<div>${wbild(x.waffe)}<small class="mut">Basismodell</small></div>`:""}<b>${esc(x.name)}</b><span>${loRub(x.preis)}${x.level?' · DM-Level '+x.level:''}</span>
         <button type="button" class="login" data-shoplo="${esc(id)}" ${gekauft||gesperrt||d.test||!d.shop_an||x.preis>d.stand?'disabled':''}>${gekauft?'Gekauft':gesperrt?'Gesperrt':'Kaufen'}</button></div>`;
-    }).join('');
+    }).join('')}</div></section>`).join('');
     liste.querySelectorAll('[data-shoplo]').forEach(b=>b.onclick=async()=>{
       const id=b.dataset.shoplo, x=artikel.get(id);
       if(!confirm(x.name+' für '+loRub(x.preis)+' kaufen?'))return;
@@ -3104,7 +3107,7 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');const vorschauOffen=$('
   </section>
   <section class="panel" id="shopLoadout" ${SHOPREITER==='loadout'?'':'hidden'}><h3>Skins & Kleidung</h3>
     <label>Kategorie <select id="shopLoadoutArt"><option value="kleidung">Kleidung</option><option value="skins">Waffenskins</option><option value="teile">Farbige Anbauteile</option></select></label>
-    <div id="shopLoadoutStatus" role="status"></div><div id="shopLoadoutArtikel" class="ware"></div>
+    <div id="shopLoadoutStatus" role="status"></div><div id="shopLoadoutArtikel"></div>
   </section>
   <div class="panel"><h3>📒 Kontoauszug</h3>${(s.auszug||[]).length?`<div class="buch">${s.auszug.slice(0,60).map(x=>`<span class="mut dat">${datumB(x.t)}</span><span>${esc(x.text)}</span><span class="${x.betrag<0?'minus':'plus'}">${x.betrag>0?'+':''}${esc(x.betrag_text)}</span><span class="mut saldo">${esc(x.saldo_text||'')}</span>`).join('')}</div>`:'<div class="mut">Noch keine Buchung. Spiel eine gewertete Deathmatch-Runde!</div>'}</div>`;
   $$('#shopReiter [data-shopreiter]').forEach(b=>b.onclick=()=>{
