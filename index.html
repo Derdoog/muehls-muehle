@@ -832,7 +832,15 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
 </style>
 <style>
 /* Kompakter Kopf: direkte Navigation, seltenere Aktionen im Menü. */
-.mobil-menue{display:none}
+.mobil-menue{display:block;position:relative}
+.kopf-aktionen>#ansichtBtn,.kopf-aktionen>#loginBtn,.kopf-aktionen>.admin-link,.kopf-aktionen>.glocke-wrap{display:none}
+ .mobil-menue{display:block;position:relative}
+ .mobil-menue summary{display:flex;align-items:center;justify-content:center;width:40px;height:40px;cursor:pointer;list-style:none;border:1px solid var(--line2);border-radius:8px;background:var(--bg2);color:var(--text);font-size:19px}
+ .mobil-menue summary::-webkit-details-marker{display:none}
+ .mobil-menue-inhalt{position:absolute;z-index:100;right:0;top:calc(100% + 6px);min-width:190px;max-width:min(290px,90vw);padding:5px;border:1px solid var(--line2);border-radius:9px;background:var(--bg2);box-shadow:0 8px 24px #000a}
+ .mobil-menue-inhalt button,.mobil-menue-inhalt a{display:block;width:100%;min-height:42px;padding:10px;border:0;border-radius:5px;background:transparent;color:var(--text);font:inherit;text-align:left;text-decoration:none;overflow-wrap:anywhere}
+ .mobil-menue-inhalt [hidden]{display:none}
+ .mobil-menue-inhalt button:hover,.mobil-menue-inhalt a:hover{background:var(--panel)}
 @media(max-width:600px){
  header{position:relative}
  .kopf{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px 10px 7px}
@@ -842,13 +850,6 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
  .kopf-aktionen>#ansichtBtn,.kopf-aktionen>#loginBtn,.kopf-aktionen>.admin-link{display:none}
  #weltSchalter{display:inline-flex;padding:2px;gap:1px}
  #weltSchalter button{min-height:36px;padding:4px 7px;font-size:11px}
- .mobil-menue{display:block;position:relative}
- .mobil-menue summary{display:flex;align-items:center;justify-content:center;width:40px;height:40px;cursor:pointer;list-style:none;border:1px solid var(--line2);border-radius:8px;background:var(--bg2);color:var(--text);font-size:19px}
- .mobil-menue summary::-webkit-details-marker{display:none}
- .mobil-menue-inhalt{position:absolute;z-index:100;right:0;top:calc(100% + 6px);min-width:190px;max-width:min(290px,90vw);padding:5px;border:1px solid var(--line2);border-radius:9px;background:var(--bg2);box-shadow:0 8px 24px #000a}
- .mobil-menue-inhalt button,.mobil-menue-inhalt a{display:block;width:100%;min-height:42px;padding:10px;border:0;border-radius:5px;background:transparent;color:var(--text);font:inherit;text-align:left;text-decoration:none;overflow-wrap:anywhere}
- .mobil-menue-inhalt [hidden]{display:none}
- .mobil-menue-inhalt button:hover,.mobil-menue-inhalt a:hover{background:var(--panel)}
  header nav{display:flex;align-items:stretch;gap:3px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:0 10px;white-space:nowrap}
  header nav::-webkit-scrollbar{display:none}
  header nav button{flex:1 0 auto;min-width:0;min-height:43px;padding:8px 8px;font-size:11px;letter-spacing:0}
@@ -869,7 +870,7 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
 </head>
 <body>
 <header>
-  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span id="weltSchalter" role="group" aria-label="Spielbereich"><button type="button" data-welt="pve" aria-pressed="false">🌲 PvE</button><button type="button" data-welt="dm" aria-pressed="true">⚔ PvP</button></span><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><span class="glocke-wrap"><button class="login glocke" id="glocke" type="button" hidden aria-haspopup="true" aria-expanded="false" aria-label="Offene Anfragen">🔔<span class="glocke-zahl" id="glockeZahl"></span></button><div class="glocke-pop" id="glockePop" hidden></div></span><a class="login admin-link" href="/admin">Zum Adminbereich</a><details class="mobil-menue" id="mobilMenue"><summary aria-label="Menü öffnen">☰<span class="glocke-zahl" id="glockeZahlM"></span></summary><div class="mobil-menue-inhalt"><div id="glockeMobil" hidden></div><button type="button" id="mobilAnsicht">⚙ Ansicht</button><button type="button" id="mobilKonto" hidden>🔑 Spieler-Login</button><a href="/admin">Zum Adminbereich</a></div></details></span></div>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span id="weltSchalter" role="group" aria-label="Spielbereich"><button type="button" data-welt="pve" aria-pressed="false">🌲 PvE</button><button type="button" data-welt="dm" aria-pressed="true">⚔ PvP</button></span><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><span class="glocke-wrap"><button class="login glocke" id="glocke" type="button" hidden aria-haspopup="true" aria-expanded="false" aria-label="Offene Anfragen">🔔<span class="glocke-zahl" id="glockeZahl"></span></button><div class="glocke-pop" id="glockePop" hidden></div></span><a class="login admin-link" href="/admin">Zum Adminbereich</a><details class="mobil-menue" id="mobilMenue"><summary aria-label="Menü öffnen">☰<span class="glocke-zahl" id="glockeZahlM"></span></summary><div class="mobil-menue-inhalt"><div id="glockeMobil" hidden></div><button type="button" id="mobilSpielanfragen" aria-haspopup="dialog" aria-controls="spielanfrageDialog" hidden>Mitspieler gesucht</button><button type="button" id="mobilAnsicht">⚙ Ansicht</button><button type="button" id="mobilKonto" hidden>🔑 Spieler-Login</button><a href="/admin">Zum Adminbereich</a></div></details></span></div>
   <nav><button data-t="pve">🌲 Chernarus<span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm" class="an">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">🚁 Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button><button type="button" data-t="shop" id="shopBtn">🛒 Shop</button></nav>
 </header>
 <main>
@@ -1559,8 +1560,15 @@ window.addEventListener('DOMContentLoaded',()=>{
     <label><input type="checkbox" data-ansicht-bereich="ruhm"> Ruhmeshalle und Level</label>
     <label><input type="checkbox" data-ansicht-bereich="termine"> Termine</label>
   </fieldset>
+  <div id="pushControls" hidden><h3>Benachrichtigungen</h3><p class="mut">Startanfragen und Freigaben auf diesem Gerät anzeigen.</p>
+    <button type="button" class="login" id="pushOn">Benachrichtigungen aktivieren</button>
+    <button type="button" class="login" id="pushOff">Benachrichtigungen deaktivieren</button><p id="pushStatus" role="status"></p></div>
+  <div class="ansicht-fuss"><span id="ansichtSpeicher" class="mut" role="status"></span><button type="button" class="login" id="ansichtSpeicherBtn">Speicherung einstellen</button><button type="button" class="login" id="ansichtReset">Zurücksetzen</button></div>
+</dialog>
+<dialog class="ansicht-dialog" id="spielanfrageDialog" aria-labelledby="spielanfrageTitel">
   <section id="spielanfragen" hidden>
-    <h3>Mitspieler gesucht</h3>
+    <h3 id="spielanfrageTitel">Mitspieler gesucht</h3>
+    <button type="button" class="login" id="spielanfrageZu">Schließen</button>
     <form id="spielanfrageForm">
       <label>Spielmodus <select name="modus"><option value="PvE">Gemeinsam PvE</option><option value="PvP">PvP-Runde</option></select></label>
       <label>Startzeit (optional) <input type="datetime-local" name="start"></label>
@@ -1570,10 +1578,6 @@ window.addEventListener('DOMContentLoaded',()=>{
     <p id="spielanfrageStatus" role="status"></p>
     <div id="spielanfrageListe"></div>
   </section>
-  <div id="pushControls" hidden><h3>Benachrichtigungen</h3><p class="mut">Startanfragen und Freigaben auf diesem Gerät anzeigen.</p>
-    <button type="button" class="login" id="pushOn">Benachrichtigungen aktivieren</button>
-    <button type="button" class="login" id="pushOff">Benachrichtigungen deaktivieren</button><p id="pushStatus" role="status"></p></div>
-  <div class="ansicht-fuss"><span id="ansichtSpeicher" class="mut" role="status"></span><button type="button" class="login" id="ansichtSpeicherBtn">Speicherung einstellen</button><button type="button" class="login" id="ansichtReset">Zurücksetzen</button></div>
 </dialog>
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
 <script>
@@ -3581,7 +3585,7 @@ laden();setInterval(()=>{if(!document.hidden)laden()},15000);})();
   const url='/zuschauer/rundenabstimmung';
   async function laden(){
     try{
-      const r=await fetch(url,{cache:'no-store'});if(!r.ok){box.hidden=true;return}
+      const r=await fetch(url,{cache:'no-store'});if(!r.ok){box.hidden=true;menue.hidden=true;if(dialog.open)dialog.close();return}
       const v=await r.json();
       const steuer=typeof STG!=='undefined'&&STG?.kann?.steuern&&STG?.lage?.dm;
       box.hidden=!(v.offen||steuer);
@@ -3768,6 +3772,10 @@ async function pushDeaktivieren() {
 <script>
 (()=>{
   const box=document.querySelector('#spielanfragen');
+  const dialog=document.querySelector('#spielanfrageDialog');
+  const menue=document.querySelector('#mobilSpielanfragen');
+  menue.onclick=()=>{document.querySelector('#mobilMenue').open=false;dialog.showModal();laden()};
+  document.querySelector('#spielanfrageZu').onclick=()=>dialog.close();
   const form=document.querySelector('#spielanfrageForm');
   const opt=document.querySelector('#spielanfragePush');
   const status=document.querySelector('#spielanfrageStatus');
@@ -3784,6 +3792,7 @@ async function pushDeaktivieren() {
       const d=await r.json();
       if(!r.ok)throw Error(d.meldung||'Spielanfragen konnten nicht geladen werden.');
       box.hidden=false;
+      menue.hidden=false;
       opt.checked=d.push;
       opt.disabled=!d.verfuegbar;
       form.hidden=d.anfragen.some(x=>x.meine);
