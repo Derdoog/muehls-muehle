@@ -3732,7 +3732,9 @@ async function pushAktivieren(publicKey) {
   const r=await fetch('/zuschauer/push',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({aktion:'anmelden',abo:sub.toJSON()})});
   if(!r.ok)throw Error('Das Gerät konnte nicht beim Server angemeldet werden.');
-  return reg;
+  const d=await r.json();
+  const rollen=(d.rollen||[]).map(x=>x==='admin'?'Admin':'Spieler');
+  return rollen.length?'Push aktiv für '+rollen.join(' und ')+'.':'Benachrichtigungen für dieses Gerät aktiviert.';
 }
 
 async function pushDeaktivieren() {
@@ -3768,7 +3770,7 @@ async function pushDeaktivieren() {
   }
   on.onclick=async()=>{
     on.disabled=true;status.textContent='';
-    try{await pushAktivieren(key);status.textContent='Benachrichtigungen für dieses Gerät aktiviert.'}
+    try{status.textContent=await pushAktivieren(key)}
     catch(e){status.textContent=e.message||'Aktivieren fehlgeschlagen.'}
     finally{on.disabled=false}
   };
@@ -3781,7 +3783,7 @@ async function pushDeaktivieren() {
   hintNein.onclick=()=>{spaeter=true;hinweis.hidden=true};
   hintJa.onclick=async()=>{
     hintJa.disabled=true;hintStatus.textContent='';
-    try{await pushAktivieren(key);hinweis.hidden=true;spaeter=true;status.textContent='Benachrichtigungen für dieses Gerät aktiviert.'}
+    try{status.textContent=await pushAktivieren(key);hinweis.hidden=true;spaeter=true}
     catch(e){hintStatus.textContent=e.message||'Aktivieren fehlgeschlagen.'}
     finally{hintJa.disabled=false}
   };
