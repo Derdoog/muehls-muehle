@@ -875,6 +875,10 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
 <main>
   <div id="steuerLeiste" hidden></div>
   <div id="liveLeiste" hidden></div>
+  <div class="panel" id="pushHinweis" hidden>Benachrichtigungen für Startanfragen auf diesem Gerät aktivieren?
+    <button type="button" class="login" id="pushHinweisJa">Aktivieren</button>
+    <button type="button" class="login" id="pushHinweisNein">Später</button>
+    <span id="pushHinweisStatus" role="status"></span></div>
   <div class="serverleiste">
     <div class="serverstatus"><div class="status" id="sStatus" hidden></div><span class="mut" id="stand">lade …</span></div>
     <div id="dMatchAktion"></div>
@@ -1555,6 +1559,9 @@ window.addEventListener('DOMContentLoaded',()=>{
     <label><input type="checkbox" data-ansicht-bereich="ruhm"> Ruhmeshalle und Level</label>
     <label><input type="checkbox" data-ansicht-bereich="termine"> Termine</label>
   </fieldset>
+  <div id="pushControls" hidden><h3>Benachrichtigungen</h3><p class="mut">Startanfragen und Freigaben auf diesem Gerät anzeigen.</p>
+    <button type="button" class="login" id="pushOn">Benachrichtigungen aktivieren</button>
+    <button type="button" class="login" id="pushOff">Benachrichtigungen deaktivieren</button><p id="pushStatus" role="status"></p></div>
   <div class="ansicht-fuss"><span id="ansichtSpeicher" class="mut" role="status"></span><button type="button" class="login" id="ansichtSpeicherBtn">Speicherung einstellen</button><button type="button" class="login" id="ansichtReset">Zurücksetzen</button></div>
 </dialog>
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
@@ -3668,6 +3675,84 @@ async function loPost(d){try{const r=await fetch('/zuschauer/loadout',{method:'P
 async function loKaufen(id){const pr=(()=>{let p=0;const K=LO.katalog;Object.values(K.waffen).forEach(w=>{w.skins.forEach(([s,x])=>{if(s===id)p=x});Object.values(w.teile).forEach(L=>L.forEach(([t,x])=>{if(t===id&&x)p=x}))});
     Object.values(K.ausruestung).forEach(L=>L.forEach(y=>{if(y[0]===id&&y[4])p=y[4]}));return p})();
   if(!confirm(`${id.replace(/_/g,' ')} für ${loRub(pr)} kaufen?`))return;const j=await loPost({aktion:'kaufen',id});if(j){LO_MELD='✅ Gekauft.';const alt=LOE;LO_LAEUFT=false;await loLaden();LOE=alt;loZeichnen()}}
+</script>
+<script>
+/* Muss von einem expliziten Klick aufgerufen werden; keine automatische Erlaubnisabfrage. */
+async function pushAktivieren(publicKey) {
+  if(!window.isSecureContext||!('serviceWorker' in navigator)||!('PushManager' in window))
+    throw Error('Push wird auf diesem Gerät oder dieser Verbindung nicht unterstützt.');
+  const permission=await Notification.requestPermission();
+  if(permission!=='granted')throw Error('Benachrichtigungen wurden nicht freigegeben.');
+  const reg=await navigator.serviceWorker.register('/zuschauer/sw.js',{scope:'/zuschauer/'});
+  if(!reg.active)await new Promise((resolve,reject)=>{
+    const worker=reg.installing||reg.waiting;
+    if(!worker)return reject(Error('Service Worker ist nicht bereit.'));
+    const timer=setTimeout(()=>reject(Error('Service Worker wird nicht rechtzeitig aktiv.')),15000);
+    worker.addEventListener('statechange',()=>{if(worker.state==='activated'){clearTimeout(timer);resolve()}});
+  });
+  const raw=atob(publicKey.replace(/-/g,'+').replace(/_/g,'/')+'='.repeat((4-publicKey.length%4)%4));
+  const key=Uint8Array.from(raw,c=>c.charCodeAt(0));
+  const existing=await reg.pushManager.getSubscription();
+  const sub=existing||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key});
+  const r=await fetch('/zuschauer/push',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({aktion:'anmelden',abo:sub.toJSON()})});
+  if(!r.ok)throw Error('Das Gerät konnte nicht beim Server angemeldet werden.');
+  return reg;
+}
+
+async function pushDeaktivieren() {
+  const reg=await navigator.serviceWorker.getRegistration('/zuschauer/');
+  const sub=reg&&await reg.pushManager.getSubscription();
+  if(!sub)return;
+  let entfernt=false;
+  try{
+    const r=await fetch('/zuschauer/push',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({aktion:'abmelden',endpoint:sub.endpoint})});
+    entfernt=r.ok;
+  }finally{await sub.unsubscribe()}
+  if(!entfernt)throw Error('Am Gerät deaktiviert; Abmeldung am Server wird noch benötigt.');
+}
+
+(()=>{
+  const box=document.getElementById('pushControls'), on=document.getElementById('pushOn'),
+    off=document.getElementById('pushOff'), status=document.getElementById('pushStatus');
+  const hinweis=document.getElementById('pushHinweis'), hintJa=document.getElementById('pushHinweisJa'),
+    hintNein=document.getElementById('pushHinweisNein'), hintStatus=document.getElementById('pushHinweisStatus');
+  let key='',spaeter=false;
+  async function refresh(){
+    try{
+      const r=await fetch('/zuschauer/push',{cache:'no-store'});
+      if(!r.ok){box.hidden=true;hinweis.hidden=true;return}
+      const d=await r.json();box.hidden=false;key=d.publicKey||'';
+      on.disabled=!d.verfuegbar;off.disabled=false;
+      if(!d.verfuegbar)status.textContent='Benachrichtigungen sind noch nicht eingerichtet.';
+      else if(status.textContent==='Benachrichtigungen sind noch nicht eingerichtet.')status.textContent='';
+      const admin=typeof STG!=='undefined'&&STG?.rolle==='admin';
+      hinweis.hidden=!(d.verfuegbar&&admin&&!spaeter&&'Notification' in window&&Notification.permission==='default');
+    }catch(e){box.hidden=true;hinweis.hidden=true}
+  }
+  on.onclick=async()=>{
+    on.disabled=true;status.textContent='';
+    try{await pushAktivieren(key);status.textContent='Benachrichtigungen für dieses Gerät aktiviert.'}
+    catch(e){status.textContent=e.message||'Aktivieren fehlgeschlagen.'}
+    finally{on.disabled=false}
+  };
+  off.onclick=async()=>{
+    off.disabled=true;status.textContent='';
+    try{await pushDeaktivieren();status.textContent='Benachrichtigungen für dieses Gerät deaktiviert.'}
+    catch(e){status.textContent=e.message||'Deaktivieren fehlgeschlagen.'}
+    finally{off.disabled=false}
+  };
+  hintNein.onclick=()=>{spaeter=true;hinweis.hidden=true};
+  hintJa.onclick=async()=>{
+    hintJa.disabled=true;hintStatus.textContent='';
+    try{await pushAktivieren(key);hinweis.hidden=true;spaeter=true;status.textContent='Benachrichtigungen für dieses Gerät aktiviert.'}
+    catch(e){hintStatus.textContent=e.message||'Aktivieren fehlgeschlagen.'}
+    finally{hintJa.disabled=false}
+  };
+  if(location.protocol!=='file:'){refresh();setInterval(()=>{if(!document.hidden)refresh()},30000)}
+})();
+
 </script>
 </body>
 </html>
