@@ -3016,6 +3016,45 @@ const SHOP_OFFEN=['offen','freigegeben','hochgeladen'];let KORB={},SWEG=null,SZI
 async function shopPost(u,b){let r,j={};try{r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)});j=await r.json().catch(()=>({}))}catch(e){alert('Keine Verbindung');return null}if(!r.ok||!j.ok){alert(j.meldung||'Ging nicht');return null}return j}
 function shopNeu(){delete $('#mr-shop').dataset.sig;meineLaden()}
 let SHOPREITER='vorrat',SHOPKOSMETIK=null;
+async function shopLoadoutLaden(){
+  const liste=$('#shopLoadoutArtikel'), status=$('#shopLoadoutStatus'), art=$('#shopLoadoutArt');
+  const wahl=art.value;
+  liste.replaceChildren();
+  try{
+    const r=await fetch('/zuschauer/loadout',{cache:'no-store'});
+    if(!r.ok)throw Error();
+    const d=await r.json(), k=d.katalog;
+    if(!liste.isConnected||art.value!==wahl)return;
+    if(!d.gt){status.textContent='Zum Kaufen mit einem Deathmatch-Gamertag anmelden.';return}
+    status.textContent='Verfügbar: '+loRub(d.stand);
+    const artikel=new Map();
+    const eintragen=(id,name,preis,level=0)=>{if(preis)artikel.set(id,{name,preis,level})};
+    if(wahl==='kleidung'){
+      Object.values(k.ausruestung).flat().forEach(([id,name,_,lv,preis])=>eintragen(id,name,preis,lv));
+    }else{
+      for(const w of Object.values(k.waffen)){
+        if(wahl==='skins')w.skins.forEach(([id,p])=>eintragen(id,w.name+' · '+id.split('_').slice(1).join(' '),p));
+        else Object.values(w.teile).flat().forEach(([id,p])=>eintragen(id,id.replaceAll('_',' '),p));
+      }
+    }
+    liste.innerHTML=[...artikel.entries()].sort((a,b)=>a[1].name.localeCompare(b[1].name,'de')).map(([id,x])=>{
+      const gekauft=d.besitz.includes(id), gesperrt=x.level>d.freigaben.survivor;
+      return `<div><b>${esc(x.name)}</b><span>${loRub(x.preis)}${x.level?' · DM-Level '+x.level:''}</span>
+        <button type="button" class="login" data-shoplo="${esc(id)}" ${gekauft||gesperrt||d.test||!d.shop_an||x.preis>d.stand?'disabled':''}>${gekauft?'Gekauft':gesperrt?'Gesperrt':'Kaufen'}</button></div>`;
+    }).join('');
+    liste.querySelectorAll('[data-shoplo]').forEach(b=>b.onclick=async()=>{
+      const id=b.dataset.shoplo, x=artikel.get(id);
+      if(!confirm(x.name+' für '+loRub(x.preis)+' kaufen?'))return;
+      b.disabled=true;
+      try{
+        const res=await fetch('/zuschauer/loadout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({aktion:'kaufen',id})});
+        const erg=await res.json();
+        if(!res.ok||!erg.ok)throw Error(erg.meldung||'Kauf fehlgeschlagen.');
+        await meineLaden();
+      }catch(e){status.textContent=e.message;b.disabled=false}
+    });
+  }catch{status.textContent='Loadout-Shop konnte nicht geladen werden.'}
+}
 function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');const vorschauOffen=$('#shopVorschau')?.open;
   if(!s){el.innerHTML='<div class="panel"><h3>🛒 Rubel-Shop</h3><div class="mut">Der Shop ist gerade nicht verfügbar.</div></div>';return}
   if(!s.gt){el.innerHTML='<div class="panel"><h3>🛒 Rubel-Shop</h3><div class="hinweis">Dir ist noch kein Deathmatch-Gamertag zugeordnet. Rubel verdienst du in gewerteten Deathmatch-Runden mit deinem DM-Gamertag.</div></div>';return}
@@ -3040,7 +3079,7 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');const vorschauOffen=$('
     <div class="mut">So verdienst du Rubel (nur gewertete Deathmatch-Runden ab ${v.min_spieler} Spielern): ${RUB(v.kurs_punkt)} je Rundenpunkt, ${RUB(v.teilnahme)} fürs Mitspielen, ${RUB(v.sieg)} für den Rundensieg.
       Höchstens ${v.farm_max} bezahlte Kills auf dasselbe Opfer je Runde, Deckel ${RUB(v.max_runde)} je Runde und ${RUB(v.max_tag)} je Tag.</div></div></div>
   <div class="reiter" id="shopReiter" role="group" aria-label="Rubel-Shop">
-    ${[['vorrat','Vorräte'],['kosmetik','Kosmetik']].map(([id,label])=>`<button type="button" data-shopreiter="${id}" class="${SHOPREITER===id?'an':''}" aria-pressed="${SHOPREITER===id}">${label}</button>`).join('')}
+    ${[['vorrat','Vorräte'],['kosmetik','Kosmetik'],['loadout','Skins & Kleidung']].map(([id,label])=>`<button type="button" data-shopreiter="${id}" class="${SHOPREITER===id?'an':''}" aria-pressed="${SHOPREITER===id}">${label}</button>`).join('')}
   </div>
   <section id="shopVorrat" aria-label="Vorräte" ${SHOPREITER==='vorrat'?'':'hidden'}>
   <div class="panel"><h3>📦 Vorräte für den PvE-Server</h3>
@@ -3063,13 +3102,21 @@ function shopZeichnen(d){const s=d.shop,el=$('#mr-shop');const vorschauOffen=$('
     <details class="panel" id="shopVorschau" ${vorschauOffen?'open':''}><summary>Vorschau für Profil, Rangliste und Killfeed</summary><div id="vsBox"></div></details>
     ${clanTeil(s,mk)}${diensteTeil(s,mk)}
   </section>
+  <section class="panel" id="shopLoadout" ${SHOPREITER==='loadout'?'':'hidden'}><h3>Skins & Kleidung</h3>
+    <label>Kategorie <select id="shopLoadoutArt"><option value="kleidung">Kleidung</option><option value="skins">Waffenskins</option><option value="teile">Farbige Anbauteile</option></select></label>
+    <div id="shopLoadoutStatus" role="status"></div><div id="shopLoadoutArtikel" class="ware"></div>
+  </section>
   <div class="panel"><h3>📒 Kontoauszug</h3>${(s.auszug||[]).length?`<div class="buch">${s.auszug.slice(0,60).map(x=>`<span class="mut dat">${datumB(x.t)}</span><span>${esc(x.text)}</span><span class="${x.betrag<0?'minus':'plus'}">${x.betrag>0?'+':''}${esc(x.betrag_text)}</span><span class="mut saldo">${esc(x.saldo_text||'')}</span>`).join('')}</div>`:'<div class="mut">Noch keine Buchung. Spiel eine gewertete Deathmatch-Runde!</div>'}</div>`;
   $$('#shopReiter [data-shopreiter]').forEach(b=>b.onclick=()=>{
     SHOPREITER=b.dataset.shopreiter;
     $('#shopVorrat').hidden=SHOPREITER!=='vorrat';
     $('#shopKosmetik').hidden=SHOPREITER!=='kosmetik';
+    $('#shopLoadout').hidden=SHOPREITER!=='loadout';
+    if(SHOPREITER==='loadout')shopLoadoutLaden();
     $$('#shopReiter button').forEach(x=>{x.classList.toggle('an',x===b);x.setAttribute('aria-pressed',String(x===b))});
   });
+  $('#shopLoadoutArt').onchange=shopLoadoutLaden;
+  if(SHOPREITER==='loadout')shopLoadoutLaden();
   $$('#mr-shop [data-shopkosmetik]').forEach(b=>b.onclick=()=>{
     SHOPKOSMETIK=b.dataset.shopkosmetik;
     shopZeichnen(d);
@@ -3645,9 +3692,12 @@ async function loLaden(){if(typeof DIREKT!=='undefined'&&!DIREKT)return;if(LO_LA
     loZeichnen()}catch(e){console.error(e)}finally{LO_LAEUFT=false}}
 function loRub(k){return (Number(k||0)/100).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})+' ₽'}
 function loPunkte(lo){const K=LO.katalog;let p=0;
-  LO_SLOTS.forEach(([s])=>{const e=lo[s];if(!e)return;const w=K.waffen[e.w];if(!w)return;p+=w.punkte;
+  LO_SLOTS.forEach(([s])=>{const e=lo[s];if(!e)return;const w=K.waffen[e.w];if(!w)return;p+=w.punkte;if(s==='sekundaer')p+=K.slot_punkte?.sekundaer||0;
+    Object.values(e.teile||{}).forEach(t=>p+=K.teil_punkte?.[t]||0);
+    Object.entries(w.teile).forEach(([pl,L])=>{if(!e.teile?.[pl])p+=K.teil_punkte?.[L[0][0]]||0});
     if(e.optik){const o=w.optik.find(x=>x[0]===e.optik);if(o)p+=o[3]}
     if(e.daempfer)p+=K.regeln.daempfer[1];if(e.gross)p+=K.regeln.gross[1];p+=(+e.extra||0)*K.regeln.extra[1]});
+  if(lo.primaer&&lo.sekundaer&&lo.pistole)p+=K.slot_punkte?.drittwaffe||0;
   Object.entries(K.ausruestung).forEach(([pl,L])=>{const c=(lo.kleidung||{})[pl]??K.start[pl];const x=L.find(y=>y[0]===c);if(x)p+=x[2]});
   (lo.gadgets||[]).forEach(g=>{const x=K.gadgets.find(y=>y[0]===g);if(x)p+=x[2]});return p}
 function loKaufKnopf(id,preis){if(!id||LO.besitz.includes(id)||!preis)return '';
@@ -3657,13 +3707,13 @@ function loWaffe(slot,titel){const K=LO.katalog,F=LO.freigaben,e=LOE[slot],kurz=
     if(!L.length)return '';const klv=F.klassen[kl].level;
     return `<optgroup label="${esc(kn)} (Level ${klv})">${L.map(([c,w])=>{const zu=klv<w.level,wl=F.waffen[c].level;
       return `<option value="${c}" ${e&&e.w===c?'selected':''} ${zu?'disabled':''}>${esc(w.name)} · ${w.punkte} P${wl>=10?' 🏅':''}${zu?' 🔒 '+esc(kn)+' Level '+w.level:''}</option>`}).join('')}</optgroup>`}).join('');
-  let h=`<div class="lo-waffe"><h4>${titel}</h4><select data-lo="w" data-slot="${slot}"><option value="">– keine –</option>${opts}</select>`;
+  let h=`<div class="lo-waffe"><h4>${titel}</h4>${slot==='sekundaer'&&K.slot_punkte?`<small class="mut">Zweitwaffe +${K.slot_punkte.sekundaer} P</small>`:''}${kurz&&K.slot_punkte?.drittwaffe?`<small class="mut">Mit zwei Langwaffen +${K.slot_punkte.drittwaffe} P</small>`:''}<select data-lo="w" data-slot="${slot}"><option value="">– keine –</option>${opts}</select>`;
   if(e&&K.waffen[e.w]){const w=K.waffen[e.w],wl=F.waffen[e.w].level,R=K.regeln;
     h+=`<div class="mut lo-wl">Waffenlevel <b>${wl}</b>${wl>=10?' <span class="wl-abz gold">🏅 Meister</span>':''}</div>`;
     if(w.skins.length){const pr=(w.skins.find(x=>x[0]===e.skin)||[])[1];
       h+=`<label>Skin <select data-lo="skin" data-slot="${slot}"><option value="">Standard</option>${w.skins.map(([s,p])=>`<option value="${s}" ${e.skin===s?'selected':''}>${esc(s.replace(/^[^_]+_?/,'')||s)}${LO.besitz.includes(s)?' ✔':' · '+loRub(p)}</option>`).join('')}</select></label>${loKaufKnopf(e.skin,pr)}`}
     Object.entries(w.teile).forEach(([pl,L])=>{const cur=(e.teile||{})[pl]||L[0][0],pr=(L.find(x=>x[0]===cur)||[])[1];
-      h+=`<label>${esc(K.teil_namen[pl]||pl)} <select data-lo="teil" data-pl="${pl}" data-slot="${slot}">${L.map(([t,p])=>`<option value="${t}" ${cur===t?'selected':''}>${esc(t.replace(/_/g,' '))}${p?(LO.besitz.includes(t)?' ✔':' · '+loRub(p)):''}</option>`).join('')}</select></label>${loKaufKnopf(cur,pr)}`});
+      h+=`<label>${esc(K.teil_namen[pl]||pl)} <select data-lo="teil" data-pl="${pl}" data-slot="${slot}">${L.map(([t,p])=>`<option value="${t}" ${cur===t?'selected':''}>${esc(t.replace(/_/g,' '))}${K.teil_punkte?.[t]?' +'+K.teil_punkte[t]+' P':''}${p?(LO.besitz.includes(t)?' ✔':' · '+loRub(p)):''}</option>`).join('')}</select></label>${loKaufKnopf(cur,pr)}`});
     if(w.optik.length)h+=`<label>Optik <select data-lo="optik" data-slot="${slot}"><option value="">Kimme und Korn</option>${w.optik.map(([o,n,lv,p])=>`<option value="${o}" ${e.optik===o?'selected':''} ${wl<lv?'disabled':''}>${esc(n)} · +${p} P${wl<lv?' 🔒 ab '+esc(w.name)+' Level '+lv:''}</option>`).join('')}</select></label>`;
     if(w.daempfer)h+=`<label class="lo-check"><input type="checkbox" data-lo="daempfer" data-slot="${slot}" ${e.daempfer?'checked':''} ${wl<R.daempfer[0]?'disabled':''}> Schalldämpfer · +${R.daempfer[1]} P${wl<R.daempfer[0]?' 🔒 ab Level '+R.daempfer[0]:''}</label>`;
     if(w.gross)h+=`<label class="lo-check"><input type="checkbox" data-lo="gross" data-slot="${slot}" ${e.gross?'checked':''} ${wl<R.gross[0]?'disabled':''}> Großes Magazin · +${R.gross[1]} P${wl<R.gross[0]?' 🔒 ab Level '+R.gross[0]:''}</label>`;
