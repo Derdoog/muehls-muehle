@@ -2176,7 +2176,7 @@ function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
     <h4>3 · Tageszeit</h4>${cmSeg('zeit',f.zeiten.map(z=>[z.id,z.name]),M.zeit,'m')}
     <h4>4 · Ziel und Laufzeit</h4>${zeile('🏁 Ziel-Punkte',cmSeg('ziel_kills',O.ziel_kills,R.ziel_kills))}${zeile('⏱ Laufzeit',cmSeg('minuten',f.minuten.map(m=>[m,m+' min']),M.minuten,'m'))}
     <h4>5 · Nebenregeln</h4>
-    ${zeile('🎒 Spieler-Loadouts',cmAnAus('loadouts'))}${zeile('🌫️ Nebel',cmSeg('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',cmSeg('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',cmAnAus('wetter_zufall'))}${zeile('☣️ Giftgas',cmSeg('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',cmSeg('rucksaecke',O.rucksaecke,R.rucksaecke))}
+    ${zeile('🎒 Spieler-Loadouts',cmAnAus('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',cmAnAus('ladder'))}${zeile('🌫️ Nebel',cmSeg('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',cmSeg('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',cmAnAus('wetter_zufall'))}${zeile('☣️ Giftgas',cmSeg('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',cmSeg('rucksaecke',O.rucksaecke,R.rucksaecke))}
     ${zeile('📦 Versorgungskisten',cmSeg('kisten',O.kisten,R.kisten))}${zeile('💰 Kopfgeld',cmAnAus('kopfgeld'))}${zeile('📏 Distanzwertung',cmSeg('distanz',O.distanz,R.distanz))}
     ${O.bedrohungen.map(([b,n])=>zeile('Gegner: '+esc(n),cmSeg(b,[['1','An'],['0','Aus']],(R.bedrohungen||[]).includes(b)?'1':'0','d'))).join('')}
     ${zeile('💀 Hardcore',cmAnAus('hardcore'))}${hc?'':zeile('Fadenkreuz',cmAnAus('fadenkreuz'))+zeile('3rd Person',cmAnAus('third'))+zeile('Aufgeben bei Bewusstlosigkeit',cmAnAus('bewusstlos_respawn'))}
@@ -3239,6 +3239,7 @@ function regelnDialog(){const R=D&&D.dm&&D.dm.regeln_info;if(!R)return;const P=R
     ${zeile('Kopfgeld 💰 (je nach Runde)',`Der Führende trägt das Kopfgeld, sobald er mindestens ${P.kopfgeld_ab} Punkte hat. Wer ihn erlegt: +${P.kopfgeld_bonus} extra`)}
     ${zeile('Juggernaut 🛡️ (Modus)',`Juggernaut erlegen: ${P.jugg_bonus} Punkte. Jäger-Kill: 0,2. Juggernaut-Kill: 1. Bis zu 2 Bonuspunkte für Schaden am Juggernaut. Juggernaut-Waffen: ${P.jugg_waffen.map(esc).join(', ')}`)}
     ${P.ttt?zeile('TTT 🕵️ (Modus, nur Ruins)',`Ein geheimer Verräter. Unschuldige erlegen den Verräter: +${P.ttt.verraeter_erlegt}. Verräter erlegt Unschuldigen: +${P.ttt.unschuldig_erlegt}. Teamkill unter Unschuldigen: ${P.ttt.teamkill}. Sieg der Unschuldigen: +${P.ttt.sieg_unschuldig} für jeden Unschuldigen, wer die Fahne hisst +${P.ttt.fahne} extra. Sieg des Verräters: +${P.ttt.sieg_verraeter}. Spielzeit ${P.ttt_minuten} Minuten.`):''}
+    ${P.ladder?zeile('Ladder-Match 🪜 (Regel, nur Ruins)',`Zu jedem Klassenmodus zuschaltbar. Schlüssel finden, Container derselben Farbe öffnen (je 3 pro Farbe, Fahne nur in einem), Fahne oben auf dem Wasserturm ganz hochziehen. Wer zuerst hisst, gewinnt die Runde: +${P.ladder}. Kills zählen wie im Modus.`):''}
     ${zeile('Selbstmord',P.selbstmord+' Punkte')}${zeile('Tod durch Umgebung (Sturz, Zone …)',P.umwelt+' Punkte')}
     ${zeile('Ziel-Kills (Modus „Ziel“)',P.ziel_kills.join(' / ')+' Kills, wer zuerst da ist, gewinnt')}</table>
   <div class="mut">Rundensieger: die meisten Punkte, bei Gleichstand mehr Kills, dann weniger Tode; mindestens 1 Kill. Gewertet werden nur Runden mit mindestens ${R.min_spieler} Spielern.
@@ -3415,7 +3416,7 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
    ${zeile('🏁 Ziel-Punkte',sel('ziel_kills',O.ziel_kills,R.ziel_kills))}
    ${zeile('Spielerzahl',`<select id="stgSp">${stgOpt(F.spielerzahlen.map(n=>[n,n===5?'5+ Spieler':n+' Spieler']),STGF.spieler)}</select>`)}</div>
    <h4 class="stg-h">Sonderregeln</h4><div class="stg-form stg-zwei">
-   ${zeile('🎒 Spieler-Loadouts',an('loadouts'))}${zeile('🌫️ Nebel',sel('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',sel('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',an('wetter_zufall'))}${zeile('☣️ Giftgas',sel('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',sel('rucksaecke',O.rucksaecke,R.rucksaecke))}
+   ${zeile('🎒 Spieler-Loadouts',an('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',an('ladder'))}${zeile('🌫️ Nebel',sel('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',sel('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',an('wetter_zufall'))}${zeile('☣️ Giftgas',sel('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',sel('rucksaecke',O.rucksaecke,R.rucksaecke))}
    ${zeile('📦 Versorgungskisten',sel('kisten',O.kisten,R.kisten))}${zeile('💰 Kopfgeld',an('kopfgeld'))}${zeile('📏 Distanzwertung',sel('distanz',O.distanz,R.distanz))}
    ${zeile('💀 Hardcore',an('hardcore'))}${R.hardcore?'':zeile('Fadenkreuz',an('fadenkreuz'))+zeile('3rd Person',an('third'))+zeile('Aufgeben bei Bewusstlosigkeit',an('bewusstlos_respawn'))}
    ${zeile('Login- und Respawn-Timer',sel('login_sekunden',[1,3,5,8,10,15].map(n=>[String(n),n+' s']),R.login_sekunden))}${zeile('Bewusstlosigkeit',sel('bewusstlos',O.bewusstlos,R.bewusstlos))}
@@ -3426,7 +3427,7 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
   $('#stgMo').onchange=()=>{neu();stgMatch()};['#stgZ','#stgMi'].forEach(id=>$(id).onchange=neu);if($('#stgSp'))$('#stgSp').onchange=neu;
   $$('#dlgIn [data-sr]').forEach(s_=>s_.onchange=()=>{const key=s_.dataset.sr,val=s_.value;
     if(key.startsWith('b:')){const b=key.slice(2),Lb=(R.bedrohungen||[]).filter(x=>x!==b);if(val==='1')Lb.push(b);R.bedrohungen=Lb}
-    else if(['kopfgeld','hardcore','fadenkreuz','third','bewusstlos_respawn','loadouts','wetter_zufall'].includes(key)){R[key]=val==='1';if(key==='hardcore'){neu();stgMatch()}}
+    else if(['kopfgeld','hardcore','fadenkreuz','third','bewusstlos_respawn','loadouts','wetter_zufall','ladder'].includes(key)){R[key]=val==='1';if(key==='hardcore'){neu();stgMatch()}}
     else R[key]=val});
   $('#stgV').onchange=()=>{const i=$('#stgV').value;STGF.vorlage=i;const x=VL[+i];
     if(i!==''&&x){STGF.karte=x.karte;STGF.modus=x.modus;STGF.zeit=x.zeit;STGF.regeln=Object.assign({},F.std,{ziel_kills:'30'},x.regeln||{})}stgMatch()};
