@@ -1559,6 +1559,17 @@ window.addEventListener('DOMContentLoaded',()=>{
     <label><input type="checkbox" data-ansicht-bereich="ruhm"> Ruhmeshalle und Level</label>
     <label><input type="checkbox" data-ansicht-bereich="termine"> Termine</label>
   </fieldset>
+  <section id="spielanfragen" hidden>
+    <h3>Mitspieler gesucht</h3>
+    <form id="spielanfrageForm">
+      <label>Spielmodus <select name="modus"><option value="PvE">Gemeinsam PvE</option><option value="PvP">PvP-Runde</option></select></label>
+      <label>Startzeit (optional) <input type="datetime-local" name="start"></label>
+      <button class="login">Mitspieler suchen</button>
+    </form>
+    <label><input type="checkbox" id="spielanfragePush"> Push für Spielanfragen</label>
+    <p id="spielanfrageStatus" role="status"></p>
+    <div id="spielanfrageListe"></div>
+  </section>
   <div id="pushControls" hidden><h3>Benachrichtigungen</h3><p class="mut">Startanfragen und Freigaben auf diesem Gerät anzeigen.</p>
     <button type="button" class="login" id="pushOn">Benachrichtigungen aktivieren</button>
     <button type="button" class="login" id="pushOff">Benachrichtigungen deaktivieren</button><p id="pushStatus" role="status"></p></div>
@@ -3753,6 +3764,55 @@ async function pushDeaktivieren() {
   if(location.protocol!=='file:'){refresh();setInterval(()=>{if(!document.hidden)refresh()},30000)}
 })();
 
+</script>
+<script>
+(()=>{
+  const box=document.querySelector('#spielanfragen');
+  const form=document.querySelector('#spielanfrageForm');
+  const opt=document.querySelector('#spielanfragePush');
+  const status=document.querySelector('#spielanfrageStatus');
+  const liste=document.querySelector('#spielanfrageListe');
+  let laeuft=false;
+  async function laden(daten){
+    if(laeuft)return;
+    laeuft=true;
+    try{
+      const r=await fetch('/zuschauer/spielanfragen',daten?{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(daten)
+      }:{cache:'no-store'});
+      if(r.status===401||r.status===404){box.hidden=true;return}
+      const d=await r.json();
+      if(!r.ok)throw Error(d.meldung||'Spielanfragen konnten nicht geladen werden.');
+      box.hidden=false;
+      opt.checked=d.push;
+      opt.disabled=!d.verfuegbar;
+      form.hidden=d.anfragen.some(x=>x.meine);
+      liste.replaceChildren();
+      for(const x of d.anfragen){
+        const row=document.createElement('p');
+        const text=document.createElement('span');
+        text.textContent=x.name+' · '+x.modus+' · '+(x.start?new Date(x.start*1000).toLocaleString('de-DE'):'Jetzt')
+          +' · '+(x.dabei.length?'Dabei: '+x.dabei.join(', '):'Noch keine Zusagen')+' ';
+        const button=document.createElement('button');
+        button.type='button';button.className='login';
+        button.textContent=x.meine?'Absagen':x.zugesagt?'Zusage zurücknehmen':'Bin dabei';
+        button.onclick=()=>laden({aktion:x.meine?'absagen':x.zugesagt?'zurueck':'dabei',id:x.id});
+        row.append(text,button);liste.append(row);
+      }
+      if(daten)status.textContent=daten.aktion==='push'&&d.push?'Spielanfragen auf Geräten mit aktiviertem Push abonniert.':'Gespeichert.';
+    }catch(e){status.textContent=e.message}
+    finally{laeuft=false}
+  }
+  form.onsubmit=e=>{
+    e.preventDefault();
+    const start=form.elements.start.value;
+    laden({aktion:'erstellen',modus:form.elements.modus.value,start:start?Math.floor(new Date(start).getTime()/1000):null});
+  };
+  opt.onchange=()=>laden({aktion:'push',an:opt.checked});
+  if(location.origin!=='null'&&typeof DIREKT!=='undefined'&&DIREKT){
+    laden();setInterval(()=>{if(!document.hidden)laden()},15000);
+  }
+})();
 </script>
 </body>
 </html>
