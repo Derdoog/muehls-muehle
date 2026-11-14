@@ -879,7 +879,7 @@ dialog.dlg-breit{width:min(1000px,calc(100vw - 16px))}
 </head>
 <body>
 <header>
-  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span id="weltSchalter" role="group" aria-label="Spielbereich"><button type="button" data-welt="pve" aria-pressed="false">🌲 PvE</button><button type="button" data-welt="dm" aria-pressed="true">⚔ PvP</button></span><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><span class="glocke-wrap"><button class="login glocke" id="glocke" type="button" hidden aria-haspopup="true" aria-expanded="false" aria-label="Offene Anfragen">🔔<span class="glocke-zahl" id="glockeZahl"></span></button><div class="glocke-pop" id="glockePop" hidden></div></span><a class="login admin-link" href="/admin">Zum Adminbereich</a><details class="mobil-menue" id="mobilMenue"><summary aria-label="Menü öffnen">☰<span class="glocke-zahl" id="glockeZahlM"></span></summary><div class="mobil-menue-inhalt"><div id="glockeMobil" hidden></div><button type="button" id="mobilSpielanfragen" aria-haspopup="dialog" aria-controls="spielanfrageDialog" hidden>Mitspieler gesucht</button><button type="button" id="mobilAnsicht">⚙ Ansicht</button><button type="button" id="mobilKonto" hidden>🔑 Spieler-Login</button><a href="/admin">Zum Adminbereich</a></div></details></span></div>
+  <div class="kopf"><h1>Muehls Muehle <span>Live</span></h1><span class="kopf-aktionen"><span id="weltSchalter" role="group" aria-label="Spielbereich"><button type="button" data-welt="pve" aria-pressed="false">🌲 PvE</button><button type="button" data-welt="dm" aria-pressed="true">⚔ PvP</button></span><button class="login" id="ansichtBtn" type="button" aria-haspopup="dialog" aria-controls="ansichtDialog">⚙ Ansicht</button><button class="login" id="loginBtn" hidden>🔑 Spieler-Login</button><span class="glocke-wrap"><button class="login glocke" id="glocke" type="button" hidden aria-haspopup="true" aria-expanded="false" aria-label="Offene Anfragen">🔔<span class="glocke-zahl" id="glockeZahl"></span></button><div class="glocke-pop" id="glockePop" hidden></div></span><a class="login admin-link" href="/admin">Zum Adminbereich</a><details class="mobil-menue" id="mobilMenue"><summary aria-label="Menü öffnen">☰<span class="glocke-zahl" id="glockeZahlM"></span></summary><div class="mobil-menue-inhalt"><div id="glockeMobil" hidden></div><button type="button" id="pushVerlaufBtn" hidden aria-haspopup="dialog">Benachrichtigungen</button><button type="button" id="mobilSpielanfragen" aria-haspopup="dialog" aria-controls="spielanfrageDialog" hidden>Mitspieler gesucht</button><button type="button" id="mobilAnsicht">⚙ Ansicht</button><button type="button" id="mobilKonto" hidden>🔑 Spieler-Login</button><a href="/admin">Zum Adminbereich</a></div></details></span></div>
   <nav><button data-t="pve">🌲 Chernarus<span class="live aus" id="pveLive" title="PvE läuft gerade nicht"></span></button><button data-t="dm" class="an">⚔ <span class="lang">Deathmatch</span><span class="kurz">DM</span><span class="live aus" id="dmLive" title="Deathmatch läuft gerade nicht"></span></button><button data-t="evakuierung">🚁 Evakuierung<span id="eLive" class="live aus" role="img" aria-label="PvE Evakuierung noch nicht freigeschaltet" title="PvE Evakuierung noch nicht freigeschaltet"></span></button><button data-t="meine" id="meineTab" hidden>👤 Mein Profil</button><button type="button" data-t="shop" id="shopBtn">🛒 Shop</button></nav>
 </header>
 <main>
@@ -1588,6 +1588,11 @@ window.addEventListener('DOMContentLoaded',()=>{
     <p id="spielanfrageStatus" role="status"></p>
     <div id="spielanfrageListe"></div>
   </section>
+</dialog>
+<dialog class="ansicht-dialog" id="pushVerlaufDialog" aria-labelledby="pushVerlaufTitel">
+  <form method="dialog"><button class="login">Schließen</button></form>
+  <h3 id="pushVerlaufTitel">Benachrichtigungen</h3>
+  <div id="pushVerlaufListe" style="max-height:58vh;overflow:auto;overflow-wrap:anywhere"></div>
 </dialog>
 <dialog id="dlg"><div class="dlg" id="dlgIn"></div></dialog>
 <script>
@@ -3906,6 +3911,45 @@ async function post(d){meld='';try{const r=await fetch('/zuschauer/ttt',{method:
 setInterval(()=>{box.querySelectorAll('.ttt-uhr[data-bis]').forEach(x=>{if(x.dataset.bis)x.textContent=uhr(+x.dataset.bis)})},1000);
 function takt(){clearTimeout(lauf);const o=oeff();lauf=setTimeout(async()=>{if(!document.hidden)await laden();takt()},o&&(o.lobby||o.runde)?5000:20000)}
 laden().then(takt);})();
+</script>
+<script>
+(()=>{
+  if(!DIREKT)return;
+  const knopf=document.getElementById('pushVerlaufBtn');
+  const dialog=document.getElementById('pushVerlaufDialog');
+  const liste=document.getElementById('pushVerlaufListe');
+  async function laden(anzeigen=false){
+    try{
+      const r=await fetch('/zuschauer/push-verlauf',{cache:'no-store'});
+      knopf.hidden=!r.ok;
+      if(!r.ok)throw Error();
+      if(!anzeigen)return;
+      const d=await r.json();
+      liste.replaceChildren();
+      for(const m of d.meldungen){
+        const zeile=document.createElement('article');
+        const titel=document.createElement('b');
+        const text=document.createElement('div');
+        const zeit=document.createElement('small');
+        zeile.className='panel';
+        titel.textContent=m.titel;
+        text.textContent=m.text;
+        zeit.textContent=new Date(m.zeit*1000).toLocaleString('de-DE');
+        zeile.append(titel,text,zeit);
+        liste.append(zeile);
+      }
+      if(!d.meldungen.length)liste.textContent='Noch keine Benachrichtigungen.';
+    }catch{if(anzeigen)liste.textContent='Benachrichtigungen konnten nicht geladen werden.'}
+  }
+  knopf.onclick=()=>{
+    document.getElementById('mobilMenue').open=false;
+    liste.textContent='Wird geladen …';
+    dialog.showModal();
+    laden(true);
+  };
+  laden();
+  setInterval(()=>{if(!document.hidden)laden(dialog.open)},15000);
+})();
 </script>
 </body>
 </html>
