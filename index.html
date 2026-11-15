@@ -1785,8 +1785,8 @@ function zeichnen(){const d=D,p=d.pve,m=d.dm,alt=Date.now()/1000-d.stand;
   waffenKatalog(m);
   $('#dSchrot').innerHTML=statistikInfo(['Der Katalog zeigt Kills und Treffer aller Spieler. Schüsse daneben stehen nicht im Server-Log. Deine Werte findest du unter Mein Profil → Waffen.',d.schrot_hinweis].filter(Boolean).join(' '));
   $$('#dRunden details').forEach(x=>x.ontoggle=()=>{const k=+x.dataset.rd;if(x.open)OFFEN.add(k);else OFFEN.delete(k)});
-  $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b><span class="mut">${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt</span>
-    <span class="mut" style="display:block">${Object.entries(k.modi).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,z])=>esc(n)+' '+z+'×').join(' · ')}</span></div>${DIREKT&&k.id?`<button type="button" class="login" data-heatk="${esc(k.id)}" data-heatt="${esc(k.karte)}">🔥 Heatmap</button>`:''}</div>`).join('')||'<div class="mut">Noch keine gewerteten Runden.</div>';
+  $('#dKarten').innerHTML=(m.karten||[]).map(k=>`<div class="spl">${k.bild?`<img class="mini" src="${esc(k.bild)}" alt="" loading="lazy">`:''}<div class="mitte"><b>${esc(k.karte)}</b>${k.beschreibung?`<span class="mut" style="display:block">${esc(k.beschreibung)}</span>`:''}<span class="mut" style="display:block">${k.runden?`${k.runden} ${k.runden===1?'Runde':'Runden'} · ${k.kills} Kills · ${dauer(k.minuten*60)} gespielt`:'Noch nicht gespielt'}</span>
+    ${k.runden?`<span class="mut" style="display:block">${Object.entries(k.modi||{}).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([n,z])=>esc(n)+' '+z+'×').join(' · ')}</span>`:''}</div>${DIREKT&&k.id?`<button type="button" class="login" data-heatk="${esc(k.id)}" data-heatt="${esc(k.karte)}">${k.runden?'🔥 Heatmap':'🗺 Karte'}</button>`:''}</div>`).join('')||'<div class="mut">Noch keine Karten.</div>';
   $$('#dKarten [data-heatk]').forEach(b=>b.onclick=()=>heatGross(b.dataset.heatk,b.dataset.heatt,true));
   const re=m.rekorde||{},dmR=[['elo','🏆 Höchste Elo',v=>v],['kills','⚔️ Meiste Kills',v=>v],['siege','🥇 Meiste Siege',v=>v],['beste_serie','🔥 Längste Serie',v=>v+' Kills'],
     ['weitester','🎯 Weitester Kill',v=>v+' m'],['laengstes_leben','⏱️ Längstes Leben',v=>dauer(v)],['kopf','💀 Meiste Kopfschüsse',v=>v],['rache','⚔️ Meiste Rache',v=>v],
@@ -2442,7 +2442,7 @@ function heatSchalterBinden(wurzel,neu){$$(wurzel+' [data-ha]').forEach(b=>b.onc
 let HEAT_M=null;
 async function heatProfil(m){HEAT_M=m;const el=$('#mr-heat');if(!el)return;
   const eigene=Object.keys((m&&m.heat)||{}),weitere=((D&&D.dm&&D.dm.karten)||[]).map(k=>k.id).filter(k=>k&&!eigene.includes(k));
-  const liste=HEAT_OPT.ansicht==='alle'?[...eigene,...weitere]:eigene;
+  const liste=[...eigene,...weitere];   // Update 218: alle Karten zeigen, auch ohne eigene Heatmap
   if(!liste.length){el.innerHTML='<div class="mut">Noch keine Deathmatch-Heatmap.</div>';return}
   const titel=k=>(m.heat&&m.heat[k]&&m.heat[k].titel)||(((D.dm.karten||[]).find(x=>x.id===k)||{}).karte)||k;
   const zeichne=async()=>{el.innerHTML=`<h4>🔥 Deathmatch-Heatmap je Arena</h4>${heatSchalter(true,true)}<div class="heat-raster">${liste.map(k=>`<button type="button" class="heat-kachel" data-hk="${esc(k)}"><b>${esc(titel(k))}</b><div class="heat-bild" id="hk-${esc(k)}"><div class="mut">lädt …</div></div></button>`).join('')}</div>
