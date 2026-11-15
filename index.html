@@ -2152,7 +2152,7 @@ function cmSeg(key,werte,wert,gruppe){return `<div class="seg">${werte.map(([v,n
 function cmAnAus(key){return cmSeg(key,[['1','An'],['0','Aus']],MF.regeln[key]?'1':'0','b')}
 function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
   const k=f.karten.find(x=>x.id===M.karte)||f.karten[0];if(k&&!k.modi.some(m=>m.id===M.modus))M.modus=(k.modi[0]||{}).id;
-  if(k&&k.kisten===false)R.kisten='aus';if(R.spuk===undefined)R.spuk=true;   // Update 212: kleine Karten ohne Kisten, Spukzone an
+  if(k&&k.kisten===false)R.kisten='aus';if(R.spuk!=='an'&&R.spuk!=='aus')R.spuk=k&&k.klein?'an':'aus';   // Update 213: Spukzone auf allen Karten, Standard je Kartengroesse   // Update 212: kleine Karten ohne Kisten, Spukzone an
   const kopf=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 4px">🎮 Match erstellen</h2>`;
   if(!f.moeglich){$('#dlgIn').innerHTML=kopf+`<div class="hinweis">${esc(f.grund)}</div>`;if(!$('#dlg').open)$('#dlg').showModal();return}
   if(!f.gt){$('#dlgIn').innerHTML=kopf+'<div class="hinweis">Dir ist noch kein Deathmatch-Gamertag zugeordnet. Das macht der Admin.</div>';if(!$('#dlg').open)$('#dlg').showModal();return}
@@ -2180,7 +2180,7 @@ function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
     <h4>4 · Ziel und Laufzeit</h4>${zeile('🏁 Ziel-Punkte',cmSeg('ziel_kills',O.ziel_kills,R.ziel_kills))}${zeile('⏱ Laufzeit',cmSeg('minuten',f.minuten.map(m=>[m,m+' min']),M.minuten,'m'))}
     <h4>5 · Nebenregeln</h4>
     ${zeile('🎒 Spieler-Loadouts',cmAnAus('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',cmAnAus('ladder'))}${zeile('🌫️ Nebel',cmSeg('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',cmSeg('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',cmAnAus('wetter_zufall'))}${zeile('☣️ Giftgas',cmSeg('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',cmSeg('rucksaecke',O.rucksaecke,R.rucksaecke))}
-    ${k&&k.kisten===false?zeile('📦 Versorgungskisten','<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>'):zeile('📦 Versorgungskisten',cmSeg('kisten',O.kisten,R.kisten))}${k&&k.klein?zeile('👻 Spukzone',cmAnAus('spuk')):''}${zeile('💰 Kopfgeld',cmAnAus('kopfgeld'))}${zeile('📏 Distanzwertung',cmSeg('distanz',O.distanz,R.distanz))}
+    ${k&&k.kisten===false?zeile('📦 Versorgungskisten','<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>'):zeile('📦 Versorgungskisten',cmSeg('kisten',O.kisten,R.kisten))}${zeile('👻 Spukzone',cmSeg('spuk',[['an','An'],['aus','Aus']],R.spuk))}${zeile('💰 Kopfgeld',cmAnAus('kopfgeld'))}${zeile('📏 Distanzwertung',cmSeg('distanz',O.distanz,R.distanz))}
     ${O.bedrohungen.map(([b,n])=>zeile('Gegner: '+esc(n),cmSeg(b,[['1','An'],['0','Aus']],(R.bedrohungen||[]).includes(b)?'1':'0','d'))).join('')}
     ${zeile('💀 Hardcore',cmAnAus('hardcore'))}${hc?'':zeile('Fadenkreuz',cmAnAus('fadenkreuz'))+zeile('3rd Person',cmAnAus('third'))+zeile('Aufgeben bei Bewusstlosigkeit',cmAnAus('bewusstlos_respawn'))}
     ${zeile('Login- und Respawn-Timer',cmSeg('login_sekunden',[1,3,5,8,10,15].map(n=>[String(n),n+' s']),R.login_sekunden))}${zeile('Bewusstlosigkeit',cmSeg('bewusstlos',O.bewusstlos,R.bewusstlos))}${zeile('Ausdauer',cmSeg('ausdauer',O.ausdauer,R.ausdauer))}
@@ -3485,7 +3485,7 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
   const VL=F.vorlagen||[];
   if(!STGF){const k0=F.karten[0];STGF={karte:k0.id,modus:(k0.standard&&k0.standard.modus)||(k0.modi[0]||{}).id,zeit:'tag',minuten:30,spieler:F.spielerzahl||4,vorlage:'',regeln:stgRegelnStart(F,k0)}}
   const k=F.karten.find(x=>x.id===STGF.karte)||F.karten[0];if(!k.modi.some(m=>m.id===STGF.modus))STGF.modus=(k.modi[0]||{}).id;
-  const R=STGF.regeln,O=F.optionen,L=(STG.lage||{});if(k.kisten===false)R.kisten='aus';if(R.spuk===undefined)R.spuk=true;
+  const R=STGF.regeln,O=F.optionen,L=(STG.lage||{});if(k.kisten===false)R.kisten='aus';if(R.spuk!=='an'&&R.spuk!=='aus')R.spuk=k.klein?'an':'aus';
   const sel=(id,liste,wert)=>`<select data-sr="${id}">${stgOpt(liste,wert)}</select>`,an=id=>sel(id,[['1','An'],['0','Aus']],R[id]?'1':'0'),zeile=(t,c)=>`<label><span class="stg-lt">${t}</span>${c}</label>`;
   const v=STGF.vorlage===''||STGF.vorlage==null?null:VL[+STGF.vorlage];
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">🎮 Match erstellen</h2>
@@ -3500,7 +3500,7 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
    ${zeile('Spielerzahl',`<select id="stgSp">${stgOpt(F.spielerzahlen.map(n=>[n,n===5?'5+ Spieler':n+' Spieler']),STGF.spieler)}</select>`)}</div>
    <h4 class="stg-h">Sonderregeln</h4><div class="stg-form stg-zwei">
    ${zeile('🎒 Spieler-Loadouts',an('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',an('ladder'))}${zeile('🌫️ Nebel',sel('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',sel('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',an('wetter_zufall'))}${zeile('☣️ Giftgas',sel('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',sel('rucksaecke',O.rucksaecke,R.rucksaecke))}
-   ${k.kisten===false?zeile('📦 Versorgungskisten','<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>'):zeile('📦 Versorgungskisten',sel('kisten',O.kisten,R.kisten))}${k.klein?zeile('👻 Spukzone',an('spuk')):''}${zeile('💰 Kopfgeld',an('kopfgeld'))}${zeile('📏 Distanzwertung',sel('distanz',O.distanz,R.distanz))}
+   ${k.kisten===false?zeile('📦 Versorgungskisten','<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>'):zeile('📦 Versorgungskisten',sel('kisten',O.kisten,R.kisten))}${zeile('👻 Spukzone',sel('spuk',[['an','An'],['aus','Aus']],R.spuk))}${zeile('💰 Kopfgeld',an('kopfgeld'))}${zeile('📏 Distanzwertung',sel('distanz',O.distanz,R.distanz))}
    ${zeile('💀 Hardcore',an('hardcore'))}${R.hardcore?'':zeile('Fadenkreuz',an('fadenkreuz'))+zeile('3rd Person',an('third'))+zeile('Aufgeben bei Bewusstlosigkeit',an('bewusstlos_respawn'))}
    ${zeile('Login- und Respawn-Timer',sel('login_sekunden',[1,3,5,8,10,15].map(n=>[String(n),n+' s']),R.login_sekunden))}${zeile('Bewusstlosigkeit',sel('bewusstlos',O.bewusstlos,R.bewusstlos))}
    ${zeile('Ausdauer',sel('ausdauer',O.ausdauer,R.ausdauer))}${(O.bedrohungen||[]).map(([b,n])=>zeile('Gegner: '+esc(n),sel('b:'+b,[['1','An'],['0','Aus']],(R.bedrohungen||[]).includes(b)?'1':'0'))).join('')}</div>
@@ -3510,7 +3510,7 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
   $('#stgMo').onchange=()=>{neu();stgMatch()};['#stgZ','#stgMi'].forEach(id=>$(id).onchange=neu);if($('#stgSp'))$('#stgSp').onchange=neu;
   $$('#dlgIn [data-sr]').forEach(s_=>s_.onchange=()=>{const key=s_.dataset.sr,val=s_.value;
     if(key.startsWith('b:')){const b=key.slice(2),Lb=(R.bedrohungen||[]).filter(x=>x!==b);if(val==='1')Lb.push(b);R.bedrohungen=Lb}
-    else if(['kopfgeld','hardcore','fadenkreuz','third','bewusstlos_respawn','loadouts','wetter_zufall','ladder','spuk'].includes(key)){R[key]=val==='1';if(key==='hardcore'){neu();stgMatch()}}
+    else if(['kopfgeld','hardcore','fadenkreuz','third','bewusstlos_respawn','loadouts','wetter_zufall','ladder'].includes(key)){R[key]=val==='1';if(key==='hardcore'){neu();stgMatch()}}
     else R[key]=val});
   $('#stgV').onchange=()=>{const i=$('#stgV').value;STGF.vorlage=i;const x=VL[+i];
     if(i!==''&&x){STGF.karte=x.karte;STGF.modus=x.modus;STGF.zeit=x.zeit;STGF.regeln=Object.assign({},F.std,{ziel_kills:'30'},x.regeln||{})}stgMatch()};
