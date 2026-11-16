@@ -2152,7 +2152,7 @@ function cmSeg(key,werte,wert,gruppe){return `<div class="seg">${werte.map(([v,n
 function cmAnAus(key){return cmSeg(key,[['1','An'],['0','Aus']],MF.regeln[key]?'1':'0','b')}
 function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
   const k=f.karten.find(x=>x.id===M.karte)||f.karten[0];if(k&&!k.modi.some(m=>m.id===M.modus))M.modus=(k.modi[0]||{}).id;
-  if(k&&k.kisten===false)R.kisten='aus';if(R.spuk!=='an'&&R.spuk!=='aus')R.spuk=k&&k.klein?'an':'aus';   // Update 213: Spukzone auf allen Karten, Standard je Kartengroesse   // Update 212: kleine Karten ohne Kisten, Spukzone an
+  if(k&&k.kisten===false)R.kisten='aus';if(k&&k.gas===false)R.gas='0';if(R.spuk!=='an'&&R.spuk!=='aus')R.spuk=k&&k.klein?'an':'aus';   // Update 213: Spukzone auf allen Karten, Standard je Kartengroesse   // Update 212: kleine Karten ohne Kisten, Spukzone an
   const kopf=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 4px">🎮 Match erstellen</h2>`;
   if(!f.moeglich){$('#dlgIn').innerHTML=kopf+`<div class="hinweis">${esc(f.grund)}</div>`;if(!$('#dlg').open)$('#dlg').showModal();return}
   if(!f.gt){$('#dlgIn').innerHTML=kopf+'<div class="hinweis">Dir ist noch kein Deathmatch-Gamertag zugeordnet. Das macht der Admin.</div>';if(!$('#dlg').open)$('#dlg').showModal();return}
@@ -2175,11 +2175,11 @@ function cmZeichnen(){const f=CMF,M=MF,R=M.regeln,O=f.optionen;
   const zeile=(t,c)=>`<div class="cmr"><span>${t}</span>${c}</div>`,hc=R.hardcore;
   $('#dlgIn').innerHTML=kopf+`<div class="mut">Stell dein Match zusammen. Es startet nach der laufenden Runde. Bis zu ${f.max} Matches in der Warteschlange, je Konto ${f.je_konto}.</div><div class="cmf">
     <h4>1 · Karte</h4><div class="cmk">${f.karten.map(x=>`<button data-cmk="${esc(x.id)}" class="${x.id===M.karte?'an':''}">${x.bild?`<img src="${esc(x.bild)}" alt="" loading="lazy">`:''}<b>${esc(x.titel)}</b></button>`).join('')}</div>
-    <h4>2 · Modus / Ausrüstung</h4>${cmSeg('modus',(k?k.modi:[]).map(m=>[m.id,m.name]),M.modus,'m')}
+    <h4>2 · Modus / Ausrüstung</h4>${cmSeg('modus',(k?k.modi:[]).map(m=>[m.id,m.name]),M.modus,'m')}${(k&&k.modi_aus||[]).length?`<div class="mut" style="opacity:.55;margin-top:4px">${k.modi_aus.map(m=>esc(m.name)+': '+esc(m.grund)).join(' · ')}</div>`:''}
     <h4>3 · Tageszeit</h4>${cmSeg('zeit',f.zeiten.map(z=>[z.id,z.name]),M.zeit,'m')}
     <h4>4 · Ziel und Laufzeit</h4>${zeile('🏁 Ziel-Punkte',cmSeg('ziel_kills',O.ziel_kills,R.ziel_kills))}${zeile('⏱ Laufzeit',cmSeg('minuten',f.minuten.map(m=>[m,m+' min']),M.minuten,'m'))}
     <h4>5 · Nebenregeln</h4>
-    ${zeile('🎒 Spieler-Loadouts',cmAnAus('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',cmAnAus('ladder'))}${zeile('🌫️ Nebel',cmSeg('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',cmSeg('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',cmAnAus('wetter_zufall'))}${zeile('☣️ Giftgas',cmSeg('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',cmSeg('rucksaecke',O.rucksaecke,R.rucksaecke))}
+    ${zeile('🎒 Spieler-Loadouts',cmAnAus('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',cmAnAus('ladder'))}${zeile('🌫️ Nebel',cmSeg('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',cmSeg('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',cmAnAus('wetter_zufall'))}${zeile('☣️ Giftgas',k&&k.gas===false?'<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>':cmSeg('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',cmSeg('rucksaecke',O.rucksaecke,R.rucksaecke))}
     ${k&&k.kisten===false?zeile('📦 Versorgungskisten','<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>'):zeile('📦 Versorgungskisten',cmSeg('kisten',O.kisten,R.kisten))}${zeile('👻 Spukzone',cmSeg('spuk',[['an','An'],['aus','Aus']],R.spuk))}${zeile('💰 Kopfgeld',cmAnAus('kopfgeld'))}${zeile('📏 Distanzwertung',cmSeg('distanz',O.distanz,R.distanz))}
     ${O.bedrohungen.map(([b,n])=>zeile('Gegner: '+esc(n),cmSeg(b,[['1','An'],['0','Aus']],(R.bedrohungen||[]).includes(b)?'1':'0','d'))).join('')}
     ${zeile('💀 Hardcore',cmAnAus('hardcore'))}${hc?'':zeile('Fadenkreuz',cmAnAus('fadenkreuz'))+zeile('3rd Person',cmAnAus('third'))+zeile('Aufgeben bei Bewusstlosigkeit',cmAnAus('bewusstlos_respawn'))}
@@ -3485,7 +3485,7 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
   const VL=F.vorlagen||[];
   if(!STGF){const k0=F.karten[0];STGF={karte:k0.id,modus:(k0.standard&&k0.standard.modus)||(k0.modi[0]||{}).id,zeit:'tag',minuten:30,spieler:F.spielerzahl||4,vorlage:'',regeln:stgRegelnStart(F,k0)}}
   const k=F.karten.find(x=>x.id===STGF.karte)||F.karten[0];if(!k.modi.some(m=>m.id===STGF.modus))STGF.modus=(k.modi[0]||{}).id;
-  const R=STGF.regeln,O=F.optionen,L=(STG.lage||{});if(k.kisten===false)R.kisten='aus';if(R.spuk!=='an'&&R.spuk!=='aus')R.spuk=k.klein?'an':'aus';
+  const R=STGF.regeln,O=F.optionen,L=(STG.lage||{});if(k.kisten===false)R.kisten='aus';if(k.gas===false)R.gas='0';if(R.spuk!=='an'&&R.spuk!=='aus')R.spuk=k.klein?'an':'aus';
   const sel=(id,liste,wert)=>`<select data-sr="${id}">${stgOpt(liste,wert)}</select>`,an=id=>sel(id,[['1','An'],['0','Aus']],R[id]?'1':'0'),zeile=(t,c)=>`<label><span class="stg-lt">${t}</span>${c}</label>`;
   const v=STGF.vorlage===''||STGF.vorlage==null?null:VL[+STGF.vorlage];
   $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 6px">🎮 Match erstellen</h2>
@@ -3493,13 +3493,13 @@ function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stg
    <div class="stg-vorlage"><label>Vorlage<select id="stgV"><option value="">Eigene Einstellungen</option>${VL.map((x,i)=>`<option value="${i}" ${String(i)===String(STGF.vorlage)?'selected':''}>${esc(x.name)} (${esc(x.titel)} · ${esc(x.modus_name)})</option>`).join('')}</select></label>
      <button class="login" id="stgVS">💾 Als Vorlage speichern</button>${v&&v.darf_loeschen?'<button class="login" id="stgVL">Vorlage löschen</button>':''}</div>
    <h4 class="stg-h">Runde</h4><div class="stg-form stg-zwei">${zeile('Karte',`<select id="stgK">${stgOpt(F.karten.map(x=>[x.id,x.titel]),STGF.karte)}</select>`)}
-   ${zeile('Modus',`<select id="stgMo">${stgOpt(k.modi.map(m=>[m.id,m.name]),STGF.modus)}</select>`)}
+   ${zeile('Modus',`<select id="stgMo">${stgOpt(k.modi.map(m=>[m.id,m.name]),STGF.modus)}${(k.modi_aus||[]).map(m=>`<option disabled>${esc(m.name)} (${esc(m.grund)})</option>`).join('')}</select>`)}
    ${zeile('Tageszeit',`<select id="stgZ">${stgOpt(F.zeiten.map(z=>[z.id,z.name]),STGF.zeit)}</select>`)}
    ${zeile('Laufzeit',`<select id="stgMi">${stgOpt(F.minuten.map(m=>[m,m+' min']),STGF.minuten)}</select>`)}
    ${zeile('🏁 Ziel-Punkte',sel('ziel_kills',O.ziel_kills,R.ziel_kills))}
    ${zeile('Spielerzahl',`<select id="stgSp">${stgOpt(F.spielerzahlen.map(n=>[n,n===5?'5+ Spieler':n+' Spieler']),STGF.spieler)}</select>`)}</div>
    <h4 class="stg-h">Sonderregeln</h4><div class="stg-form stg-zwei">
-   ${zeile('🎒 Spieler-Loadouts',an('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',an('ladder'))}${zeile('🌫️ Nebel',sel('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',sel('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',an('wetter_zufall'))}${zeile('☣️ Giftgas',sel('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',sel('rucksaecke',O.rucksaecke,R.rucksaecke))}
+   ${zeile('🎒 Spieler-Loadouts',an('loadouts'))}${zeile('🪜 Ladder-Match (nur Ruins)',an('ladder'))}${zeile('🌫️ Nebel',sel('nebel',O.nebel,R.nebel))}${zeile('🌧️ Regen',sel('regen',O.regen||[['aus','Aus']],R.regen))}${zeile('🎲 Zufallswetter',an('wetter_zufall'))}${zeile('☣️ Giftgas',k.gas===false?'<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>':sel('gas',O.gas,R.gas))}${zeile('🎒 Rucksäcke',sel('rucksaecke',O.rucksaecke,R.rucksaecke))}
    ${k.kisten===false?zeile('📦 Versorgungskisten','<span class="mut" style="opacity:.55">Auf dieser Karte nicht möglich</span>'):zeile('📦 Versorgungskisten',sel('kisten',O.kisten,R.kisten))}${zeile('👻 Spukzone',sel('spuk',[['an','An'],['aus','Aus']],R.spuk))}${zeile('💰 Kopfgeld',an('kopfgeld'))}${zeile('📏 Distanzwertung',sel('distanz',O.distanz,R.distanz))}
    ${zeile('💀 Hardcore',an('hardcore'))}${R.hardcore?'':zeile('Fadenkreuz',an('fadenkreuz'))+zeile('3rd Person',an('third'))+zeile('Aufgeben bei Bewusstlosigkeit',an('bewusstlos_respawn'))}
    ${zeile('Login- und Respawn-Timer',sel('login_sekunden',[1,3,5,8,10,15].map(n=>[String(n),n+' s']),R.login_sekunden))}${zeile('Bewusstlosigkeit',sel('bewusstlos',O.bewusstlos,R.bewusstlos))}
