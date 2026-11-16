@@ -3466,6 +3466,7 @@ function stgZeichnen(){const el=$('#steuerLeiste');if(!el)return;stgGlocke();
     if(!R.aktiv)kn.push(`<button class="login" data-stg="dm_start" data-art="${R.art==='zufall'?'zufall':'liste'}" ${R.art!=='zufall'&&!R.laenge?'disabled':''}>▶ Rotation starten</button>`)}
   kn.push('<button class="login" data-stgx="match">🎮 Match erstellen</button>','<button class="login" data-stgx="rotation">✏ Rotation bearbeiten</button>');
   if(!L.pve)kn.push('<button class="login" data-stg="pve_start">🌲 PvE starten</button>');
+  else if(rolle==='admin')kn.push('<button class="login" data-stg="pve_neustart">🔄 PvE neu starten</button>','<button class="login" data-stg="pve_stopp">⏹ PvE stoppen</button>');   // Update 222
   if(rolle==='host')kn.push('<button class="login" data-stg="abgeben">Host-Rolle abgeben</button>');
   const warn=rolle==='host'&&H&&H.warnung?`<div class="stg-warn">⚠ Deine Host-Sitzung läuft bald ab. Rotation verlängern? <button class="login stg-haupt" data-stg="verlaengern">Verlängern</button></div>`:'';
   const hostZ=rolle==='admin'?(H?`<div class="stg-info">🎮 Host: <b>${esc(H.gt)}</b> · noch ${stgDauer(H.rest)}${H.endet?' · letzte Runde':''} <button class="login" data-stg="entziehen" style="font-size:11px;padding:3px 8px">Entziehen</button></div>`:'')
@@ -3476,7 +3477,7 @@ function stgZeichnen(){const el=$('#steuerLeiste');if(!el)return;stgGlocke();
 function stgKnoepfe(){
   $$('#steuerLeiste [data-stgm]').forEach(b=>b.onclick=async()=>{if(!(STG&&STG.angemeldet))return loginForm(false);b.disabled=true;await stgPost({aktion:'anfrage',modus:b.dataset.stgm},true)});
   $$('#steuerLeiste [data-stg]').forEach(b=>b.onclick=async()=>{const a=b.dataset.stg;
-    const frage={stopp:'Laufende Runde jetzt beenden? Der Deathmatch-Server stoppt.',pve_start:'PvE Chernarus jetzt starten? Ein laufendes Deathmatch endet.',abgeben:'Host-Rolle abgeben?',entziehen:'Dem Host die Rolle entziehen?',dm_start:'Rotation jetzt starten? Der Server wechselt auf Deathmatch (ca. 3 Minuten).'}[a];
+    const frage={stopp:'Laufende Runde jetzt beenden? Der Deathmatch-Server stoppt.',pve_start:'PvE Chernarus jetzt starten? Ein laufendes Deathmatch endet.',pve_neustart:'PvE-Server JETZT neu starten?\nAlle Spieler fliegen für ca. 3 Minuten raus.',pve_stopp:'PvE-Server stoppen?\nAlle Spieler fliegen raus, der Server bleibt aus, bis du „PvE neu starten“ drückst.',abgeben:'Host-Rolle abgeben?',entziehen:'Dem Host die Rolle entziehen?',dm_start:'Rotation jetzt starten? Der Server wechselt auf Deathmatch (ca. 3 Minuten).'}[a];
     if(frage&&!confirm(frage))return;b.disabled=true;await stgPost(a==='dm_start'?{aktion:a,art:b.dataset.art}:{aktion:a},['zurueckziehen','abgeben','verlaengern','entziehen'].includes(a))});
   $$('#steuerLeiste [data-stgx]').forEach(b=>b.onclick=()=>b.dataset.stgx==='match'?stgMatch():stgRotation())}
 const stgOpt=(liste,wert)=>liste.map(([v,n])=>`<option value="${esc(String(v))}" ${String(v)===String(wert)?'selected':''}>${esc(n)}</option>`).join('');
