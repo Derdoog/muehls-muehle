@@ -3480,6 +3480,7 @@ function stgZeichnen(){const el=$('#steuerLeiste');if(!el)return;stgGlocke();
   kn.push('<button class="login" data-stgx="match">🎮 Match erstellen</button>','<button class="login" data-stgx="rotation">✏ Rotation bearbeiten</button>');
   if(!L.pve)kn.push('<button class="login" data-stg="pve_start">🌲 PvE starten</button>');
   else if(rolle==='admin')kn.push('<button class="login" data-stg="pve_neustart">🔄 PvE neu starten</button>','<button class="login" data-stg="pve_stopp">⏹ PvE stoppen</button>');   // Update 222
+  if(rolle==='admin')kn.push('<button class="login" data-stgx="passwort">🔒 Serverpasswort</button>');   // Update 231
   if(rolle==='host')kn.push('<button class="login" data-stg="abgeben">Host-Rolle abgeben</button>');
   const warn=rolle==='host'&&H&&H.warnung?`<div class="stg-warn">⚠ Deine Host-Sitzung läuft bald ab. Rotation verlängern? <button class="login stg-haupt" data-stg="verlaengern">Verlängern</button></div>`:'';
   const hostZ=rolle==='admin'?(H?`<div class="stg-info">🎮 Host: <b>${esc(H.gt)}</b> · noch ${stgDauer(H.rest)}${H.endet?' · letzte Runde':''} <button class="login" data-stg="entziehen" style="font-size:11px;padding:3px 8px">Entziehen</button></div>`:'')
@@ -3492,7 +3493,19 @@ function stgKnoepfe(){
   $$('#steuerLeiste [data-stg]').forEach(b=>b.onclick=async()=>{const a=b.dataset.stg;
     const frage={stopp:'Laufende Runde jetzt beenden? Der Deathmatch-Server stoppt.',pve_start:'PvE Chernarus jetzt starten? Ein laufendes Deathmatch endet.',pve_neustart:'PvE-Server JETZT neu starten?\nAlle Spieler fliegen für ca. 3 Minuten raus.',pve_stopp:'PvE-Server stoppen?\nAlle Spieler fliegen raus, der Server bleibt aus, bis du „PvE neu starten“ drückst.',abgeben:'Host-Rolle abgeben?',entziehen:'Dem Host die Rolle entziehen?',dm_start:'Rotation jetzt starten? Der Server wechselt auf Deathmatch (ca. 3 Minuten).'}[a];
     if(frage&&!confirm(frage))return;b.disabled=true;await stgPost(a==='dm_start'?{aktion:a,art:b.dataset.art}:{aktion:a},['zurueckziehen','abgeben','verlaengern','entziehen'].includes(a))});
-  $$('#steuerLeiste [data-stgx]').forEach(b=>b.onclick=()=>b.dataset.stgx==='match'?stgMatch():stgRotation())}
+  $$('#steuerLeiste [data-stgx]').forEach(b=>b.onclick=()=>b.dataset.stgx==='match'?stgMatch():b.dataset.stgx==='passwort'?stgPasswort():stgRotation())}
+async function stgPasswort(){   // Update 231: Serverpasswort setzen oder entfernen (gilt fuer DM und PvE, wirkt ab dem naechsten Neustart)
+  $('#dlgIn').innerHTML=`<button class="zu" onclick="dlg.close()">✕</button><h2 style="margin:0 0 8px">🔒 Serverpasswort</h2>
+    <div class="hinweis" id="pwStand">Stand wird geladen …</div>
+    <div class="zeile" style="margin:10px 0"><input id="pwNeu" type="password" maxlength="32" autocomplete="new-password" placeholder="Neues Passwort" style="width:100%;box-sizing:border-box;padding:9px;border-radius:7px;border:1px solid var(--line2);background:var(--panel2);color:var(--text)"></div>
+    <div class="mut" style="font-size:12px;margin-bottom:10px">Gilt für Deathmatch und PvE. Wirkt ab dem nächsten Neustart (Deathmatch: nächste Runde).</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="login cmbtn stg-haupt" id="pwSetzen">Passwort setzen</button><button class="login cmbtn" id="pwAus">🌍 Passwort aus (öffentlich)</button></div>`;
+  if(!$('#dlg').open)$('#dlg').showModal();
+  const stand=j=>{const el=$('#pwStand');if(el)el.textContent=j&&j.passwort_an===true?'Der Server hat ein Passwort.':j&&j.passwort_an===false?'Der Server ist offen (kein Passwort).':'Stand unbekannt.'};
+  stand(await stgPost({aktion:'serverpasswort_status'},true));
+  $('#pwSetzen').onclick=async()=>{const v=$('#pwNeu').value.trim();if(!v)return alertFeld();if(!confirm('Serverpasswort ändern? Wirkt ab dem nächsten Neustart.'))return;const j=await stgPost({aktion:'serverpasswort',passwort:v},true);if(j)stgMeldung('Serverpasswort','Neues Passwort gespeichert. Es gilt ab dem nächsten Neustart.')};
+  $('#pwAus').onclick=async()=>{if(!confirm('Passwort entfernen? Dann kann jeder auf den Server, ab dem nächsten Neustart.'))return;const j=await stgPost({aktion:'serverpasswort',passwort:''},true);if(j)stgMeldung('Serverpasswort','Passwort entfernt. Der Server ist ab dem nächsten Neustart öffentlich.')};
+  function alertFeld(){const f=$('#pwNeu');f.focus();f.style.borderColor='var(--acc)'}}
 const stgOpt=(liste,wert)=>liste.map(([v,n])=>`<option value="${esc(String(v))}" ${String(v)===String(wert)?'selected':''}>${esc(n)}</option>`).join('');
 function stgRegelnStart(F,k){const st=(k&&k.standard)||{};return Object.assign({},F.std,{ziel_kills:'30'},st.regeln||{})}
 function stgMatch(){const F=STG&&STG.formular;if(!F||!F.karten.length)return stgMeldung('Match erstellen','Gerade ist keine fertig gebaute Arena verfügbar.');
