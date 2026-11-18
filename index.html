@@ -734,6 +734,11 @@ nav button{min-width:0}
 .serverstatus{display:flex;align-items:center;gap:8px;min-width:0;padding:0 10px;background:var(--panel2);border:1px solid var(--line2)}
 .serverstatus .status{padding:4px 0;border:0;background:none;white-space:nowrap}
 .serverstatus #stand{font-size:10px;white-space:nowrap;opacity:.75}
+/* Update 228: Statustext bricht um statt ueber den Rand zu laufen */
+.serverleiste{display:grid;grid-template-columns:minmax(0,1fr) auto;width:100%;max-width:100%}
+.serverleiste:not(:has(#dMatchAktion:not(:empty))){grid-template-columns:minmax(0,1fr)}
+.serverstatus{flex-wrap:wrap;padding-top:6px;padding-bottom:6px}
+.serverstatus .status{white-space:normal;overflow-wrap:anywhere;min-width:0;line-height:1.3;text-align:left;justify-content:flex-start}
 @media(max-width:540px){.kopf{padding-top:10px}.kopf-aktionen{margin-top:8px}.serverstatus{gap:6px;padding:0 7px}.serverstatus #stand{font-size:9px}}
 </style>
 <style>
@@ -2122,7 +2127,7 @@ function cmPanel(c){const el=$('#dCustom'),aktion=$('#dMatchAktion');aktion.repl
     knopf.setAttribute('aria-disabled',c?.moeglich?'false':'true');
     knopf.onclick=()=>cmKlick(c);
     aktion.append(knopf);
-    if(!c?.moeglich&&(c?.grund||'')){const h=document.createElement('div');h.className='cmleiste-grund';h.textContent=c.grund;aktion.append(h)}
+    // Update 228: Grund nicht mehr dauerhaft unter dem Knopf (zu viel Text), nur beim Antippen
   }
   if(el.hidden)return;
   el.innerHTML=`<h3>🎮 Custom-Matches</h3>
