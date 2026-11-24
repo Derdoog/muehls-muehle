@@ -1100,6 +1100,24 @@ header .marke .marke-unter b{color:#c9773f;font-weight:800}
 .pl-teilen{margin:12px 0 0;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 button.rlink{background:transparent;cursor:pointer;margin-top:4px;padding:5px 10px;border:1px solid var(--line2);color:var(--acc2);font:700 12px var(--kopf);text-transform:uppercase}
 
+/* r240: SWOT (Chancen, Risiken) und neue Analyse-Bloecke */
+.perf-karten.swot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+@media (max-width:700px){.perf-karten.swot{grid-template-columns:1fr}}
+.perf-karte.chance{border-left:3px solid #6fb7d8;background:linear-gradient(110deg,rgba(111,183,216,.08),var(--panel2) 55%)}
+.perf-karte.risiko{border-left:3px solid #d8a23f;background:linear-gradient(110deg,rgba(216,162,63,.09),var(--panel2) 55%)}
+.perf-karte.chance>b{color:#8fcbe6}.perf-karte.risiko>b{color:#e8bd62}
+.perf-karte.chance .performance-liste b.chance,.perf-karte.risiko .performance-liste b.risiko{font-weight:800}
+.perf-karte.chance .performance-liste b.chance{color:#8fcbe6}.perf-karte.risiko .performance-liste b.risiko{color:#e8bd62}
+.r240{display:grid;gap:14px;margin-top:16px}
+.r240-b{padding:12px 14px;border:1px solid var(--line2);background:var(--panel2);border-radius:8px}
+.r240-b h5{margin:0 0 8px}
+.r240-t{width:100%;border-collapse:collapse;font-size:13px}
+.r240-t th,.r240-t td{padding:5px 6px;border:0;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
+.r240-t th{font:700 10px var(--mm-kopf);letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.r240-t .z{text-align:right;font-variant-numeric:tabular-nums}
+.r240-b .regelbtn{margin-top:8px}
+.perf-karten.swot .performance-liste li.mut{display:block}
+
 </style><!-- r235: hier setzt der Server die Designschicht web2026.css ein (webpaket.py) -->
 </head>
 <body>
@@ -3007,6 +3025,136 @@ function rInfo(r){   // Update 161: Kacheln statt Textzeilen
   return kach||leben||erf?`<div class="ri">${kach}${leben}${erf}</div>`:''}
 function raBlock(a){if(!a||(!(a.text||[]).length&&!(a.spieler||[]).length))return '';
   return `<div class="ra"><h5>📝 Rundenanalyse</h5>${(a.text||[]).map(t=>`<p>${esc(t)}</p>`).join('')}${(a.spieler||[]).length?`<ul>${a.spieler.map(([n,st])=>`<li><b>${esc(n)}</b> ${st.map(esc).join(', ')}.</li>`).join('')}</ul>`:''}</div>`}
+// r240: SWOT-Ergaenzung (Chancen, Risiken, Waffenpunkte) und neue Bloecke Waffenprofil, Entfernungsbaender, Entwicklung, Bewegung.
+// Selbstmord wird hier nirgends gewertet (Tom 24.11.).
+function r240Swot(m,genug,c){
+  // r240 v3: Chancen und Risiken. Spielverhalten vor Waffendetails; Waffen fair (gleiche Waffe bei anderen Spielern, ersatzweise Klasse,
+  // schadensbereinigt). Hoechstens 2 Waffenpunkte unter den ersten 5 und 4 insgesamt. Selbstmord nie.
+  c=c||{};
+  const X={plus:[],minus:[],chancen:[],risiken:[],leerC:'',leerR:''},R=m.r240||{},vg=m.vergleich||{},vi=vg.ich||{},vs=vg.schnitt||{};
+  const f=(n,d=1)=>Number(n||0).toLocaleString('de-DE',{maximumFractionDigits:d}),pq=q=>Math.round(100*q)+' %';
+  const vgOk=genug&&vg.spieler>=3&&(vi.runden||0)>=3;
+  const sicher=(n,voll)=>Math.min(1,n/voll);
+  const C=[],Rk=[],ch=(s,t,w)=>C.push({s,t,w:!!w}),ri=(s,t,w)=>Rk.push({s,t,w:!!w});
+  const bil=x=>`<b>${x.k} Kills zu ${x.t} Toden</b>`,q=x=>x.k/Math.max(1,x.k+x.t);
+  const stufe=(d,a,b,c_)=>d>=0.15?a:d>=0.08?b:c_;
+  // Staerken/Schwaechen: schadensbereinigt (eigene Treffer pro Kill gegenueber allen Spielern mit denselben Waffen)
+  if(vgOk&&vi.eff!=null){const p=Math.round(100*Math.abs(1-vi.eff));
+    if(vi.eff<=0.8)X.plus.push(`Deine Treffer sitzen: Mit denselben Waffen brauchst du rund <b>${p} % weniger</b> Treffer für einen Kill als die anderen.`);
+    else if(vi.eff>=1.25)X.minus.push(`Mit denselben Waffen brauchst du rund <b>${p} % mehr</b> Treffer für einen Kill als die anderen. Ruhiger zielen und auf Oberkörper oder Kopf gehen.`)}
+  if(vgOk&&vi.kopf_rel!=null){const p=Math.round(100*Math.abs(1-vi.kopf_rel));
+    if(vi.kopf_rel>=1.25)X.plus.push(`Du zielst hoch: Mit denselben Waffen landest du rund <b>${p} % mehr</b> Kopftreffer als die anderen.`);
+    else if(vi.kopf_rel<=0.75)X.minus.push(`Mit denselben Waffen landest du rund <b>${p} % weniger</b> Kopftreffer als die anderen. Etwas höher anlegen spart Treffer.`)}
+  if(!genug){X.leerC=X.leerR='Chancen und Risiken gibt es ab 3 gewerteten Runden.';return X}
+  // ===== Spielverhalten =====
+  const sp=(m.runden_liste||[]).filter(r=>r[4]),sK=sp.reduce((a,r)=>[a[0]+(Number(r[4][0])||0),a[1]+(Number(r[4][1])||0)],[0,0]),qr=sK[0]/Math.max(1,sK[0]+sK[1]);
+  const dGes=(m.distanzbilanz||[]).reduce((a,[k,t])=>[a[0]+k,a[1]+t],[0,0]),q0=dGes[0]/Math.max(1,dGes[0]+dGes[1]);
+  const hGes=(c.hoehe||[]).reduce((a,x)=>[a[0]+x.k,a[1]+x.t],[0,0]),qh=hGes[0]/Math.max(1,hGes[0]+hGes[1]);
+  const rn=x=>`${x.n} ${x.n===1?'Runde':'Runden'}`;
+  const verhalten=(g,leicht)=>{        // g = Mindestabstand in Prozentpunkten (0,05; ersatzweise 0,03)
+    const wort=d=>leicht&&d<0.05?'leicht':stufe(d,'klar','spürbar','etwas');
+    (c.dist||[]).filter(x=>x.k+x.t>=10).forEach(x=>{const d=q(x)-q0;
+      if(d>=g&&x!==c.staerke)ch(d*2.5*sicher(x.k+x.t,30),`${x.name}: Hier gewinnst du ${wort(d)} öfter, ${bil(x)} (${pq(q(x))}, über alle Distanzen ${pq(q0)}). Solche Gefechte bewusst suchen.`);
+      if(d<=-g&&x!==c.schwaeche)ri(-d*2.5*sicher(x.k+x.t,30),`${x.name}: Hier ziehst du ${wort(-d)} öfter den Kürzeren, ${bil(x)} (${pq(q(x))}, über alle Distanzen ${pq(q0)}). Solche Gefechte lieber meiden oder die Waffe darauf abstimmen.`)});
+    (c.hoehe||[]).filter(x=>x.k+x.t>=10).forEach(x=>{const d=q(x)-qh;
+      if(d>=g&&x!==c.besteHoehe)ch(d*2.5*sicher(x.k+x.t,30),`Wenn du ${x.lage} bist, gewinnst du ${wort(d)} öfter: ${bil(x)} (${pq(q(x))}). Diese Lage öfter suchen.`);
+      if(d<=-g&&x!==c.schwacheHoehe)ri(-d*2.5*sicher(x.k+x.t,30),`Wenn du ${x.lage} bist, verlierst du ${wort(-d)} öfter: ${bil(x)} (${pq(q(x))}). Solche Lagen lieber umgehen.`)});
+    [[c.karten,c.besteKarte,c.schwacheKarte,'Auf'],[c.modi,c.besterModus,c.schwacherModus,'Im Modus']].forEach(([li,best,schw,w])=>{if(!li||li.length<2)return;
+      li.filter(x=>x.k+x.t>=5).forEach(x=>{const d=q(x)-qr;
+        if(d>=g&&x!==best)ch(d*2.5*sicher(x.k+x.t,25),`${w} <b>${esc(x.name)}</b> läuft es ${wort(d)} besser als sonst: ${bil(x)} in ${rn(x)} (${pq(q(x))}, sonst ${pq(qr)}).${x.n<3?' Öfter spielen lohnt sich.':''}`);
+        if(d<=-g&&x!==schw)ri(-d*2.5*sicher(x.k+x.t,25),`${w} <b>${esc(x.name)}</b> tust du dich ${wort(-d)} schwerer: ${bil(x)} in ${rn(x)} (${pq(q(x))}, sonst ${pq(qr)}).`)})});
+    (c.gegner||[]).filter(x=>x.k+x.t>=6).forEach(x=>{const p=q(x);
+      if(p>=0.5+g&&x!==c.besterGegner)ch((p-0.5)*2.5*sicher(x.k+x.t,30),`Gegen ${GT(x.name,'dm')} hast du die Nase vorn: ${bil(x)} (${pq(p)}). Ihn ruhig aktiv suchen.`);
+      else if(Math.abs(p-0.5)<g&&x.k+x.t>=15)ch(0.08*sicher(x.k+x.t,40),`Gegen ${GT(x.name,'dm')} steht es fast ausgeglichen: ${bil(x)}. Ein paar gewonnene Duelle mehr und du liegst klar vorn.`);
+      if(p<=0.5-g&&x!==c.schwersterGegner)ri((0.5-p)*2.5*sicher(x.k+x.t,30),`${GT(x.name,'dm')} liegt dir nicht: ${bil(x)} (${pq(p)}). Ihm nicht offen entgegenlaufen.`)})};
+  verhalten(0.05,false);
+  if(C.length+Rk.length<4){C.length=0;Rk.length=0;verhalten(0.03,true)}    // wenig Auffaelliges: Schwelle leicht senken
+  const gK=c.gehaltenKills||0,mK=c.messbareKills||0,gT=c.gehaltenTode||0,mT=c.messbareTode||0;
+  if(mK>=5&&gK/mK>=0.3&&gK*2<mK)ch(gK/mK*0.8,`Aus fester Stellung triffst du gut: <b>${gK} von ${mK}</b> messbaren Kills kamen aus einer gehaltenen Position. Gute Plätze ruhig länger halten.`);
+  if(mT>=5&&gT/mT>=0.3&&gT*2<mT)ri(gT/mT*0.8,`<b>${gT} von ${mT}</b> messbaren Toden kamen von Gegnern, die still in Stellung lagen. Beim Vorrücken Ecken und Fenster vorher prüfen.`);
+  const kn=c.kn||m.knock||{},kn_=kn.knocks||0,ent=kn.knock_entk||0,klau=c.knGeklaut||0;
+  if(kn_>=10&&ent/kn_>=0.12&&ent*4<kn_)ch(ent/kn_*1.2,`Bei <b>${ent} von ${kn_}</b> deiner Knocks ist der Gegner wieder hochgekommen. Konsequent nachsetzen bringt dir zusätzliche Kills.`);
+  if(klau>=2&&klau<5)ch(klau/15,`<b>${klau}</b> Gegner, die du bewusstlos geschossen hattest, hat am Ende ein anderer erledigt. Selbst schneller nachsetzen.`);
+  if((kn.geknockt||0)>=10&&(kn.knock_ueberlebt||0)/kn.geknockt<=0.15)ri(0.3*sicher(kn.geknockt,30),`Wenn du bewusstlos gehst, ist es fast immer vorbei: nur <b>${kn.knock_ueberlebt||0} von ${kn.geknockt}</b> Mal bist du noch davongekommen. Nach einem Treffer sofort in Deckung.`);
+  if((kn.trades||0)>=1&&(kn.trades||0)<2)ch(0.05,`Einmal habt ihr euch gegenseitig erwischt (Trade). Mit etwas mehr Deckung beim Schusswechsel bleibst du stehen.`);
+  const T=Math.max(Number(m.tode)||0,1),tw=(m.tode_waffen||[]).filter(x=>x[0]!=='Selbstmord');
+  const st=(tw.find(x=>x[0]==='Sturz')||[,0])[1],gr=(tw.find(x=>x[0]==='Granate')||[,0])[1];
+  if(st>=2&&st/T>=0.03)ri(st/T*5,`Eigene Fehler: <b>${st} Mal</b> bist du in den Tod gestürzt (${pq(st/T)} deiner Tode). Vorsicht an Kanten, Leitern und Dächern.`);
+  if(gr>=2&&gr/T>=0.04)ri(gr/T*5,`Granaten kosten dich <b>${gr}</b> Leben (${pq(gr/T)} deiner Tode). Nicht zu lange an einer Stelle bleiben, wenn Gegner nah sind.`);
+  if(vgOk)[['kd','K/D',2,''],['kpr','Kills pro Runde',1,''],['siegquote','Siegquote',0,' %'],['apr','Assists pro Runde',2,''],['kopfquote','Kopfschuss-Kills',0,' %'],['knockq','Selbst erledigte Knocks',0,' %']].forEach(([k,n,d,e])=>{
+    const a=vi[k],b=vs[k];if(a==null||!b)return;const r=a/b;
+    if(r>=0.85&&r<1)ch((1-r)*0.8+0.05,`${n}: Mit <b>${f(a,d)}${e}</b> fehlt dir nur wenig zum Schnitt (${f(b,d)}${e}). Ein, zwei gute Runden und du liegst darüber.`);
+    else if(r>0.75&&r<0.85)ri((1-r)*1.5,`${n}: <b>${f(a,d)}${e}</b> liegt spürbar unter dem Schnitt (${f(b,d)}${e}).`)});
+  if(vgOk&&vi.gpr!=null&&vs.gpr&&vi.gpr/vs.gpr>=1.1&&vi.gpr/vs.gpr<1.25)ri((vi.gpr/vs.gpr-1)*1.2,`Du wirst etwas öfter bewusstlos geschossen als die anderen: <b>${f(vi.gpr)}</b> Mal pro Runde (Schnitt ${f(vs.gpr)}).`);
+  const s10=sp.slice(0,10);if(s10.length>=6){const n=Math.floor(s10.length/2),b=l=>l.reduce(([k,t],r)=>[k+(Number(r[4][0])||0),t+(Number(r[4][1])||0)],[0,0]),kd=([k,t])=>t?k/t:k;
+    const neu=kd(b(s10.slice(0,n))),alt=kd(b(s10.slice(n,2*n))),d=neu-alt;
+    if(d>=0.05)ch(Math.min(1,d)+0.1,`Deine Form steigt: K/D <b>${f(neu,2)}</b> in den letzten ${n} Runden, davor ${f(alt,2)}. Dranbleiben.`);
+    if(d<=-0.05)ri(Math.min(1,-d)+0.1,`Deine Form sinkt: K/D <b>${f(neu,2)}</b> in den letzten ${n} Runden, davor ${f(alt,2)}.`)}
+  const ev=(m.elo_verlauf||[]).map(x=>Array.isArray(x)?x[1]:x).filter(x=>x!=null);
+  if(ev.length>=6){const n=Math.min(10,ev.length-1),d=ev[ev.length-1]-ev[ev.length-1-n];
+    if(d>=10)ch(Math.min(1,d/50),`Deine Elo ist in den letzten ${n} Runden um <b>${Math.round(d)}</b> Punkte gestiegen.`);
+    if(d<=-10)ri(Math.min(1,-d/50),`Deine Elo ist in den letzten ${n} Runden um <b>${Math.round(-d)}</b> Punkte gefallen.`)}
+  // ===== Waffen (fair: gleiche Waffe bei anderen Spielern, ersatzweise Klasse schadensbereinigt) =====
+  const WG=0.6;                                       // Waffenpunkte zaehlen weniger als Spielverhalten
+  (R.waffen_vergleich||[]).forEach(([w,k,t,tk,erw,ref,kl,spt])=>{if(!ref||t<20)return;
+    const bei=ref.quelle==='waffe'?`andere brauchen mit ${esc(w)} im Schnitt ${f(ref.tpk)}`:`andere mit ${esc(ref.name)} brauchen schadensbereinigt ${f(ref.tpk*(ref.spt||spt)/spt)}`;
+    const soll=ref.quelle==='waffe'?ref.tpk:ref.tpk*(ref.spt||spt)/spt;
+    if(k>=3){const r=t/k/soll;
+      if(r<=0.75)ch((1-r)*sicher(k,10)*WG*2,`Mit <b>${esc(w)}</b> brauchst du <b>${f(t/k)}</b> Treffer pro Kill, ${bei}. Die Waffe liegt dir, öfter mitnehmen.`,1);
+      if(r>=1.3)ri(Math.min(1,(r-1))*sicher(t,80)*WG*2,`Mit <b>${esc(w)}</b> brauchst du <b>${f(t/k)}</b> Treffer pro Kill, ${bei}. Hier geht Schaden verloren.`,1)}
+    const p=100*tk/t;
+    if(t>=30&&p>=ref.kopf+8)ch((p-ref.kopf)/40*sicher(t,80)*WG,`Mit <b>${esc(w)}</b> landen <b>${Math.round(p)} %</b> deiner Treffer am Kopf, andere schaffen mit ${ref.quelle==='waffe'?'ihr':esc(ref.name)} ${f(ref.kopf)} %.`,1);
+    if(t>=40&&p<=ref.kopf-8&&p<=ref.kopf*0.6)ri((ref.kopf-p)/40*sicher(t,120)*WG,`Mit <b>${esc(w)}</b> gehen nur <b>${Math.round(p)} %</b> deiner Treffer an den Kopf, andere schaffen mit ${ref.quelle==='waffe'?'ihr':esc(ref.name)} ${f(ref.kopf)} %. Etwas höher anlegen.`,1)});
+  const BN=['unter 25 m','25 bis 100 m','ab 100 m'];
+  Object.entries(R.waffen_baender||{}).map(([w,b])=>{const n=b[0]+b[1]+b[2],i=b.indexOf(Math.max(...b));return {w,b,n,i,a:b[i]/Math.max(1,n)}}).filter(x=>x.n>=5&&x.a>=0.7&&x.i>0).sort((x,y)=>y.b[y.i]-x.b[x.i]).slice(0,1)
+    .forEach(({w,b,n,i,a})=>ch((a-0.5)*sicher(n,12)*WG*0.5,`<b>${esc(w)}</b> zahlt sich bei dir ${BN[i]} aus: <b>${b[i]} von ${n}</b> Kills damit fallen dort.`,1));
+  const eigen=Object.fromEntries((m.waffen||[]).map(x=>[x[0],x[1]])),gezeigt=c.ursacheTxt&&c.verlust?c.verlust[0]:null;
+  tw.filter(x=>!['Sturz','Granate'].includes(x[0])&&x[1]>=4&&x[1]/T>=0.06).slice(0,2).forEach(([w,n])=>{
+    if(w!==gezeigt)ri(n/T*2.5*sicher(n,8)*WG,`<b>${esc(w)}</b> erwischt dich am häufigsten: <b>${n} von ${T}</b> Toden (${pq(n/T)}). Gegner damit früh ausmachen und ihnen nicht ihre Distanz lassen.`,1)});
+  const kGes=Number(m.kills)||0,top=(m.waffen||[])[0];
+  if(top&&kGes>=10&&top[1]/kGes>=0.3)ri((top[1]/kGes-0.2)*WG*1.5,`Viel hängt an einer Waffe: <b>${top[1]} von ${kGes}</b> Kills machst du mit ${esc(top[0])} (${pq(top[1]/kGes)}). Fehlt sie im Loadout, fehlt dir eine Alternative.`,1);
+  // Sortieren: nach Gewicht, Waffenpunkte hoechstens 2 unter den ersten 5 und 4 insgesamt
+  const ordnen=l=>{const s=new Set(),a=l.sort((x,y)=>y.s-x.s).filter(x=>!s.has(x.t)&&s.add(x.t)),vorne=[],rest=[];let wv=0,wg=0;
+    for(const x of a){if(x.w){if(wg>=4)continue;wg++}
+      if(vorne.length<5&&(!x.w||wv<2)){vorne.push(x);if(x.w)wv++}else rest.push(x)}
+    vorne.sort((x,y)=>x.w-y.w);                     // Spielverhalten zuerst, Waffenpunkte dahinter
+    return [vorne.map(x=>x.t),rest.map(x=>x.t)]};
+  [X.chancen,X.chancenRest]=ordnen(C);[X.risiken,X.risikenRest]=ordnen(Rk);
+  X.leerC='Gerade fällt keine Chance auf: deine Werte liegen überall nah an deinem eigenen Schnitt.';
+  X.leerR='Kein Risiko erkennbar: keine Distanz, Karte, kein Gegner und keine Waffe liegt klar gegen dich.';
+  return X}
+function r240Karte(titel,zeichen,klasse,vorne,rest){   // wie die alten Karten, aber sichtbar genau 'vorne' (Waffenbegrenzung)
+  const li=t=>`<li><b class="${klasse}" aria-hidden="true">${zeichen}</b><span>${t.trim()}</span></li>`;
+  return `<div class="perf-karte ${klasse}"><b>${titel}</b><ul class="performance-liste">${vorne.map(li).join('')}</ul>${rest.length?`<details class="perf-mehr"><summary>${rest.length} weitere</summary><ul class="performance-liste">${rest.map(li).join('')}</ul></details>`:''}</div>`}
+function r240Leer(titel,klasse,text){return `<div class="perf-karte ${klasse}"><b>${titel}</b><ul class="performance-liste"><li class="mut">${text}</li></ul></div>`}
+function r240Bloecke(m){
+  const R=m.r240;if(!R)return '';
+  const f=(n,d=1)=>n==null||!isFinite(n)?'–':Number(n).toLocaleString('de-DE',{maximumFractionDigits:d}),vs=(m.vergleich||{}).schnitt||{},vi_=(m.vergleich||{}).ich||{},K=R.kennzahlen||{};
+  const VG=Object.fromEntries((R.waffen_vergleich||[]).map(x=>[x[0],x]));
+  const info=t=>typeof statistikInfo==='function'?statistikInfo(t):'';
+  // A Waffenprofil
+  const zon=z=>{const s={kopf:0,torso:0,arme:0,beine:0};Object.entries(z||{}).forEach(([k,v])=>{if(k in s)s[k]+=v});const n=Object.values(s).reduce((a,b)=>a+b,0);return n?`${Math.round(100*s.kopf/n)} / ${Math.round(100*s.torso/n)} / ${Math.round(100*s.arme/n)} / ${Math.round(100*s.beine/n)}`:'–'};
+  const wl=(R.wd||[]).filter(w=>w[1]>=5||w[2]>=20).sort((a,b)=>b[1]-a[1]||b[2]-a[2]);
+  const A=`<div class="r240-b"><h5>🎯 Waffenprofil ${info('Ab 5 Kills oder 20 Treffern je Waffe. Treffer pro Kill = Treffer ÷ Kills. Kopftreffer = Anteil der Treffer am Kopf. Abgegebene Schüsse stehen nicht im Server-Log, eine echte Trefferquote gibt es deshalb nicht. „andere T/K“ = Treffer pro Kill aller anderen Spieler mit derselben Waffe; gibt es zu wenige, die Waffenklasse aus den Rucksack-Sätzen (MPs, Schrot, Sturmgewehre, Scharfschütze, Western), über den Schaden pro Treffer auf diese Waffe umgerechnet. Schrot zählt jede Kugel als Treffer.')}</h5>
+    ${waffenKennzahlen([['Treffer pro Kill gegenüber anderen mit denselben Waffen',vi_.eff!=null?(vi_.eff<=1?'−':'+')+Math.round(100*Math.abs(1-vi_.eff))+' %':'–'],['Treffer pro Kill',K.tpk!=null?f(K.tpk):'–'],['Kopftreffer',K.kopftreffer!=null?f(K.kopftreffer)+' %'+(vs.kopftreffer?' (Ø '+f(vs.kopftreffer)+' %)':''):'–'],['Schaden pro Treffer',K.spt!=null?f(K.spt)+(vs.spt?' (Ø '+f(vs.spt)+')':''):'–'],['Treffer gesamt',f(K.treffer,0)]])}
+    ${wl.length?`<div class="scroll"><table class="r240-t"><tr><th>Waffe</th><th class="z">Kills</th><th class="z">Treffer</th><th class="z">Treffer/Kill</th><th class="z">andere T/K</th><th class="z">Kopf</th><th class="z">Schaden/Treffer</th><th class="z">Ø Treffer</th><th class="z">Ø Kill</th><th class="z">Zonen K/T/A/B</th></tr>${wl.slice(0,12).map(w=>`<tr><td>${esc(w[0])}</td><td class="z">${w[1]}</td><td class="z">${w[2]}</td><td class="z">${w[1]?f(w[2]/w[1]):'–'}</td><td class="z">${(r=>r?f(r.quelle==='waffe'?r.tpk:r.tpk*(r.spt||VG[w[0]][7])/VG[w[0]][7])+(r.quelle==='klasse'?' <span class="mut">('+esc(r.name)+')</span>':''):'–')((VG[w[0]]||[])[5])}</td><td class="z">${w[2]?Math.round(100*w[3]/w[2])+' %':'–'}</td><td class="z">${w[2]?f(w[4]/w[2]):'–'}</td><td class="z">${w[6]?f(w[5]/w[6],0)+' m':'–'}</td><td class="z">${w[1]?f(w[7]/w[1],0)+' m':'–'}</td><td class="z">${zon(w[9])}</td></tr>`).join('')}</table></div>`:'<p class="mut">Noch keine Waffe mit 5 Kills oder 20 Treffern.</p>'}</div>`;
+  // C Entfernungsbaender
+  const wb=R.waffen_baender||{},wt=R.wband||{},namen=Object.keys(wb).sort((a,b)=>wb[b].reduce((x,y)=>x+y,0)-wb[a].reduce((x,y)=>x+y,0)).slice(0,10);
+  const zelle=(k,t)=>`${k}${t&&t[0]?` <span class="mut">· ${t[0]} Tr. · ${Math.round(100*t[1]/t[0])} % Kopf</span>`:''}`;
+  const C=`<div class="r240-b"><h5>📏 Entfernungsbänder je Waffe ${info('Kills je Band aus den Rundenverläufen. Treffer und Kopftreffer je Band werden erst seit r240 gezählt.')}</h5>
+    ${namen.length?`<div class="scroll"><table class="r240-t"><tr><th>Waffe</th><th class="z">unter 25 m</th><th class="z">25 bis 100 m</th><th class="z">ab 100 m</th></tr>${namen.map(w=>`<tr><td>${esc(w)}</td>${[0,1,2].map(i=>`<td class="z">${zelle(wb[w][i],(wt[w]||[])[i])}</td>`).join('')}</tr>`).join('')}</table></div><small class="mut">Zahl vorne = Kills. Dahinter Treffer und Kopfanteil im Band (seit r240).</small>`:'<p class="mut">Noch keine Kills mit Entfernung in gewerteten Runden.</p>'}</div>`;
+  // D Entwicklung
+  const MN_=['Jan','Feb','Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez'],ev=R.entwicklung||[];
+  const D_=`<div class="r240-b"><h5>📈 Entwicklung je Saison ${info('Saison = Kalendermonat. K/D und Kills pro Runde aus allen gewerteten Runden. Treffer, Kopftreffer und Strecke erst ab r240.')}</h5>
+    ${ev.length?`<div class="scroll"><table class="r240-t"><tr><th>Saison</th><th class="z">Runden</th><th class="z">K/D</th><th class="z">Kills/Runde</th><th class="z">Treffer/Kill</th><th class="z">Kopftreffer</th></tr>${ev.slice().reverse().map((e,i,a)=>{const kd=e.tode?e.kills/e.tode:e.kills,v=a[i+1],vk=v?(v.tode?v.kills/v.tode:v.kills):null,pf=vk==null||Math.abs(kd-vk)<0.1?'':kd>vk?' <span class="performance-positiv">↑</span>':' <span class="performance-negativ">↓</span>';
+      return `<tr><td>${MN_[+e.monat.slice(5)-1]} ${e.monat.slice(0,4)}</td><td class="z">${e.runden}</td><td class="z">${f(kd,2)}${pf}</td><td class="z">${f(e.kills/e.runden)}</td><td class="z">${e.mit_ana&&e.ana_kills?f(e.treffer/e.ana_kills):'–'}</td><td class="z">${e.mit_ana&&e.treffer?Math.round(100*e.kopftreffer/e.treffer)+' %':'–'}</td></tr>`}).join('')}</table></div>`:'<p class="mut">Noch keine gewerteten Runden.</p>'}</div>`;
+  // E Bewegung
+  const ma=ev.reduce((a,e)=>[a[0]+e.strecke,a[1]+e.minuten,a[2]+e.mit_ana],[0,0,0]);
+  const [[gk,mk]]=m.position_gehalten||[[0,0]];const bd=(m.kill_kontext||{}).bewegung_distanz,bew=bd?bd[0].reduce((a,x)=>[a[0]+x[0],a[1]+x[1]],[0,0]):[0,0];
+  const E=`<div class="r240-b"><h5>🏃 Bewegungsprofil ${info('Laufstrecke ist eine Schätzung aus den Positionen im Server-Log (bei jedem Treffer und alle 5 Minuten), also eine Untergrenze, gezählt ab r240. Camping-Anteil = Kills aus gehaltener Position (höchstens 5 m in 20 bis 30 s) ÷ messbare Kills. Wo du dich bewegst, zeigt die Bewegungs-Heatmap unter Karte & Heatmap.')}</h5>
+    ${waffenKennzahlen([['m pro Minute (Schätzung)',ma[2]?f(ma[0]/Math.max(1,ma[1]),0):'–'],['Runden mit Strecke',ma[2]],['Camping-Anteil',mk>=5?Math.round(100*gk/mk)+' %':'–'],['Kills aus der Bewegung',bew[0]+bew[1]>=5?Math.round(100*bew[1]/(bew[0]+bew[1]))+' %':'–']])}
+    <button type="button" class="regelbtn" onclick="MREIT='karte';reiterZeigen();try{karteZeichnen(MDATEN)}catch(e){}">🗺 Zur Heatmap</button></div>`;
+  return `<div class="r240">${A}${C}${D_}${E}</div>`}
 function dmPerformance(m){
   // Update 158: fairere Bewertung (K/D-Trend, ab 3 Runden, klarer Abstand 60/40, Fallzahlen), Nahdistanz fein, Karten/Modi, Gegner, Todesursachen
   const spiele=(m.runden_liste||[]).filter(r=>r[4]).slice(0,10);
@@ -3031,7 +3179,7 @@ function dmPerformance(m){
   const besteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>((b.k-b.t)-(a.k-a.t))||(quote(b)-quote(a)))[0];
   const schlechtesteVon=(liste,f)=>liste.filter(x=>f(x)).sort((a,b)=>((a.k-a.t)-(b.k-b.t))||(quote(a)-quote(b)))[0];
   const top=(m.waffen||[]).find(x=>x[1]>0);
-  const verlust=(m.tode_waffen||[]).find(x=>x[1]>0);
+  const verlust=(m.tode_waffen||[]).find(x=>x[1]>0&&x[0]!=='Selbstmord');   // r240: Selbstmord nicht werten (Tom)
   const fein=distanz4(m.distanzbilanz,m.nah_fein);
   const namen=fein?['Sehr nah (<10 m)','Nahdistanz (10 bis <25 m)','Mitteldistanz (25 bis <100 m)','Ferndistanz (ab 100 m)']:['Nahdistanz (<25 m)','Mitteldistanz (25 bis <100 m)','Ferndistanz (ab 100 m)'];
   const dist=(fein||m.distanzbilanz||[]).map(([k,t],i)=>({name:namen[i],k,t,fach:fein?Math.max(0,i-1):i}));
@@ -3150,22 +3298,24 @@ function dmPerformance(m){
     return `<div class="perf-karte ${klasse}"><b>${titel}</b><ul class="performance-liste">
     ${a.length?vorne.map(li).join(''):'<li class="mut">Noch kein klares Muster.</li>'}</ul>${rest.length?`<details class="perf-mehr"><summary>${rest.length} weitere</summary><ul class="performance-liste">${rest.map(li).join('')}</ul></details>`:''}</div>`};
   const netto=kills-tode;
+  const X_=r240Swot(m,genug,{dist,hoehe,karten,modi,gegner,staerke,schwaeche,besteHoehe,schwacheHoehe,besteKarte,schwacheKarte,besterModus,schwacherModus,besterGegner,schwersterGegner,verlust,ursacheTxt,kn,knGeklaut,gehaltenKills,messbareKills,gehaltenTode,messbareTode});   // r240
   const farbe=spiele.length<3?'':netto>0?'performance-positiv':netto<0?'performance-negativ':'';
   return `<section class="waffen-gruppe"><h4>Performance ${statistikInfo('Stärken und Schwächen gibt es ab 3 gewerteten Runden und nur bei klarem Abstand: mindestens 60 % Kills (bzw. Tode) bei mindestens 5 Duellen oder 55 % bei mindestens 30 Duellen, bei Karten und Modi ab 2 Runden oder 10 Duellen. Der Trend vergleicht die K/D der letzten Runden mit den Runden davor (ab 0,1 Unterschied). Distanz, Höhe und Bewegung beziehen sich auf die erfassten Spielerduelle aus gewerteten Runden. Die Höhenbilanz vergleicht deine Position mit der des Gegners, ab 3 m Unterschied zählt sie als höher oder tiefer.')}</h4>
     <div class="performance-kopf"><strong class="${farbe}">${st}</strong>
       ${spiele.length?waffenKennzahlen([['Runden',spiele.length],['Kills',kills],['Tode',tode],['Bilanz',netto>0?'+'+netto:netto]]):'<span class="mut">Noch keine Runden mit Kill-/Todesdaten.</span>'}
       ${trend}</div>
-    <div class="perf-karten">
-    ${punkte('Stärken','+','plus',auffuellen([distanzStaerke,hoehePlusTxt,positionsStaerke,...vgPlus,...knPlus,
+    <div class="perf-karten swot">
+    ${punkte('Stärken','+','plus',[...auffuellen([distanzStaerke,hoehePlusTxt,positionsStaerke,...vgPlus,...knPlus,
       besteKarte?`${esc(besteKarte.name)} liegt dir: ${bil(besteKarte)} in ${rn(besteKarte)}.`:'',besterModus?`Im Modus ${esc(besterModus.name)} bist du stark: ${bil(besterModus)} in ${rn(besterModus)}.`:'',
-      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du deine beste Bilanz: ${bil(besterGegner)}.`:'',granTxt]))}
+      besterGegner?`Gegen ${GT(besterGegner.name,'dm')} hast du deine beste Bilanz: ${bil(besterGegner)}.`:'',granTxt]),...X_.plus])}
     ${punkte('Verbesserungspotenzial','−','minus',[distanzSchwaeche,hoeheMinusTxt,positionsTipp,...vgMinus,...knMinus,
       schwacheKarte?`Auf ${esc(schwacheKarte.name)} läuft es nicht: ${bil(schwacheKarte)} in ${rn(schwacheKarte)}.`:'',schwacherModus?`Im Modus ${esc(schwacherModus.name)} tust du dich schwer: ${bil(schwacherModus)} in ${rn(schwacherModus)}.`:'',
-      schwersterGegner?`Gegen ${GT(schwersterGegner.name,'dm')} hast du deine schlechteste Bilanz: ${bil(schwersterGegner)}.`:'',ursacheTxt])}
+      schwersterGegner?`Gegen ${GT(schwersterGegner.name,'dm')} hast du deine schlechteste Bilanz: ${bil(schwersterGegner)}.`:'',ursacheTxt,...X_.minus])}
+    ${X_.chancen.length?r240Karte('Chancen','↗','chance',X_.chancen,X_.chancenRest):r240Leer('Chancen','chance',X_.leerC)}${X_.risiken.length?r240Karte('Risiken','!','risiko',X_.risiken,X_.risikenRest):r240Leer('Risiken','risiko',X_.leerR)}
     </div>${vgTabelle}${knBlock}${distanz}${hoehenZeile}
 
 
-    ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}</section>`;
+    ${gehaltenePosition(m.position_gehalten)}${bewegungsKontext(kontext)}${r240Bloecke(m)}</section>`;
 }
 let infoNummer=0;
 function statistikInfo(text){
