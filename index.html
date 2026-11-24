@@ -4412,7 +4412,7 @@ let hashErledigt=false;
 function hashProfil(){if(hashErledigt||!D||!D.dm)return;hashErledigt=true;const m=decodeURIComponent(location.hash||'').match(/^#spieler\/(.{1,40})$/);
   if(m&&(D.dm.elo||[]).some(x=>x.name===m[1]))setTimeout(()=>{try{dmProfil(m[1])}catch(x){}},50)}
 {const _z=zeichnen;zeichnen=function(){_z.apply(this,arguments);try{wzZeichnen();hashProfil()}catch(x){console.error(x)}}}
-try{wzZeichnen()}catch(x){}})();
+try{if(D&&D.dm)zeichnen();else wzZeichnen()}catch(x){console.error(x)}})();   // r239b: Daten schon da (schnelles Laden) -> sofort neu zeichnen
 </script>
 </body>
 </html>
