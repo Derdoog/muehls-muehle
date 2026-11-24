@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="de" data-welt="dm" data-seite="zuschauer">
+<html lang="de" data-welt="dm" data-seite="zuschauer" data-evak="aus">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -782,6 +782,8 @@ dialog.aktion-dialog::backdrop{background:#000b}dialog.aktion-dialog .dlg{paddin
 .waffen-raster>details.waffe-eigen{border:2px solid var(--acc)}.waffen-raster>details.waffe-offen>summary{opacity:.65}
 @media(max-width:600px){.waffen-filter label{flex:1 1 42%}}
 /* Weltweit gültige Auswahl; Evakuierung gehört zu PvE */
+/* r241: Evakuierung ausgeblendet (Tom 24.11.2026). Wieder einschalten: im html-Tag data-evak="an" setzen. */
+:root:not([data-evak="an"]) nav [data-t="evakuierung"],:root:not([data-evak="an"]) #t-evakuierung,:root:not([data-evak="an"]) #eBereit{display:none!important}
 .kf-zeit{font-size:11px;margin:-3px 0 7px}
 @media (max-width:600px){#dr-live .zwei{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#dr-live .zwei>.panel{min-width:0;padding:9px 7px}#dr-live .zwei .panel h3{font-size:11px;letter-spacing:0}#dr-live .zwei .kf,#dr-live .zwei .dm-kompakt{font-size:11px;overflow-wrap:anywhere}#dr-live .zwei .dm-spieler{padding:5px 0}#dr-live .zwei .dm-spieler-werte{font-size:10px}#dr-live .zwei .kf-zeit{font-size:10px;line-height:1.3}}
 
@@ -1925,7 +1927,9 @@ function medaille(icon,stufe,n){const f=STF[stufe]||'#555';const z=n>1?`<circle 
     `<circle cx="24" cy="24" r="21" fill="${stufe?`url(#g${stufe})`:'#2a2e35'}" stroke="${f}" stroke-width="3"/>${stufe==='diamant'||stufe==='platin'?`<circle cx="24" cy="24" r="16.5" fill="none" stroke="#fff" stroke-opacity=".5" stroke-dasharray="3 2"/>`:''}`+
     `<text x="24" y="31" font-size="19" text-anchor="middle">${icon}</text>${z}</svg>`}
 let D=null,RZ='gesamt',RS='spielzeit',ersterTab=true,EV_AUF=false;const OFFEN=new Set();
-function tab(t){$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{sichtSpeicher.setItem('tab',t)}catch(e){}try{stgZeichnen()}catch(e){}}
+// r241: Schalter Evakuierung (html data-evak="an" blendet sie wieder ein)
+const EVAK_AN=document.documentElement.dataset.evak==='an';
+function tab(t){if(t==='evakuierung'&&!EVAK_AN)t='pve';$$('nav button').forEach(b=>b.classList.toggle('an',b.dataset.t===t));$$('.tab').forEach(x=>x.classList.toggle('an',x.id==='t-'+t));try{sichtSpeicher.setItem('tab',t)}catch(e){}try{stgZeichnen()}catch(e){}}
 $$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.t));
 const TAKT=30,ZWEIGE=20;
 async function holeJson(u,opt){try{const r=await fetch(u,opt||{cache:'no-store'});if(r.ok)return await r.json()}catch(e){}return null}
@@ -4013,7 +4017,7 @@ async function eMelden(bereit){
 }
 $('#eJa').onclick=()=>eMelden(true);
 $('#eWarten').onclick=()=>eMelden(false);
-if(DIREKT){eLaden();setInterval(()=>{if(!document.hidden)eLaden()},5000)}
+if(DIREKT&&EVAK_AN){eLaden();setInterval(()=>{if(!document.hidden)eLaden()},5000)}
 if(DIREKT)setInterval(()=>{if(document.hidden)return;voteLaden();if($('#t-meine').classList.contains('an')||$('#t-shop').classList.contains('an'))meineLaden()},15000);
 setInterval(()=>{if(VOTE&&VOTE.offen)voteZeichnen()},30000);
 function naechster(){const s=DIREKT?10:TAKT-(Date.now()/1000)%TAKT+9;setTimeout(()=>{if(!document.hidden)laden();naechster()},s*1000)}naechster();
