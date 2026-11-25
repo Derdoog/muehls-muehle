@@ -792,6 +792,12 @@ dialog.aktion-dialog::backdrop{background:#000b}dialog.aktion-dialog .dlg{paddin
 .r242-bericht{white-space:pre-line;line-height:1.55}
 .r242-liste div{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid var(--line)}
 #pRegeln .r242-liste b{text-align:right;min-width:0;overflow-wrap:anywhere}
+.r242-uhrzeile{display:flex;gap:12px 18px;align-items:center;flex-wrap:wrap}
+.r242-uhrzeit{font-size:clamp(24px,4vw,34px);font-weight:700;line-height:1.2;font-variant-numeric:tabular-nums}
+.r242-abschnitt{padding:4px 10px;border:1px solid var(--linie,#48513e);border-radius:5px;color:var(--acc,#e4c447);font-weight:700}
+.r242-wechsel{flex-basis:100%;font-size:14px}
+#kopfStatus[data-welt="pve"]{height:auto;min-height:28px;flex-wrap:wrap;white-space:normal;overflow:visible;row-gap:6px;padding-top:8px;padding-bottom:8px;-webkit-mask-image:none;mask-image:none}
+#kopfStatus[data-welt="pve"] .ks-teil{white-space:nowrap}
 .r242-haken{color:#82cf78;font-size:18px;line-height:1}
 .kf-zeit{font-size:11px;margin:-3px 0 7px}
 @media (max-width:600px){#dr-live .zwei{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#dr-live .zwei>.panel{min-width:0;padding:9px 7px}#dr-live .zwei .panel h3{font-size:11px;letter-spacing:0}#dr-live .zwei .kf,#dr-live .zwei .dm-kompakt{font-size:11px;overflow-wrap:anywhere}#dr-live .zwei .dm-spieler{padding:5px 0}#dr-live .zwei .dm-spieler-werte{font-size:10px}#dr-live .zwei .kf-zeit{font-size:10px;line-height:1.3}}
@@ -3804,19 +3810,23 @@ function r242Regeln(uhrtext){
   if('disableCrosshair' in G)zeilen.push(['➕ Fadenkreuz',ja(G.disableCrosshair)?'aus':haken]);
   if('serverTimePersistent' in G)zeilen.push(['💾 Uhrzeit speichern',ja(G.serverTimePersistent)?haken:'aus']);
   r242Setzen('#pRegeln',`<h3>📜 Serverregeln</h3><div class="r242-liste">${zeilen.map(([label,wert])=>`<div><span>${label}</span><b>${wert===haken?haken:esc(wert)}</b></div>`).join('')}</div>
-    <div class="mut" style="margin-top:6px">Tag und Nacht in echter Zeit, geschätzt für das aktuelle Datum im Spiel.</div>`);
+    <div class="mut" style="margin-top:6px">Tag und Nacht in echter Zeit, geschätzt für das aktuelle Datum im Spiel. Die Nachtlänge ändert sich mit der Jahreszeit.</div>`);
 }
 const r242UhrStand={wert:null,ab:0,alter:0};
-function r242Uhr(){const U=D&&D.pve&&D.pve.r242&&D.pve.r242.uhr;if(!U){r242Setzen('#pUhr','');r242UhrStand.wert=null;r242Regeln();return}
+function r242Zeit(){
+  const U=D&&D.pve&&D.pve.r242&&D.pve.r242.uhr;if(!U){r242UhrStand.wert=null;return null}
   if(r242UhrStand.wert!==U){r242UhrStand.wert=U;r242UhrStand.ab=performance.now();r242UhrStand.alter=Math.max(0,(D.stand||U.stand)-U.stand)}
   const p=(U.ingame_s||U.ingame).split(/[- :]/).map(Number),seit=U.laeuft?Math.max(0,Math.min(r242UhrStand.alter+(performance.now()-r242UhrStand.ab)/1000,U.wechsel_s,120)):0;
   const g=new Date(Date.UTC(p[0],p[1]-1,p[2],p[3],p[4],p[5]||0));g.setTime(g.getTime()+seit*U.rate*1000);
-  const rest=Math.max(0,U.wechsel_s-seit),z=n=>String(n).padStart(2,'0'),dau=s=>{const m=Math.max(0,Math.ceil(s/60));return s<90?'gleich':m<60?m+' min':Math.floor(m/60)+' h '+z(m%60)+' min'};
-  const an=new Date(U.anker_echt*1000).toLocaleString('de-DE',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
-  r242Setzen('#pUhr',`<h3>🕰 Uhrzeit im Spiel</h3><div style="display:flex;gap:18px;align-items:baseline;flex-wrap:wrap"><div style="font-size:30px;font-weight:700">${U.nacht?'🌙':'☀️'} ca. ${z(g.getUTCHours())}:${z(g.getUTCMinutes())} Uhr</div>
-    <div><b>${U.nacht?'Tag':'Nacht'} in ${dau(rest)}</b> <span class="mut">(echte Zeit${U.laeuft?'':', Server läuft gerade nicht'})</span></div></div>
-    <div class="mut" style="margin-top:6px">Ingame ${z(g.getUTCDate())}.${z(g.getUTCMonth()+1)}.${g.getUTCFullYear()} · Sonne etwa ${U.auf} bis ${U.unter} Uhr (Näherung). Uhr seit Anker vom ${an} geschätzt, Neustartpausen abgezogen.</div>`);
-  r242Regeln('ca. '+z(g.getUTCHours())+':'+z(g.getUTCMinutes())+' Uhr')}
+  const h=g.getUTCHours(),z=n=>String(n).padStart(2,'0');
+  return {U,g,rest:Math.max(0,(U.phase_wechsel_s??U.wechsel_s)-seit),zeit:z(h)+':'+z(g.getUTCMinutes()),abschnitt:U.nacht?'nachts':h<11?'morgens':h<14?'mittags':h<18?'nachmittags':'abends'};
+}
+function r242Uhr(){const t=r242Zeit();if(!t){r242Setzen('#pUhr','');r242Regeln();return}
+  const {U,g,rest,zeit,abschnitt}=t,z=n=>String(n).padStart(2,'0'),dau=s=>{const m=Math.max(0,Math.ceil(s/60));return s<90?'gleich':m<60?m+' min':Math.floor(m/60)+' h '+z(m%60)+' min'};
+  r242Setzen('#pUhr',`<h3>🕰 Uhrzeit im Spiel</h3><div class="r242-uhrzeile"><div class="r242-uhrzeit">ca. ${zeit} Uhr</div><span class="r242-abschnitt">${abschnitt}</span>
+    <div class="r242-wechsel"><b>${U.nacht?'Tag':'Nacht'} in ${dau(rest)}</b> <span class="mut">(echte Zeit${U.laeuft?'':', Server läuft gerade nicht'})</span></div></div>
+    <div class="mut" style="margin-top:6px">Ingame ${z(g.getUTCDate())}.${z(g.getUTCMonth()+1)}.${g.getUTCFullYear()} · Tag etwa ${U.auf} bis ${U.unter} Uhr. Uhrzeit geschätzt, Neustartpausen berücksichtigt.</div>`);
+  r242Regeln('ca. '+zeit+' Uhr')}
 setInterval(()=>{try{r242Uhr()}catch(e){}},1000);
 function r242Pve(){const x=D&&D.pve&&D.pve.r242;r242Uhr();if(!x){['#pZiel','#pBericht','#pRaster','#pTode','#pRegeln','#pNeu'].forEach(i=>r242Setzen(i,''));return}
   const z=x.wochenziel,pz=(a,b)=>Math.min(100,Math.round(a/Math.max(1,b)*100));
@@ -4543,7 +4553,7 @@ function lage(){const d=typeof D!=='undefined'?D:null;if(!d||!d.dm||!d.pve)retur
     else if(ro.aktiv&&ro.wechsel_um){o.bis=ro.wechsel_um;o.bisText='Wechsel in'}
     else o.teile.push(ro.pausiert?'Automatik pausiert':'Automatik aus, kein Wechsel geplant');
     if(ro.naechster&&ro.naechster.karte)o.teile.push('danach '+e(ro.naechster.karte)+(ro.naechster.modus?' · '+e(ro.naechster.modus):''))}
-  else{o.welt='pve';o.titel='🌲 PvE Chernarus';o.teile.push((p.online||[]).length+' online');
+  else{o.welt='pve';o.titel='🌲 PvE Chernarus';const u=r242Zeit();if(u)o.teile.push('ca. '+u.zeit+' Uhr · '+u.abschnitt);o.teile.push((p.online||[]).length+' online');
     if(p.neustart&&st!=='gestoppt'){o.bis=p.neustart-60;o.bisText='Neustart in'}}
   if(SW[st])o.teile.unshift('Server '+SW[st]);
   return o}
@@ -4551,7 +4561,7 @@ function zeichnenLage(){const o=lage();if(!o)return;ziel=o.bis;
   const h=`<span class="ks-punkt ks-${o.farbe}"></span><b class="ks-titel">${o.titel}</b>${o.bis?`<span class="ks-teil ks-uhr">⏱ ${o.bisText} <b class="ks-bis">${dauer(o.bis-Date.now()/1000)}</b></span>`:''}${o.teile.map(x=>`<span class="ks-teil">${x}</span>`).join('')}`;
   if(el.dataset.sig!==h){el.innerHTML=h;el.dataset.sig=h}
   el.setAttribute('role','button');el.tabIndex=0;el.title=o.welt==='dm'?'Zur laufenden Runde':'Zur PvE-Übersicht';el.dataset.welt=o.welt}
-function ticken(){const b=el.querySelector('.ks-bis');if(b&&ziel)b.textContent=dauer(ziel-Date.now()/1000)}
+function ticken(){if(el.dataset.welt==='pve'){zeichnenLage();return}const b=el.querySelector('.ks-bis');if(b&&ziel)b.textContent=dauer(ziel-Date.now()/1000)}
 const gehe=()=>{try{if(el.dataset.welt)tab(el.dataset.welt)}catch(x){}};
 el.onclick=gehe;el.onkeydown=x=>{if(x.key==='Enter'||x.key===' '){x.preventDefault();gehe()}};
 {const _z=zeichnen;zeichnen=function(){_z.apply(this,arguments);try{zeichnenLage()}catch(x){console.error(x)}}}
