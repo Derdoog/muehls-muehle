@@ -4553,7 +4553,7 @@ function lage(){const d=typeof D!=='undefined'?D:null;if(!d||!d.dm||!d.pve)retur
     else if(ro.aktiv&&ro.wechsel_um){o.bis=ro.wechsel_um;o.bisText='Wechsel in'}
     else o.teile.push(ro.pausiert?'Automatik pausiert':'Automatik aus, kein Wechsel geplant');
     if(ro.naechster&&ro.naechster.karte)o.teile.push('danach '+e(ro.naechster.karte)+(ro.naechster.modus?' · '+e(ro.naechster.modus):''))}
-  else{o.welt='pve';o.titel='🌲 PvE Chernarus';const u=r242Zeit();if(u)o.teile.push('ca. '+u.zeit+' Uhr · '+u.abschnitt);o.teile.push((p.online||[]).length+' online');
+  else{o.welt='pve';o.titel='🌲 PvE Chernarus';const u=r242Zeit();if(u)o.teile.push('ca. '+u.zeit+' Uhr');o.teile.push((p.online||[]).length+' online');
     if(p.neustart&&st!=='gestoppt'){o.bis=p.neustart-60;o.bisText='Neustart in'}}
   if(SW[st])o.teile.unshift('Server '+SW[st]);
   return o}
