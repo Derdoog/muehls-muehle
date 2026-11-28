@@ -3810,7 +3810,7 @@ function r242Regeln(uhrtext){
   if('disableCrosshair' in G)zeilen.push(['➕ Fadenkreuz',ja(G.disableCrosshair)?'aus':haken]);
   if('serverTimePersistent' in G)zeilen.push(['💾 Uhrzeit speichern',ja(G.serverTimePersistent)?haken:'aus']);
   r242Setzen('#pRegeln',`<h3>📜 Serverregeln</h3><div class="r242-liste">${zeilen.map(([label,wert])=>`<div><span>${label}</span><b>${wert===haken?haken:esc(wert)}</b></div>`).join('')}</div>
-    <div class="mut" style="margin-top:6px">Tag und Nacht in echter Zeit, geschätzt für das aktuelle Datum im Spiel. Die Nachtlänge ändert sich mit der Jahreszeit.</div>`);
+    <div class="mut" style="margin-top:6px">${U?.modus==='neustart'?'Fester Tageszyklus pro Serverstart. Neustart nach drei Stunden wieder im Morgengrauen.':'Tag und Nacht in echter Zeit, geschätzt für das aktuelle Datum im Spiel. Die Nachtlänge ändert sich mit der Jahreszeit.'}</div>`);
 }
 const r242UhrStand={wert:null,ab:0,alter:0};
 function r242Zeit(){
@@ -3825,7 +3825,7 @@ function r242Uhr(){const t=r242Zeit();if(!t){r242Setzen('#pUhr','');r242Regeln()
   const {U,g,rest,zeit,abschnitt}=t,z=n=>String(n).padStart(2,'0'),dau=s=>{const m=Math.max(0,Math.ceil(s/60));return s<90?'gleich':m<60?m+' min':Math.floor(m/60)+' h '+z(m%60)+' min'};
   r242Setzen('#pUhr',`<h3>🕰 Uhrzeit im Spiel</h3><div class="r242-uhrzeile"><div class="r242-uhrzeit">ca. ${zeit} Uhr</div><span class="r242-abschnitt">${abschnitt}</span>
     <div class="r242-wechsel"><b>${U.nacht?'Tag':'Nacht'} in ${dau(rest)}</b> <span class="mut">(echte Zeit${U.laeuft?'':', Server läuft gerade nicht'})</span></div></div>
-    <div class="mut" style="margin-top:6px">Ingame ${z(g.getUTCDate())}.${z(g.getUTCMonth()+1)}.${g.getUTCFullYear()} · Tag etwa ${U.auf} bis ${U.unter} Uhr. Uhrzeit geschätzt, Neustartpausen berücksichtigt.</div>`);
+    <div class="mut" style="margin-top:6px">Ingame ${z(g.getUTCDate())}.${z(g.getUTCMonth()+1)}.${g.getUTCFullYear()} · Tag etwa ${U.auf} bis ${U.unter} Uhr. ${U.modus==='neustart'?'Ab diesem Serverstart berechnet'+(U.start_geschaetzt?', Startzeit vorläufig geschätzt.':'.'):'Uhrzeit geschätzt, Neustartpausen berücksichtigt.'}</div>`);
   r242Regeln('ca. '+zeit+' Uhr')}
 setInterval(()=>{try{r242Uhr()}catch(e){}},1000);
 function r242Pve(){const x=D&&D.pve&&D.pve.r242;r242Uhr();if(!x){['#pZiel','#pBericht','#pRaster','#pTode','#pRegeln','#pNeu'].forEach(i=>r242Setzen(i,''));return}
